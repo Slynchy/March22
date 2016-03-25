@@ -1,0 +1,4 @@
+3
+graphics/backgrounds/bedroom_day.webp
+graphics/backgrounds/bedroom_night.webp
+graphics/backgrounds/bedroom_night_s.webp
