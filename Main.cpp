@@ -11,20 +11,21 @@
 
 #include "SDL.h" // Main SDL library
 #include <SDL_image.h> // SDL Image library
-#include <SDL_mixer.h> // SDL Image library
+#include <SDL_mixer.h> // SDL Sound library
+#include <SDL_ttf.h> // SDL TTF library
 #include "M22Engine.h"
 #include <iostream>
 #include <chrono>
 
 #define DEBUG_ENABLED false
 
-#define WINDOW_TITLE "March22 Engine Prototype"
+#define WINDOW_TITLE	"March22 Engine Prototype "
+#define VERSION			"v0.1.0"
 
 #define FPS 60
-#define screenW 640
-#define screenH 480
-#define screenX 600
-#define screenY 200
+
+Vec2 ScrSize(640,480);
+Vec2 ScrPos(600,200);
 
 bool QUIT = false;
 
@@ -42,25 +43,28 @@ int main(int argc, char* argv[])
 {
 	InitializeSDL();
 	InitializeSound();
+	M22Engine::InitializeM22();
 	M22Graphics::LoadBackgroundsFromIndex("graphics/backgrounds/index.txt");
 	M22Graphics::textFrame = IMG_LoadTexture(M22Engine::SDL_RENDERER, "graphics/frame.png");
-	M22Graphics::characterFrameHeaders.push_back(IMG_LoadTexture(M22Engine::SDL_RENDERER, "graphics/text_frames/yuuji.png"));
 	M22Script::LoadScriptToCurrent("scripts/EVC_001_strings.txt");
+	M22Graphics::textFont = TTF_OpenFont( "graphics/times.ttf", 19 );
+
+	M22Script::ChangeLine(0);
 
 	while( !QUIT )
 	{
 		UpdateEvents();
-		UpdateKeyboard();
 		UpdateSound();
 
 		switch(M22Engine::GAMESTATE)
 		{
 			case M22Engine::GAMESTATES::MAIN_MENU:
-				DrawBackground(0);
-				SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::textFrame, NULL, NULL);
-				SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::characterFrameHeaders[M22Script::activeSpeakerIndex], NULL, NULL);
 				break;
 			case M22Engine::GAMESTATES::INGAME:
+				DrawBackground(M22Engine::ACTIVE_BACKGROUND_INDEX);
+				SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::textFrame, NULL, NULL);
+				SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::characterFrameHeaders[M22Script::activeSpeakerIndex], NULL, NULL);
+				M22Script::DrawCurrentLine();
 				break;
 			default:
 				break;
@@ -85,6 +89,8 @@ void Shutdown()
 	M22Graphics::BACKGROUNDS.clear();
 	M22Graphics::characterFrameHeaders.clear();
 	M22Graphics::textFrame = NULL;
+	M22Graphics::textFont = NULL;
+	TTF_Quit();
 	if(DEBUG_ENABLED)
 	{
 		printf("\nPress enter to exit...");
@@ -95,14 +101,20 @@ void Shutdown()
 short int InitializeSDL()
 {
 	SDL_Init( SDL_INIT_EVERYTHING );
-	M22Engine::SDL_SCREEN = SDL_CreateWindow(WINDOW_TITLE, screenX, screenY, screenW, screenH, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL);
+	std::string tempTitle = WINDOW_TITLE;
+	tempTitle += VERSION;
+	M22Engine::SDL_SCREEN = SDL_CreateWindow(tempTitle.c_str(), (int)ScrPos.x(), (int)ScrPos.y(), (int)ScrSize.x(), (int)ScrSize.y(), SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL);
     M22Engine::SDL_RENDERER = SDL_CreateRenderer(M22Engine::SDL_SCREEN, -1, SDL_RENDERER_ACCELERATED);
-	SDL_RenderSetLogicalSize(M22Engine::SDL_RENDERER, screenW, screenH);
+	SDL_RenderSetLogicalSize(M22Engine::SDL_RENDERER, (int)ScrSize.x(), (int)ScrSize.y());
 	if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 )
 	{
 		printf( "SDL_mixer failed to init! Error: %s\n", Mix_GetError() );
 	};
 	Mix_VolumeMusic(int(MIX_MAX_VOLUME*M22Sound::MUSIC_VOLUME));
+	if( TTF_Init() == -1 )
+    {
+		printf( "SDL_TTF failed to init! Error: %s\n", TTF_GetError() );
+    }
 	return 0;
 };
 
@@ -182,9 +194,9 @@ short int InitializeSound()
 
 void UpdateSound()
 {
-	if(!Mix_PlayingMusic() && DEBUG_ENABLED == false)
+	if( (!Mix_PlayingMusic()) && DEBUG_ENABLED == false)
 	{
-		M22Sound::ChangeMusicTrack(0);
+		M22Sound::ChangeMusicTrack(M22Sound::currentTrack);
 	};
 	return;
 };
@@ -197,9 +209,9 @@ void UpdateKeyboard()
 	{
 		QUIT=true;
 	};
-	if(M22Engine::SDL_KEYBOARDSTATE[SDL_SCANCODE_W] && DEBUG_ENABLED == true)
+	if(M22Engine::SDL_KEYBOARDSTATE[SDL_SCANCODE_RETURN])
 	{
-		M22Sound::PlaySting(0);
+		M22Script::ChangeLine(++M22Script::currentLineIndex);
 	};
 	return;
 };
@@ -212,6 +224,12 @@ void UpdateEvents()
 		{
 			case SDL_QUIT:
 				QUIT = true;
+				break;
+			case SDL_KEYDOWN:
+				if(M22Engine::SDL_EVENTS.key.repeat == 0)
+				{
+					UpdateKeyboard();
+				};
 				break;
 			default:
 				break;
