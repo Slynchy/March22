@@ -13,6 +13,8 @@
 #include "SDL.h"
 #include <SDL_image.h>
 #include <SDL_mixer.h>
+#include <SDL_ttf.h>
+#include "engine/Vectors.h"
 #include <vector>
 #include <fstream>
 #include <iostream>
@@ -27,17 +29,24 @@ class M22Engine
 			MAIN_MENU,
 			INGAME
 		};
-
 		enum CHARACTERS
 		{
-			YUUJI
+			NONE,
+			YUUJI,
+			GIRL,
+			TOTAL_CHARACTERS
 		};
+
+		static std::vector<std::string> CHARACTER_NAMES;
+		static unsigned short int ACTIVE_BACKGROUND_INDEX;
 
 		static M22Engine::GAMESTATES GAMESTATE;
 		static SDL_Window* SDL_SCREEN;
 		static SDL_Renderer *SDL_RENDERER;
 		static SDL_Event SDL_EVENTS;
 		static const Uint8 *SDL_KEYBOARDSTATE;
+
+		static short int InitializeM22(void);
 };
 
 class M22Graphics
@@ -49,6 +58,8 @@ class M22Graphics
 
 		static std::vector<SDL_Texture*> BACKGROUNDS;
 		static short int LoadBackgroundsFromIndex(const char* _filename);
+
+		static TTF_Font *textFont;
 };
 
 class M22Sound
@@ -65,6 +76,7 @@ class M22Sound
 		static std::vector<Mix_Music*> MUSIC;
 		static float MUSIC_VOLUME;
 		static float SFX_VOLUME;
+		static int currentTrack;
 
 		static short int PlaySting(short int);
 		static short int PlaySting(short int, bool);
@@ -83,9 +95,15 @@ class M22Script
 		static std::string currentLine;
 		static int currentLineIndex;
 		static std::vector<std::string> currentScript;
-		static short int activeSpeakerIndex;
+		static M22Engine::CHARACTERS activeSpeakerIndex;
+		static SDL_Surface *currentLineSurface;
+		static SDL_Surface *currentLineSurfaceShadow;
 
 		static short int LoadScriptToCurrent(const char* _filename);
+		static void DrawCurrentLine(void);
+		static void ChangeLine(int _newLine);
+		static unsigned int SplitString(const std::string&, std::vector<std::string>&, char);
+		static M22Engine::CHARACTERS CheckCharacter(std::string*);
 };
 
 #endif
