@@ -1,7 +1,11 @@
-433
+439
+DrawBackground mystery_girl
+PlayMusic MP03
 Girl: "Do you know about the Snow Sakura?"
 Snow Sakura?
+DrawCharacter Misaki Shirt ANGRY 0
 Girl: "Once a year, its flowers bloom in the chill of winter."
+ClearCharacters
 Even though it's a cherry tree?
 Girl: "Yes, even though it's a cherry tree."
 Cherry trees only bloom in the spring, you know.
@@ -22,6 +26,7 @@ Beep beep beep beep! Beep beep beep beep!
 Yuuji: "Ugh..."
 It was the familiar sound of my alarm clock.
 I opened my eyes sleepily.
+DrawBackground bedroom_day
 Yuuji: "........."
 I don't recognize this ceiling.
 I don't recognize this room, either.
@@ -432,3 +437,4 @@ Takeaki: "Hey! You shouldn't light fireworks indoors!"
 Saki and Uncle came running into my room.
 Amidst the ruckus...
 ...my life in this noisy, exasperating snowy country had truly begun.
+LoadScript EVC_002_strings.txt

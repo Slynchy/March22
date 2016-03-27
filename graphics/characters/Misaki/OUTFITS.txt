@@ -1,0 +1,5 @@
+4
+Indoors
+Outdoors
+School
+Shirt

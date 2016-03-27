@@ -7,17 +7,24 @@ SDL_Event M22Engine::SDL_EVENTS;
 const Uint8 *M22Engine::SDL_KEYBOARDSTATE = NULL;
 std::vector<std::string> M22Engine::CHARACTER_NAMES;
 unsigned short int M22Engine::ACTIVE_BACKGROUND_INDEX = 0;
+std::vector<std::string> M22Engine::CHARACTER_EMOTIONS;
+std::vector<M22Engine::Character> M22Engine::CHARACTERS_ARRAY;
+std::vector<M22Engine::Background> M22Engine::ACTIVE_BACKGROUNDS;
 
 std::vector<Mix_Chunk*> M22Sound::SOUND_FX;
 std::vector<Mix_Music*> M22Sound::MUSIC;
 float M22Sound::MUSIC_VOLUME = DEFAULT_MUSIC_VOLUME_MULT;
 float M22Sound::SFX_VOLUME = (float)DEFAULT_SFX_VOLUME_MULT;
 int M22Sound::currentTrack = 0;
+std::vector<std::string> M22Sound::MUSIC_NAMES;
+std::vector<std::string> M22Sound::SFX_NAMES;
 
 std::vector<SDL_Texture*> M22Graphics::BACKGROUNDS;
 SDL_Texture* M22Graphics::textFrame;
 std::vector<SDL_Texture*> M22Graphics::characterFrameHeaders;
 TTF_Font* M22Graphics::textFont = NULL;
+std::vector<std::string> M22Graphics::backgroundIndex;
+std::vector<M22Engine::CharacterReference> M22Graphics::activeCharacters;
 
 std::string M22Script::currentLine;
 int M22Script::currentLineIndex = NULL;
@@ -71,11 +78,41 @@ short int M22Sound::PlaySting(short int _position, bool _forceplayback)
 	};
 };
 
+short int M22Sound::PlaySting(std::string _name, bool _forceplayback)
+{
+	for(size_t i = 0; i < M22Sound::SOUND_FX.size(); i++)
+	{
+		if(_name == M22Sound::SFX_NAMES[i])
+		{
+			if(!Mix_Playing(M22Sound::MIXERS::SFX) || _forceplayback == true)
+			{
+				Mix_PlayChannel( M22Sound::MIXERS::SFX, M22Sound::SOUND_FX[i], 0);
+				return 0;
+			};
+			return -2;
+		};
+	};
+	return -1;
+};
+
+short int M22Sound::ChangeMusicTrack(std::string _name)
+{
+	for(size_t i = 0; i < M22Sound::MUSIC.size(); i++)
+	{
+		if(_name == M22Sound::MUSIC_NAMES[i])
+		{
+			Mix_PlayMusic( M22Sound::MUSIC[i], M22Sound::MIXERS::BGM );
+			return 0;
+		};
+	};
+	return -1;
+};
+
 short int M22Sound::ChangeMusicTrack(short int _position)
 {
 	if(M22Sound::MUSIC[_position])
 	{
-		Mix_PlayMusic( M22Sound::MUSIC[_position], -1 );
+		Mix_PlayMusic( M22Sound::MUSIC[_position], M22Sound::MIXERS::BGM );
 		return 0;
 	}
 	else
@@ -113,6 +150,7 @@ short int M22Graphics::LoadBackgroundsFromIndex(const char* _filename)
 		{
 			std::string currentfile;
 			input >> currentfile;
+			M22Graphics::backgroundIndex.push_back(currentfile);
 			SDL_Texture *temp = IMG_LoadTexture(M22Engine::SDL_RENDERER, currentfile.c_str());
 			if(!temp)
 			{
@@ -133,7 +171,9 @@ short int M22Graphics::LoadBackgroundsFromIndex(const char* _filename)
 
 short int M22Script::LoadScriptToCurrent(const char* _filename)
 {
-	std::fstream input(_filename);
+	std::string filename = "scripts/";
+	filename += _filename;
+	std::fstream input(filename);
 	int length;
 	std::string temp;
 	if(input)
@@ -200,31 +240,6 @@ void M22Script::DrawCurrentLine(void)
 	return;
 };
 
-void M22Script::ChangeLine(int _newLine)
-{
-	if(size_t(_newLine) > M22Script::currentScript.size())
-	{
-		printf("Cannot change line! Out of bounds!\n");
-		return;
-	};
-
-	M22Script::currentLine = M22Script::currentScript[_newLine];
-
-	std::vector<std::string> temp;
-	M22Script::SplitString(M22Script::currentLine, temp, ' ');
-	std::string character = temp[0];
-
-	M22Script::activeSpeakerIndex = M22Script::CheckCharacter(&character);
-
-	if(M22Script::activeSpeakerIndex > 0)
-	{
-		M22Script::currentLine.erase(0, M22Engine::CHARACTER_NAMES[M22Script::activeSpeakerIndex].length());
-	};
-
-	M22Script::currentLineIndex = _newLine;
-	return;
-};
-
 /*
 	By Baltasarq from: http://stackoverflow.com/questions/5888022/split-string-by-single-spaces
 */
@@ -248,6 +263,111 @@ unsigned int M22Script::SplitString(const std::string &txt, std::vector<std::str
     return strs.size();
 };
 
+void M22Script::ChangeLine(int _newLine)
+{
+	// Check the line even exists
+	if(size_t(_newLine) > M22Script::currentScript.size())
+	{
+		printf("Cannot change line! Out of bounds!\n");
+		return;
+	};
+
+	// Update currentLine variable
+	M22Script::currentLine = M22Script::currentScript[_newLine];
+
+	// Get type of line
+	std::vector<std::string> temp;
+	M22Script::SplitString(M22Script::currentLine, temp, ' ');
+	std::string type = temp[0];
+
+	M22Script::LINETYPE LINETYPE = M22Script::CheckLineType(type);
+
+	if(LINETYPE == M22Script::LINETYPE::NEW_BACKGROUND)
+	{
+		for(size_t i = 0; i < M22Graphics::backgroundIndex.size(); i++)
+		{
+			std::string tempPath = "graphics/backgrounds/";
+			tempPath += temp[1];
+			tempPath += ".webp";
+			if(tempPath == M22Graphics::backgroundIndex[i])
+			{
+				if(M22Engine::ACTIVE_BACKGROUNDS[0].sprite)
+				{
+					M22Engine::ACTIVE_BACKGROUNDS[1].sprite = M22Graphics::BACKGROUNDS[i];
+					SDL_SetTextureBlendMode(M22Engine::ACTIVE_BACKGROUNDS[1].sprite, SDL_BLENDMODE_BLEND);
+					SDL_SetTextureAlphaMod( M22Engine::ACTIVE_BACKGROUNDS[1].sprite, 0 );
+				}
+				else
+				{
+					M22Engine::ACTIVE_BACKGROUNDS[0].sprite = M22Graphics::BACKGROUNDS[i];
+				};
+				M22Script::ChangeLine(++_newLine);
+				return;
+			};
+		};
+	}
+	else if(LINETYPE == M22Script::LINETYPE::NEW_MUSIC)
+	{
+		std::string tempPath = "sfx/music/";
+		tempPath += temp[1];
+		tempPath += ".OGG";
+		M22Sound::ChangeMusicTrack(tempPath);
+		M22Script::ChangeLine(++_newLine);
+		return;
+	}
+	else if(LINETYPE == M22Script::LINETYPE::PLAY_STING)
+	{
+		std::string tempPath = "sfx/stings/";
+		tempPath += temp[1];
+		tempPath += ".OGG";
+		M22Sound::PlaySting(tempPath, true);
+		M22Script::ChangeLine(++_newLine);
+		return;
+	}
+	else if(LINETYPE == M22Script::LINETYPE::DRAW_CHARACTER)
+	{
+		M22Engine::CharacterReference tempChar;
+		int charIndex, outfitIndex, emotionIndex;
+		charIndex = M22Engine::GetCharacterIndexFromName(temp[1]);
+		outfitIndex = M22Engine::GetOutfitIndexFromName(temp[2], charIndex);
+		emotionIndex = M22Engine::GetEmotionIndexFromName(temp[3]);
+		tempChar.sprite = M22Engine::CHARACTERS_ARRAY[charIndex].sprites[outfitIndex][emotionIndex];
+
+		SDL_QueryTexture(tempChar.sprite, NULL, NULL, &tempChar.rect.w, &tempChar.rect.h);
+		tempChar.rect.x = atoi(temp[4].c_str());
+		tempChar.rect.y = 0;
+
+		M22Graphics::activeCharacters.push_back(tempChar);
+		M22Script::ChangeLine(++_newLine);
+		return;
+	}
+	else if(LINETYPE == M22Script::LINETYPE::CLEAR_CHARACTERS)
+	{
+		M22Graphics::activeCharacters.clear();
+		M22Script::ChangeLine(++_newLine);
+		return;
+	}
+	else if(LINETYPE == M22Script::LINETYPE::LOAD_SCRIPT)
+	{
+		M22Script::currentScript.clear();
+		LoadScriptToCurrent(temp[1].c_str());
+		M22Script::ChangeLine(0);
+		return;
+	}
+	else
+	{
+		M22Script::activeSpeakerIndex = M22Script::CheckCharacter(&type);
+	};
+
+	if(M22Script::activeSpeakerIndex > 0)
+	{
+		M22Script::currentLine.erase(0, M22Engine::CHARACTER_NAMES[M22Script::activeSpeakerIndex].length());
+	};
+
+	M22Script::currentLineIndex = _newLine;
+	return;
+};
+
 /*
 	Checks the string against database of character names
 	and returns the character's enumerator
@@ -265,6 +385,40 @@ M22Engine::CHARACTERS M22Script::CheckCharacter(std::string* _input)
 		};
 	};
 	return M22Engine::CHARACTERS(0);
+};
+
+/*
+	Checks the string against database of character names
+	and returns the character's enumerator
+*/
+M22Script::LINETYPE M22Script::CheckLineType(std::string _input)
+{
+	_input.erase(std::remove_if(_input.begin(), _input.end(), isspace));
+	if(_input == std::string("DrawBackground"))
+	{
+		return M22Script::LINETYPE::NEW_BACKGROUND;
+	}
+	else if(_input == std::string("PlayMusic"))
+	{
+		return M22Script::LINETYPE::NEW_MUSIC;
+	}
+	else if(_input == std::string("PlaySting"))
+	{
+		return M22Script::LINETYPE::PLAY_STING;
+	}
+	else if(_input == std::string("DrawCharacter"))
+	{
+		return M22Script::LINETYPE::DRAW_CHARACTER;
+	}
+	else if(_input == std::string("ClearCharacters"))
+	{
+		return M22Script::LINETYPE::CLEAR_CHARACTERS;
+	}
+	else if(_input == std::string("LoadScript"))
+	{
+		return M22Script::LINETYPE::LOAD_SCRIPT;
+	};
+	return M22Script::LINETYPE::SPEECH;
 };
 
 short int M22Engine::InitializeM22(void)
@@ -300,5 +454,169 @@ short int M22Engine::InitializeM22(void)
 		temp.clear();
 	};
 
+	input.open("graphics/characters/EMOTIONS.txt");
+	if(input)
+	{
+		input >> length;
+		getline(input,temp);
+		M22Engine::CHARACTER_EMOTIONS.clear();
+		for(int i = 0; i < length; i++)
+		{
+			getline(input,temp);
+			M22Engine::CHARACTER_EMOTIONS.push_back(temp);
+		};
+	}
+	else
+	{
+		std::cout << "Failed to load script file: " << "graphics/characters/EMOTIONS.txt" << std::endl;
+		return -1;
+	};
+	input.close();
+
+	input.open("graphics/characters/CHARACTERS.txt");
+	if(input)
+	{
+		input >> length;
+		getline(input,temp);
+		M22Engine::CHARACTERS_ARRAY.clear();
+		for(int i = 0; i < length; i++)
+		{
+			getline(input,temp);
+			M22Engine::Character tempChar;
+			tempChar.name = temp;
+			M22Engine::CHARACTERS_ARRAY.push_back(tempChar);
+		};
+	}
+	else
+	{
+		std::cout << "Failed to load script file: " << "graphics/characters/CHARACTERS.txt" << std::endl;
+		return -1;
+	};
+	input.close();
+
+	for(size_t i = 0; i < CHARACTERS_ARRAY.size(); i++)
+	{
+		std::string filename = "graphics/characters/";
+		filename += M22Engine::CHARACTERS_ARRAY[i].name;
+		filename += "/OUTFITS.txt";
+		input.open(filename);
+		if(input)
+		{
+			input >> length;
+			getline(input,temp);
+			M22Engine::CHARACTERS_ARRAY[i].outfits.clear();
+			for(int k = 0; k < length; k++)
+			{
+				getline(input,temp);
+				M22Engine::CHARACTERS_ARRAY[i].outfits.push_back(temp);
+			};
+		}
+		else
+		{
+			std::cout << "Failed to load script file: " << filename << std::endl;
+			return -1;
+		};
+		input.close();
+	};
+
+	for(size_t i = 0; i < CHARACTERS_ARRAY.size(); i++)
+	{
+		CHARACTERS_ARRAY[i].sprites.resize(CHARACTERS_ARRAY[i].outfits.size());
+		for(size_t p = 0; p < CHARACTERS_ARRAY[i].outfits.size(); p++)
+		{
+			for(size_t k = 0; k < CHARACTER_EMOTIONS.size(); k++)
+			{
+				std::string tempPath = "graphics/characters/";
+				tempPath += CHARACTERS_ARRAY[i].name;
+				tempPath += "/";
+				tempPath += CHARACTERS_ARRAY[i].outfits[p];
+				tempPath += "/";
+				tempPath += CHARACTER_EMOTIONS[k];
+				tempPath += ".png";
+				M22Engine::CHARACTERS_ARRAY[i].sprites[p].push_back(IMG_LoadTexture(M22Engine::SDL_RENDERER, tempPath.c_str()));
+			};
+		};
+	};
+	
+	M22Engine::ACTIVE_BACKGROUNDS.resize(2);
 	return 0;
+};
+
+int M22Engine::GetCharacterIndexFromName(std::string _input)
+{
+	_input.erase(std::remove_if(_input.begin(), _input.end(), isspace));
+	for(size_t i = 0; i < M22Engine::CHARACTERS_ARRAY.size(); i++)
+	{
+		if(M22Engine::CHARACTERS_ARRAY[i].name == _input)
+		{
+			return i;
+		};
+	};
+	return -1;
+};
+
+int M22Engine::GetOutfitIndexFromName(std::string _input, int _charIndex)
+{
+	_input.erase(std::remove_if(_input.begin(), _input.end(), isspace));
+	for(size_t i = 0; i < M22Engine::CHARACTERS_ARRAY[_charIndex].outfits.size(); i++)
+	{
+		if(M22Engine::CHARACTERS_ARRAY[_charIndex].outfits[i] == _input)
+		{
+			return i;
+		};
+	};
+	return -1;
+};
+
+int M22Engine::GetEmotionIndexFromName(std::string _input)
+{
+	_input.erase(std::remove_if(_input.begin(), _input.end(), isspace));
+	for(size_t i = 0; i < M22Engine::CHARACTER_EMOTIONS.size(); i++)
+	{
+		if(M22Engine::CHARACTER_EMOTIONS[i] == _input)
+		{
+			return i;
+		};
+	};
+	return -1;
+};
+
+void M22Graphics::DrawBackground(SDL_Texture* _target)
+{
+	if(_target)
+	{
+		// Backgrounds match the 640x480 resolution, so no need for scaling... for now.
+		SDL_RenderCopy(M22Engine::SDL_RENDERER, _target, NULL, NULL);
+	}
+	else
+	{
+		// non existent
+	};
+	return;
+};
+
+void M22Graphics::UpdateBackgrounds(void)
+{
+	if(M22Engine::ACTIVE_BACKGROUNDS[1].sprite != NULL)
+	{
+		if(M22Engine::ACTIVE_BACKGROUNDS[1].alpha < 255)
+		{
+			M22Engine::ACTIVE_BACKGROUNDS[1].alpha = unsigned short int(M22Graphics::Lerp(M22Engine::ACTIVE_BACKGROUNDS[1].alpha, 255.0f, DEFAULT_LERP_SPEED));
+		}
+		else
+		{
+			M22Engine::ACTIVE_BACKGROUNDS[0] = M22Engine::ACTIVE_BACKGROUNDS[1];
+			M22Engine::ACTIVE_BACKGROUNDS[1].sprite = NULL;
+			M22Engine::ACTIVE_BACKGROUNDS[1].alpha = NULL;
+		};
+	};
+	SDL_SetTextureAlphaMod( M22Engine::ACTIVE_BACKGROUNDS[0].sprite, Uint8(M22Engine::ACTIVE_BACKGROUNDS[0].alpha) );
+	SDL_SetTextureAlphaMod( M22Engine::ACTIVE_BACKGROUNDS[1].sprite, Uint8(M22Engine::ACTIVE_BACKGROUNDS[1].alpha) );
+	return;
+};
+
+float M22Graphics::Lerp(float _var1, float _var2, float _t)
+{
+	float tempfl = _var1*(1-_t) + _var2*_t;
+	return tempfl;
 };

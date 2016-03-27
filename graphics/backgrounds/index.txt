@@ -1,4 +1,7 @@
-3
+6
 graphics/backgrounds/bedroom_day.webp
 graphics/backgrounds/bedroom_night.webp
 graphics/backgrounds/bedroom_night_s.webp
+graphics/backgrounds/mystery_girl.webp
+graphics/backgrounds/mystery_girl_s.webp
+graphics/backgrounds/BLACK.webp

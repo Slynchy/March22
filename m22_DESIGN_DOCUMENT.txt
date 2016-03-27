@@ -1,0 +1,18 @@
+||=============================================================================||
+||								.m22 DESIGN DOCUMENT						   ||
+||	  The specification for the scripting language of the March22 VN engine    ||
+||=============================================================================||
+
+The engine parses the next line of the script and does the action based on the first word. This document will plan out the required actions and their associated keyword. 
+
+KEYWORD													ACTIONDrawBackground( _name )								Changes the background with fading lerp transition
+DrawCharacter( _name, _outfit, _emotion, _x )		Adds the specified character to an array of characters to draw, at _x position.
+ClearCharacters										Clears the character drawing array.
+PlaySting( _name )									Plays a sound from the loaded stings.
+ChangeMusic( _name )								Changes the current music to the new one
+FadeToBlack( [ _speed ] )							Basically DrawBackground_fade but only one (or no) variable. Shorthand.
+
+LoadScript( _filename )								Basically DrawBackground_fade but only one (or no) variable. Shorthand.
+March22 Engine	27/03/2016
+Sam Lynch	
+Amduat Games

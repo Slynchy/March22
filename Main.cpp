@@ -20,7 +20,7 @@
 #define DEBUG_ENABLED false
 
 #define WINDOW_TITLE	"March22 Engine Prototype "
-#define VERSION			"v0.1.0"
+#define VERSION			"v0.1.1"
 
 #define FPS 60
 
@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
 	M22Engine::InitializeM22();
 	M22Graphics::LoadBackgroundsFromIndex("graphics/backgrounds/index.txt");
 	M22Graphics::textFrame = IMG_LoadTexture(M22Engine::SDL_RENDERER, "graphics/frame.png");
-	M22Script::LoadScriptToCurrent("scripts/EVC_001_strings.txt");
+	M22Script::LoadScriptToCurrent("EVC_001_strings.txt");
 	M22Graphics::textFont = TTF_OpenFont( "graphics/times.ttf", 19 );
 
 	M22Script::ChangeLine(0);
@@ -55,13 +55,24 @@ int main(int argc, char* argv[])
 	{
 		UpdateEvents();
 		UpdateSound();
+		M22Graphics::UpdateBackgrounds();
 
 		switch(M22Engine::GAMESTATE)
 		{
 			case M22Engine::GAMESTATES::MAIN_MENU:
 				break;
 			case M22Engine::GAMESTATES::INGAME:
-				DrawBackground(M22Engine::ACTIVE_BACKGROUND_INDEX);
+				M22Graphics::DrawBackground(M22Engine::ACTIVE_BACKGROUNDS[0].sprite);
+				if(M22Engine::ACTIVE_BACKGROUNDS[1].sprite != NULL) M22Graphics::DrawBackground(M22Engine::ACTIVE_BACKGROUNDS[1].sprite);
+
+				if(M22Graphics::activeCharacters.size() != 0)
+				{
+					for(size_t i = 0; i < M22Graphics::activeCharacters.size(); i++)
+					{
+						SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::activeCharacters[i].sprite, NULL, &M22Graphics::activeCharacters[i].rect);
+					};
+				};
+
 				SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::textFrame, NULL, NULL);
 				SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::characterFrameHeaders[M22Script::activeSpeakerIndex], NULL, NULL);
 				M22Script::DrawCurrentLine();
@@ -90,6 +101,7 @@ void Shutdown()
 	M22Graphics::characterFrameHeaders.clear();
 	M22Graphics::textFrame = NULL;
 	M22Graphics::textFont = NULL;
+	M22Engine::CHARACTERS_ARRAY.clear();
 	TTF_Quit();
 	if(DEBUG_ENABLED)
 	{
@@ -135,6 +147,7 @@ short int InitializeMusic()
 				std::cout << "Failed to load file: " << currentfile << std::endl;
 				return -1;
 			};
+			M22Sound::MUSIC_NAMES.push_back(currentfile);
 			M22Sound::MUSIC.push_back(temp);
 		};
 	}
@@ -165,6 +178,7 @@ short int InitializeSFX()
 				return -1;
 			};
 			M22Sound::SOUND_FX.push_back(temp);
+			M22Sound::SFX_NAMES.push_back(currentfile);
 			Mix_VolumeChunk(M22Sound::SOUND_FX[i], int(MIX_MAX_VOLUME*M22Sound::SFX_VOLUME));
 		};
 	}
