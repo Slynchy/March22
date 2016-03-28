@@ -1,4 +1,4 @@
-||=============================||
+#||=============================||
 || M22/Snow Sakura++ Changelog ||
 ||=============================||
 	 NOTE: Please don't take 
@@ -6,7 +6,7 @@
 	 I hardly ever remember 
 	 what I add per version.
 
-# v0.1.4
+## v0.1.4
 
 	- Added basic fade-in/out of backgrounds and characters
 	- Shift key to skip dialogue faster
