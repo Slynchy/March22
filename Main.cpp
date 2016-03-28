@@ -20,7 +20,7 @@
 #define DEBUG_ENABLED false
 
 #define WINDOW_TITLE	"March22 Engine Prototype "
-#define VERSION			"v0.1.1"
+#define VERSION			"v0.1.4"
 
 #define FPS 60
 
@@ -41,25 +41,41 @@ void DrawBackground(short int);
 
 int main(int argc, char* argv[]) 
 {
+	srand((unsigned int)time(NULL));
+
 	InitializeSDL();
 	InitializeSound();
-	M22Engine::InitializeM22();
+	M22Engine::InitializeM22(int(ScrSize.x()),int(ScrSize.y()));
 	M22Graphics::LoadBackgroundsFromIndex("graphics/backgrounds/index.txt");
 	M22Graphics::textFrame = IMG_LoadTexture(M22Engine::SDL_RENDERER, "graphics/frame.png");
 	M22Script::LoadScriptToCurrent("EVC_001_strings.txt");
-	M22Graphics::textFont = TTF_OpenFont( "graphics/times.ttf", 19 );
+	M22Graphics::textFont = TTF_OpenFont( "graphics/FONT.ttf", int(19.0f * M22Script::fontSize) );
+	SDL_SetRenderDrawColor(M22Engine::SDL_RENDERER, 255, 255, 255, 255);
 
-	M22Script::ChangeLine(0);
+	if(M22Engine::GAMESTATE == M22Engine::GAMESTATES::INGAME)
+	{
+		M22Script::ChangeLine(0);
+	}
+	else if(M22Engine::GAMESTATE == M22Engine::GAMESTATES::MAIN_MENU)
+	{
+		std::string tempPath = "sfx/music/MENU.OGG";
+		M22Sound::ChangeMusicTrack(tempPath);
+	};
 
 	while( !QUIT )
 	{
 		UpdateEvents();
 		UpdateSound();
 		M22Graphics::UpdateBackgrounds();
+		M22Graphics::UpdateCharacters();
+		
+		SDL_RenderClear(M22Engine::SDL_RENDERER);
 
 		switch(M22Engine::GAMESTATE)
 		{
 			case M22Engine::GAMESTATES::MAIN_MENU:
+				SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::activeMenuBackground.sprite, NULL, NULL);
+				SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::menuLogo.sprite			, NULL, NULL);
 				break;
 			case M22Engine::GAMESTATES::INGAME:
 				M22Graphics::DrawBackground(M22Engine::ACTIVE_BACKGROUNDS[0].sprite);
@@ -75,12 +91,14 @@ int main(int argc, char* argv[])
 
 				SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::textFrame, NULL, NULL);
 				SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::characterFrameHeaders[M22Script::activeSpeakerIndex], NULL, NULL);
-				M22Script::DrawCurrentLine();
+				M22Graphics::DrawArrow((int)ScrSize.x(), (int)ScrSize.y());
+				M22Script::DrawCurrentLine((int)ScrSize.x(), (int)ScrSize.y());
 				break;
 			default:
 				break;
 		};
 
+		M22Engine::LMB_Pressed = false;
 		SDL_RenderPresent(M22Engine::SDL_RENDERER);
 		SDL_Delay(1000/FPS);
 	};
@@ -123,7 +141,7 @@ short int InitializeSDL()
 		printf( "SDL_mixer failed to init! Error: %s\n", Mix_GetError() );
 	};
 	Mix_VolumeMusic(int(MIX_MAX_VOLUME*M22Sound::MUSIC_VOLUME));
-	if( TTF_Init() == -1 )
+	if( TTF_Init() < 0 )
     {
 		printf( "SDL_TTF failed to init! Error: %s\n", TTF_GetError() );
     }
@@ -239,8 +257,28 @@ void UpdateEvents()
 			case SDL_QUIT:
 				QUIT = true;
 				break;
+			case SDL_MOUSEMOTION:
+				M22Engine::MousePos.x(M22Engine::SDL_EVENTS.motion.x);
+				M22Engine::MousePos.y(M22Engine::SDL_EVENTS.motion.y);
+				break;
+			case SDL_MOUSEBUTTONDOWN:
+				if(M22Engine::SDL_EVENTS.button.button == SDL_BUTTON_LEFT)
+				{
+					M22Engine::LMB_Pressed = true;
+				};
+				break;
+			case SDL_MOUSEBUTTONUP:
+				if(M22Engine::SDL_EVENTS.button.button == SDL_BUTTON_LEFT)
+				{
+					M22Engine::LMB_Pressed = false;
+				};
+				break;
 			case SDL_KEYDOWN:
-				if(M22Engine::SDL_EVENTS.key.repeat == 0)
+				if(M22Engine::SDL_EVENTS.key.keysym.scancode == SDL_SCANCODE_RSHIFT)
+				{
+					M22Script::ChangeLine(++M22Script::currentLineIndex);
+				}
+				else if(M22Engine::SDL_EVENTS.key.repeat == 0)
 				{
 					UpdateKeyboard();
 				};
