@@ -6,7 +6,8 @@
 	 I hardly ever remember 
 	 what I add per version.
 
-v0.1.4
+*v0.1.4*
+
 	- Added basic fade-in/out of backgrounds and characters
 	- Shift key to skip dialogue faster
 	- Basic main menu functionality
@@ -15,7 +16,6 @@ v0.1.4
 	- Resolution scaling support (4:3 ratio only, since that's what most run at anyway)
 	- Added new functions to m22 script language:
 		* FadeToBlack - Shorthand for DrawBackground BLACK
-
 	- Todo list:
 		* Seperate engine components into their own header files for ease of access
 		* Finish implementing UI system
