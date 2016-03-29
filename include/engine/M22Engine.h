@@ -56,20 +56,19 @@ class M22Engine
 			MAIN_MENU,
 			INGAME
 		};
-		enum CHARACTERS
-		{
-			NONE,
-			YUUJI,
-			GIRL,
-			TOTAL_CHARACTERS
-		};
 		
 		static Vec2 MousePos;
 		static bool LMB_Pressed;
 
+		static bool skipping;
+		
+		static bool QUIT;
+
 		static int GetCharacterIndexFromName(std::string);
 		static int GetOutfitIndexFromName(std::string, int);
 		static int GetEmotionIndexFromName(std::string, int _charIndex);
+
+		static void StartGame(void);
 
 		static std::vector<std::string> CHARACTER_NAMES;
 		static unsigned short int ACTIVE_BACKGROUND_INDEX;
@@ -108,6 +107,8 @@ class M22Graphics
 		static std::vector<SDL_Texture*> mainMenuBackgrounds;
 		static M22Engine::Background activeMenuBackground;
 		static M22Engine::Background menuLogo;
+
+		static SDL_Texture* darkScreen;
 
 		static std::vector<SDL_Texture*> BACKGROUNDS;
 		static std::vector<std::string> backgroundIndex;
@@ -162,8 +163,11 @@ class M22Script
 			NEW_BACKGROUND,
 			FADE_TO_BLACK,
 			NEW_MUSIC,
+			DARK_SCREEN,
+			BRIGHT_SCREEN,
 			STOP_MUSIC,
 			PLAY_STING,
+			GOTO,
 			DRAW_CHARACTER,
 			CLEAR_CHARACTERS,
 			LOAD_SCRIPT,
@@ -185,32 +189,55 @@ class M22Script
 		static void ChangeLine(int _newLine);
 		static unsigned int SplitString(const std::string&, std::vector<std::string>&, char);
 		static M22Script::LINETYPE CheckLineType(std::string);
+		static bool isColon(int _char);
 };
 
 class M22Interface
 {
 	private:
 	public:
+		enum BUTTON_STATES
+		{
+			NOMOUSEOVER,
+			RESTING,
+			MOUSEOVER,
+			CLICKED,
+			NUM_OF_BUTTON_STATES
+		};
 		struct Button
 		{
-			bool mouseOver;
+			std::string name;
+			BUTTON_STATES state;
 			SDL_Texture* sheet;
-			SDL_Rect rectSrc;
-			SDL_Rect rectDst;
+			SDL_Rect rectSrc[NUM_OF_BUTTON_STATES];
+			SDL_Rect rectDst[NUM_OF_BUTTON_STATES];
 			Button()
 			{
-				mouseOver = false;
+				state = RESTING;
 				sheet = NULL;
 			};
 		};
 
 		struct Interface
 		{
-			std::vector<M22Interface::Interface> buttons;
+			std::vector<M22Interface::Button> buttons;
 			SDL_Texture* spriteSheet;
 		};
+		
+		static std::vector<Interface> storedInterfaces;
+		static std::vector<Interface*> activeInterfaces;
+		static M22Interface::BUTTON_STATES* skipButtonState;
+		static M22Interface::BUTTON_STATES* menuButtonState;
 
-		static std::vector<Interface> activeInterfaces;
+		static bool menuOpen;
+
+		static void DrawActiveInterfaces(void);
+		static bool DRAW_TEXT_AREA;
+		static void DrawTextArea(int, int);
+		static void UpdateActiveInterfaces(int _ScrSizeX, int _ScrSizeY);
+		static bool CheckOverlap(Vec2 _pos1, Vec2 _pos2, Vec2 _size);
+
+		static short int InitializeInterface(M22Interface::Interface* _interface, int _num_of_buttons, int _startline, const std::string _filename = "graphics/interface/GAME_BUTTONS.txt");
 };
 
 #endif
