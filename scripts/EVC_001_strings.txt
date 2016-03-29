@@ -1,11 +1,8 @@
-439
-DrawBackground mystery_girl
+DrawBackground mystery_girl_s
 PlayMusic MP03
 Girl: "Do you know about the Snow Sakura?"
 Snow Sakura?
-DrawCharacter Misaki Shirt ANGRY 0
 Girl: "Once a year, its flowers bloom in the chill of winter."
-ClearCharacters
 Even though it's a cherry tree?
 Girl: "Yes, even though it's a cherry tree."
 Cherry trees only bloom in the spring, you know.
@@ -22,6 +19,8 @@ Girl: "Oh, that's right."
 Tell me your name.
 Girl: "Okay. My name is..."
 Girl: "My name is..."
+FadeToBlack
+StopMusic
 Beep beep beep beep! Beep beep beep beep!
 Yuuji: "Ugh..."
 It was the familiar sound of my alarm clock.
@@ -50,13 +49,18 @@ The blankets were pulled from my body.
 Yuuji: "AAAHH!!"
 It's incredibly cold!
 Yuuji: "Saki...!!"
+DrawCharacter Saki Indoors_1 ANGRY 0
 Saki: "Don't whine like that! You sound pathetic!"
+DarkenScreen
 Her name is Saki.
 She's around my age, and I guess she would be considered my cousin.
 She has a slim body and soft, silky hair.
 She may look cute, but don't be fooled!
+BrightenScreen
 Saki: "Come on, get up and eat your breakfast."
 Yuuji: "No way! I'm cold!"
+ClearCharacters
+DrawCharacter Saki Indoors_1 SNEAKY 0
 Saki: "That's no excuse!"
 Yuuji: "I don't want breakfast! I just want to sleep straight through to Saturday morning."
 Saki: "Stop being such a lazy bum!"

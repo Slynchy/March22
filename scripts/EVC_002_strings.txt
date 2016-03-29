@@ -1,4 +1,3 @@
-329
 DrawBackground BLACK
 ???: "Yuuji! It's morning!"
 Mom?
