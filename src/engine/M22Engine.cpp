@@ -14,10 +14,27 @@ Vec2 M22Engine::MousePos;
 bool M22Engine::LMB_Pressed;
 bool M22Engine::QUIT = false;
 bool M22Engine::skipping = false;
+bool M22Engine::FULLSCREEN = false;
 
 void M22Engine::StartGame(void)
 {
 	M22Engine::GAMESTATE = M22Engine::GAMESTATES::INGAME;
+	float fade_to_black_alpha = 0;
+	bool fadeout = false;
+	while(fade_to_black_alpha < 250.0f && Mix_PlayingMusic())
+	{
+		fade_to_black_alpha = M22Graphics::Lerp( fade_to_black_alpha, 255.0f, DEFAULT_LERP_SPEED / 128);
+		SDL_SetTextureAlphaMod( M22Graphics::BLACK_TEXTURE, Uint8(fade_to_black_alpha) );
+		SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::BLACK_TEXTURE, NULL, NULL);
+		SDL_RenderPresent(M22Engine::SDL_RENDERER);
+		if(fadeout == false)
+		{
+			Mix_FadeOutMusic(2000);	
+			fadeout = true;
+		};
+		if(RENDERING_API == "direct3d") SDL_Delay(1000/60);
+	};
+	SDL_SetTextureAlphaMod( M22Graphics::BLACK_TEXTURE, 0 );
 	SDL_SetTextureAlphaMod( M22Graphics::activeMenuBackground.sprite, 0 );
 	SDL_SetTextureAlphaMod( M22Graphics::menuLogo.sprite, 0 );
 	M22Interface::activeInterfaces.clear();
@@ -56,8 +73,9 @@ short int M22Engine::InitializeM22(int ScrW, int ScrH)
 	input.open("graphics/characters/CHARACTERS.txt");
 	if(input)
 	{
-		input >> length;
-		getline(input,temp);
+		length=int(std::count(std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>(), '\n'));
+		length++; // Linecount is number of '\n' + 1
+		input.seekg(0, std::ios::beg);
 		M22Engine::CHARACTERS_ARRAY.clear();
 		for(int i = 0; i < length; i++)
 		{
@@ -79,8 +97,8 @@ short int M22Engine::InitializeM22(int ScrW, int ScrH)
 	{
 		temp.clear();
 		temp = "graphics/text_frames/";
-		temp += std::to_string(i);
-		temp += ".png";
+		temp += M22Engine::CHARACTERS_ARRAY[i].name;
+		temp += ".webp";
 		M22Graphics::characterFrameHeaders.push_back(IMG_LoadTexture(M22Engine::SDL_RENDERER, temp.c_str()));
 		temp.clear();
 	};
@@ -236,4 +254,24 @@ int M22Engine::GetEmotionIndexFromName(std::string _input, int _charIndex)
 		};
 	};
 	return -1;
+};
+
+void M22Engine::ResetGame(void)
+{
+	M22Interface::activeInterfaces.clear();
+	std::string tempPath = "sfx/music/MENU.OGG";
+	M22Sound::ChangeMusicTrack(tempPath);
+	M22Interface::ResetStoredInterfaces();
+	M22Interface::menuOpen = false;
+	M22Engine::skipping = false;
+	*M22Interface::skipButtonState = M22Interface::BUTTON_STATES::RESTING;
+	*M22Interface::menuButtonState = M22Interface::BUTTON_STATES::RESTING;
+	SDL_SetTextureAlphaMod( M22Graphics::BLACK_TEXTURE, 0 );
+	M22Graphics::menuLogo.alpha = 255;
+	M22Graphics::activeMenuBackground.alpha = 255;
+	SDL_SetTextureAlphaMod( M22Graphics::activeMenuBackground.sprite, 255 );
+	SDL_SetTextureAlphaMod( M22Graphics::menuLogo.sprite, 255 );
+	M22Interface::activeInterfaces.push_back(&M22Interface::storedInterfaces[M22Interface::INTERFACES::MAIN_MENU_INTRFC]);
+	M22Engine::GAMESTATE = M22Engine::GAMESTATES::MAIN_MENU;
+	return;
 };

@@ -10,7 +10,7 @@ std::vector<M22Engine::CharacterReference> M22Graphics::activeCharacters;
 std::vector<SDL_Texture*> M22Graphics::mainMenuBackgrounds;
 M22Engine::Background M22Graphics::activeMenuBackground;
 M22Engine::Background M22Graphics::menuLogo;
-SDL_Texture* M22Graphics::darkScreen;
+SDL_Texture* M22Graphics::BLACK_TEXTURE;
 
 short int M22Graphics::LoadBackgroundsFromIndex(const char* _filename)
 {
@@ -18,7 +18,9 @@ short int M22Graphics::LoadBackgroundsFromIndex(const char* _filename)
 	int length;
 	if(input)
 	{
-		input >> length;
+		length=int(std::count(std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>(), '\n'));
+		length++; // Linecount is number of '\n' + 1
+		input.seekg(0, std::ios::beg);
 		for(int i = 0; i < length; i++)
 		{
 			std::string currentfile;
@@ -31,6 +33,16 @@ short int M22Graphics::LoadBackgroundsFromIndex(const char* _filename)
 				return -1;
 			};
 			M22Graphics::BACKGROUNDS.push_back(temp);
+			// The following code is disgusting but solves conflict issues between the black background and the misc black texture
+			if(currentfile == "graphics/backgrounds/BLACK.webp") 
+			{
+				temp = NULL;
+				temp = IMG_LoadTexture(M22Engine::SDL_RENDERER, currentfile.c_str());
+				M22Graphics::BLACK_TEXTURE = temp;
+				SDL_SetTextureBlendMode(M22Graphics::BLACK_TEXTURE, SDL_BLENDMODE_BLEND);
+				SDL_SetTextureAlphaMod( M22Graphics::BLACK_TEXTURE, 0 );
+				temp = NULL;
+			};
 		};
 	}
 	else
@@ -65,7 +77,7 @@ void M22Graphics::UpdateBackgrounds(void)
 			M22Graphics::activeMenuBackground.alpha = M22Graphics::Lerp(M22Graphics::activeMenuBackground.alpha, 255.0f, DEFAULT_LERP_SPEED/4);
 			SDL_SetTextureAlphaMod( M22Graphics::activeMenuBackground.sprite, Uint8(M22Graphics::activeMenuBackground.alpha) );
 		}
-		else if(M22Graphics::menuLogo.alpha < 254)
+		else if(M22Graphics::menuLogo.alpha < 245)
 		{
 			M22Graphics::activeMenuBackground.alpha = 255;
 			SDL_SetTextureAlphaMod( M22Graphics::activeMenuBackground.sprite, Uint8(M22Graphics::activeMenuBackground.alpha) );
@@ -76,6 +88,7 @@ void M22Graphics::UpdateBackgrounds(void)
 		{
 			M22Graphics::menuLogo.alpha = 255;
 			SDL_SetTextureAlphaMod( M22Graphics::menuLogo.sprite, Uint8(M22Graphics::menuLogo.alpha) );
+			M22Interface::activeInterfaces[0]->FadeInAllButtons();
 		};
 	}
 	else

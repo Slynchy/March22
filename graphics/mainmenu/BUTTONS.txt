@@ -1,1 +1,4 @@
+Background BLANK
 START vertical 32 152 373 328
+OPTIONS vertical 32 152 340 328
+QUIT vertical 32 152 307 328

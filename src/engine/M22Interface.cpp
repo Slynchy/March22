@@ -7,15 +7,39 @@ M22Interface::BUTTON_STATES* M22Interface::skipButtonState;
 M22Interface::BUTTON_STATES* M22Interface::menuButtonState;
 bool M22Interface::menuOpen = false;
 
-short int M22Interface::InitializeInterface(M22Interface::Interface* _interface, int _num_of_buttons, int _startline = 0, const std::string _filename)
+short int M22Interface::InitializeInterface(M22Interface::Interface* _interface, int _num_of_buttons, int _startline, const std::string _filename, bool _opaque)
 {
 	printf("Loading %s...\n", _filename.c_str());
 
 	std::vector<std::string> directory;
 	M22Script::SplitString(_filename, directory, '/');
 
+	if(_opaque == true)
+	{
+		_interface->alpha = 255.0f;
+	};
+
 	std::fstream input(_filename);
 	std::string temp;
+	std::vector<std::string> tempStr;
+
+	getline(input,temp);
+	M22Script::SplitString(temp, tempStr, ' ');
+	if(tempStr[1] == "BLANK")
+	{
+		_interface->spriteSheet = IMG_LoadTexture(M22Engine::SDL_RENDERER, "graphics/BLANK.png");
+	}
+	else
+	{
+		temp = "";
+		for(size_t i = 0; i < (directory.size()-1); i++)
+		{
+			temp += directory[i];
+		};
+		temp += tempStr[1];
+		_interface->spriteSheet = IMG_LoadTexture(M22Engine::SDL_RENDERER, temp.c_str());
+	};
+
 	if(input)
 	{
 		for( int i = 0; i < _startline; i++)
@@ -25,7 +49,7 @@ short int M22Interface::InitializeInterface(M22Interface::Interface* _interface,
 		for( int k = _startline; k < (_num_of_buttons + _startline); k++ )
 		{
 			getline(input,temp);
-			std::vector<std::string> tempStr;
+			tempStr.clear();
 			M22Script::SplitString(temp, tempStr, ' ');
 
 			std::string fileName;
@@ -43,6 +67,8 @@ short int M22Interface::InitializeInterface(M22Interface::Interface* _interface,
 
 			_interface->buttons.resize(_num_of_buttons);
 			_interface->buttons[k-_startline].sheet = IMG_LoadTexture(M22Engine::SDL_RENDERER, fileName.c_str());
+			SDL_SetTextureBlendMode(_interface->buttons[k-_startline].sheet, SDL_BLENDMODE_BLEND);
+			SDL_SetTextureAlphaMod( _interface->buttons[k-_startline].sheet, Uint8(_interface->alpha) );
 			_interface->buttons[k-_startline].name = tempStr[0];
 			if(!_interface->buttons[k-_startline].sheet)
 			{
@@ -104,6 +130,10 @@ void M22Interface::DrawActiveInterfaces(void)
 {
 	for(size_t i = 0; i < M22Interface::activeInterfaces.size(); i++)
 	{
+		if(M22Interface::activeInterfaces[i]->spriteSheet != NULL)
+		{
+			SDL_RenderCopy( M22Engine::SDL_RENDERER, M22Interface::activeInterfaces[i]->spriteSheet, NULL, NULL);
+		};
 		for(size_t k = 0; k < M22Interface::activeInterfaces[i]->buttons.size(); k++)
 		{
 			SDL_RenderCopyEx(
@@ -124,9 +154,9 @@ void M22Interface::DrawTextArea(int _ScrSizeX, int _ScrSizeY)
 	{
 		SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::textFrame, NULL, NULL);
 		SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::characterFrameHeaders[M22Script::activeSpeakerIndex], NULL, NULL);
-		M22Interface::DrawActiveInterfaces();
 		M22Graphics::DrawArrow(_ScrSizeX, _ScrSizeY);
 		M22Script::DrawCurrentLine(_ScrSizeX, _ScrSizeY);
+		M22Interface::DrawActiveInterfaces();
 	};
 	return;
 };
@@ -135,6 +165,11 @@ void M22Interface::UpdateActiveInterfaces(int _ScrSizeX, int _ScrSizeY)
 {
 	for(size_t i = 0; i < M22Interface::activeInterfaces.size(); i++)
 	{
+		if(M22Engine::GAMESTATE == M22Engine::GAMESTATES::MAIN_MENU)
+		{
+			//M22Interface::activeInterfaces[i]->FadeInAllButtons();
+		};
+
 		for(size_t k = 0; k < M22Interface::activeInterfaces[i]->buttons.size(); k++)
 		{
 			Vec2* tempButtonPos = new Vec2(M22Interface::activeInterfaces[i]->buttons[k].rectDst[M22Interface::activeInterfaces[i]->buttons[k].state].x,M22Interface::activeInterfaces[i]->buttons[k].rectDst[M22Interface::activeInterfaces[i]->buttons[k].state].y);
@@ -158,6 +193,21 @@ void M22Interface::UpdateActiveInterfaces(int _ScrSizeX, int _ScrSizeY)
 					else if(M22Interface::activeInterfaces[i]->buttons[k].name == "START")
 					{
 						M22Engine::StartGame();
+					}
+					else if(M22Interface::activeInterfaces[i]->buttons[k].name == "QUIT")
+					{
+						M22Engine::QUIT = true;
+						M22Interface::activeInterfaces[i]->buttons[k].state = M22Interface::BUTTON_STATES::CLICKED;
+					}
+					else if(M22Interface::activeInterfaces[i]->buttons[k].name == "OPTIONS")
+					{
+						M22Interface::activeInterfaces[i]->buttons[k].state = M22Interface::BUTTON_STATES::CLICKED;
+						M22Interface::activeInterfaces.push_back(&M22Interface::storedInterfaces[M22Interface::INTERFACES::OPTIONS_MENU_INTRFC]);
+					}
+					else if(M22Interface::activeInterfaces[i]->buttons[k].name == "RETURN_TO_TITLE")
+					{
+						M22Engine::ResetGame();
+						return;
 					}
 					else
 					{
@@ -193,7 +243,7 @@ void M22Interface::UpdateActiveInterfaces(int _ScrSizeX, int _ScrSizeY)
 	}
 	else
 	{
-		if(M22Interface::activeInterfaces.size() > 1)
+		if(M22Interface::activeInterfaces.size() > 1 && M22Engine::GAMESTATE == M22Engine::GAMESTATES::INGAME)
 		{
 			M22Interface::activeInterfaces.pop_back();
 		};
@@ -217,4 +267,14 @@ bool M22Interface::CheckOverlap(Vec2 _pos1, Vec2 _pos2, Vec2 _size)
 	};
 	//The sprites do not overlap:
 	return false;
+};
+
+void M22Interface::ResetStoredInterfaces(void)
+{
+	for(size_t i = 0; i < M22Interface::storedInterfaces.size(); i++)
+	{
+		M22Interface::storedInterfaces[i].alpha = 255.0f;
+
+	};
+	return;
 };

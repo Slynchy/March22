@@ -1,4 +1,3 @@
-7
 Narrator
 Misaki
 Saki
@@ -6,3 +5,4 @@ Girl
 Yuuji
 Takeaki
 Keijiro
+Unknown

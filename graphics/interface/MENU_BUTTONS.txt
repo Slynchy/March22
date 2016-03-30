@@ -1,0 +1,5 @@
+Background BLANK
+LOG horizontal 120 40 520 328
+OPTIONS horizontal 120 40 520 288
+LOAD horizontal 120 40 520 248
+SAVE horizontal 120 40 520 208

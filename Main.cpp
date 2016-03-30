@@ -19,8 +19,8 @@
 
 #define DEBUG_ENABLED false
 
-#define WINDOW_TITLE	"March22 Engine Prototype "
-#define VERSION			"v0.2.0"
+#define WINDOW_TITLE		"March22 Engine Prototype "
+#define VERSION				"v0.2.3"
 
 #define FPS 60
 
@@ -49,19 +49,11 @@ int main(int argc, char* argv[])
 	M22Script::LoadScriptToCurrent("EVC_001_strings.txt");
 	M22Graphics::textFont = TTF_OpenFont( "graphics/FONT.ttf", int(19.0f * M22Script::fontSize) );
 
-	M22Interface::Interface* tempGameInterface = new M22Interface::Interface();
-	M22Interface::storedInterfaces.push_back(*tempGameInterface);
-	M22Interface::storedInterfaces.push_back(*tempGameInterface);
-	M22Interface::storedInterfaces.push_back(*tempGameInterface);
-	delete tempGameInterface;
-	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[0], 3, 0);
-	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[1], 4, 3);
-	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[2], 4, 3, "graphics/mainmenu/BUTTONS.txt");
-
-	M22Graphics::darkScreen = IMG_LoadTexture(M22Engine::SDL_RENDERER, "graphics/dark.webp");
-	SDL_SetTextureBlendMode(M22Graphics::darkScreen, SDL_BLENDMODE_BLEND);
-	SDL_SetTextureAlphaMod( M22Graphics::darkScreen, 0 );
-	if(!M22Graphics::darkScreen) printf("Failed to load image: graphics/dark.webp");
+	M22Interface::storedInterfaces.resize(M22Interface::INTERFACES::NUM_OF_INTERFACES);
+	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[M22Interface::INTERFACES::INGAME_INTRFC], 3, 0);
+	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[M22Interface::INTERFACES::MENU_BUTTON_INTRFC], 4, 0, "graphics/interface/MENU_BUTTONS.txt");
+	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[M22Interface::INTERFACES::MAIN_MENU_INTRFC], 3, 0, "graphics/mainmenu/BUTTONS.txt", false);
+	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[M22Interface::INTERFACES::OPTIONS_MENU_INTRFC], 4, 0, "graphics/optionsmenu/BUTTONS.txt", true);
 
 	SDL_SetRenderDrawColor(M22Engine::SDL_RENDERER, 255, 255, 255, 255);
 
@@ -104,7 +96,7 @@ int main(int argc, char* argv[])
 						SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::activeCharacters[i].sprite, NULL, &M22Graphics::activeCharacters[i].rect);
 					};
 				};
-				SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::darkScreen, NULL, NULL);
+				SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::BLACK_TEXTURE, NULL, NULL);
 				M22Interface::DrawTextArea(int(ScrSize.x()),int(ScrSize.y()));
 				break;
 			default:
@@ -113,7 +105,7 @@ int main(int argc, char* argv[])
 
 		M22Engine::LMB_Pressed = false;
 		SDL_RenderPresent(M22Engine::SDL_RENDERER);
-		SDL_Delay(1000/FPS);
+		if(RENDERING_API == "direct3d") SDL_Delay(1000/FPS);
 	};
 
 	Shutdown();
@@ -144,9 +136,19 @@ void Shutdown()
 short int InitializeSDL()
 {
 	SDL_Init( SDL_INIT_EVERYTHING );
+	SDL_SetHint (SDL_HINT_RENDER_DRIVER, RENDERING_API);
 	std::string tempTitle = WINDOW_TITLE;
 	tempTitle += VERSION;
-	M22Engine::SDL_SCREEN = SDL_CreateWindow(tempTitle.c_str(), (int)ScrPos.x(), (int)ScrPos.y(), (int)ScrSize.x(), (int)ScrSize.y(), SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL);
+
+	if(M22Engine::FULLSCREEN == false)
+	{
+		M22Engine::SDL_SCREEN = SDL_CreateWindow(tempTitle.c_str(), (int)ScrPos.x(), (int)ScrPos.y(), (int)ScrSize.x(), (int)ScrSize.y(), SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
+	}
+	else
+	{
+		M22Engine::SDL_SCREEN = SDL_CreateWindow(tempTitle.c_str(), (int)ScrPos.x(), (int)ScrPos.y(), (int)ScrSize.x(), (int)ScrSize.y(), SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
+	};
+
     M22Engine::SDL_RENDERER = SDL_CreateRenderer(M22Engine::SDL_SCREEN, -1, SDL_RENDERER_ACCELERATED);
 	SDL_RenderSetLogicalSize(M22Engine::SDL_RENDERER, (int)ScrSize.x(), (int)ScrSize.y());
 	if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 )
@@ -158,6 +160,10 @@ short int InitializeSDL()
     {
 		printf( "SDL_TTF failed to init! Error: %s\n", TTF_GetError() );
     }
+
+	// linear filter; works on all platforms
+	SDL_SetHint (SDL_HINT_RENDER_SCALE_QUALITY, BILINEAR_FILTERING);
+
 	return 0;
 };
 
@@ -197,7 +203,9 @@ short int InitializeSFX()
 	int length;
 	if(input)
 	{
-		input >> length;
+		length=int(std::count(std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>(), '\n'));
+		length++; // Linecount is number of '\n' + 1
+		input.seekg(0, std::ios::beg);
 		for(int i = 0; i < length; i++)
 		{
 			std::string currentfile;

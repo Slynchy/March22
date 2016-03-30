@@ -103,6 +103,15 @@ unsigned int M22Script::SplitString(const std::string &txt, std::vector<std::str
     return strs.size();
 };
 
+void M22Script::ClearCharacters(void)
+{
+	for(size_t i = 0; i < M22Graphics::activeCharacters.size(); i++)
+	{
+		M22Graphics::activeCharacters[i].clearing = true;
+	};
+	return;
+};
+
 void M22Script::ChangeLine(int _newLine)
 {
 	// Check the line even exists
@@ -165,7 +174,7 @@ void M22Script::ChangeLine(int _newLine)
 	{
 		for(size_t i = 0; i < M22Graphics::backgroundIndex.size(); i++)
 		{
-			if("graphics/backgrounds/BLACK.webp" == M22Graphics::backgroundIndex[i])
+			if(M22Graphics::backgroundIndex[i] == "graphics/backgrounds/BLACK.webp")
 			{
 				if(M22Engine::ACTIVE_BACKGROUNDS[0].sprite)
 				{
@@ -210,30 +219,42 @@ void M22Script::ChangeLine(int _newLine)
 	}
 	else if(LINETYPE == M22Script::LINETYPE::CLEAR_CHARACTERS)
 	{
-		//M22Graphics::activeCharacters.clear();
-		for(size_t i = 0; i < M22Graphics::activeCharacters.size(); i++)
-		{
-			M22Graphics::activeCharacters[i].clearing = true;
-		};
+		M22Script::ClearCharacters();
 		M22Script::ChangeLine(++_newLine);
 		return;
 	}
 	else if(LINETYPE == M22Script::LINETYPE::LOAD_SCRIPT)
 	{
 		M22Script::currentScript.clear();
+		M22Script::ClearCharacters();
 		LoadScriptToCurrent(temp[1].c_str());
 		M22Script::ChangeLine(0);
 		return;
 	}
 	else if(LINETYPE == M22Script::LINETYPE::DARK_SCREEN)
 	{
-		SDL_SetTextureAlphaMod( M22Graphics::darkScreen, 255 );
+		SDL_SetTextureAlphaMod( M22Graphics::BLACK_TEXTURE, M22Script::DARKEN_SCREEN_OPACITY );
 		M22Script::ChangeLine(++_newLine);
 		return;
 	}
 	else if(LINETYPE == M22Script::LINETYPE::BRIGHT_SCREEN)
 	{
-		SDL_SetTextureAlphaMod( M22Graphics::darkScreen, 0 );
+		SDL_SetTextureAlphaMod( M22Graphics::BLACK_TEXTURE, 0 );
+		M22Script::ChangeLine(++_newLine);
+		return;
+	}
+	else if(LINETYPE == M22Script::LINETYPE::PLAY_STING_LOOPED)
+	{
+		std::string tempPath = "sfx/stings/";
+		tempPath += temp[1];
+		tempPath += ".OGG";
+		M22Sound::PlayLoopedSting(tempPath);
+		M22Script::ChangeLine(++_newLine);
+		return;
+	}
+	else if(LINETYPE == M22Script::LINETYPE::STOP_STING_LOOPED)
+	{
+		M22Sound::StopLoopedStings();
 		M22Script::ChangeLine(++_newLine);
 		return;
 	}
@@ -320,6 +341,14 @@ M22Script::LINETYPE M22Script::CheckLineType(std::string _input)
 	else if(_input == std::string("Goto"))
 	{
 		return M22Script::LINETYPE::GOTO;
+	}
+	else if(_input == std::string("PlayLoopedSting"))
+	{
+		return M22Script::LINETYPE::PLAY_STING_LOOPED;
+	}
+	else if(_input == std::string("StopLoopedStings"))
+	{
+		return M22Script::LINETYPE::STOP_STING_LOOPED;
 	};
 	return M22Script::LINETYPE::SPEECH;
 };

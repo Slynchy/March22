@@ -53,6 +53,29 @@ short int M22Sound::PlaySting(short int _position, bool _forceplayback)
 	};
 };
 
+void M22Sound::StopLoopedStings(void)
+{
+	Mix_HaltChannel(M22Sound::MIXERS::LOOPED_SFX);
+	return;
+};
+
+short int M22Sound::PlayLoopedSting(std::string _name)
+{
+	for(size_t i = 0; i < M22Sound::SOUND_FX.size(); i++)
+	{
+		if(_name == M22Sound::SFX_NAMES[i])
+		{
+			if(!Mix_Playing(M22Sound::MIXERS::LOOPED_SFX))
+			{
+				Mix_PlayChannel( M22Sound::MIXERS::LOOPED_SFX, M22Sound::SOUND_FX[i], -1);
+				return 0;
+			};
+			return -2;
+		};
+	};
+	return -1;
+};
+
 short int M22Sound::PlaySting(std::string _name, bool _forceplayback)
 {
 	for(size_t i = 0; i < M22Sound::SOUND_FX.size(); i++)

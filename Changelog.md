@@ -1,6 +1,29 @@
 #M22/Snow Sakura++ Changelog
 ###NOTE: Please don't take this changelog as gospel; I hardly ever remember what I add per version.
 
+#### v0.2.3
+
+- Interface improvements
+	* Added an options menu
+		+ Only has a quit-to-title option at the moment
+	* Added quit and options buttons to main menu
+		+ All main menu buttons need to be alpha'd; otherwise they need to be perfectly aligned...
+	* Every interface now has a background; if "BLANK" is specified, it just uses a blank pixel
+- Updated main menu transitions to and from.
+- Added new functions to m22 script language:
+	* PlayLoopedSting ( _name ) - Plays the specified sting sound on repeat in a seperate channel
+	* StopLoopedStings - Stops all tracks in the looped sting channel
+- Fixed more text files not needing a line count prefix
+- Added more characters/character names
+- Added more M22 to the first script
+- Switched to OpenGL; has built-in vsync plus is multi-platform
+- Added bilinear filtering option
+	* "Destabilises" the text box composition; perhaps render this outside of the main renderer w/o filtering then blit to screen?
+- Todo list:
+	* Update main menu buttons to have a transparent background
+	* Finish options menu implementation
+	* STILL NEED TO CONVERT TO UNICODE.
+
 #### v0.2.0
 
 - Interface improvements/implementation

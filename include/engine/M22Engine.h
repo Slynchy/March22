@@ -11,6 +11,9 @@
 #define DEFAULT_SFX_VOLUME_MULT 0.05f
 #define DEFAULT_LERP_SPEED 0.15f
 
+#define RENDERING_API		"opengl"
+#define BILINEAR_FILTERING	"0"
+
 #include "SDL.h"
 #include <SDL_image.h>
 #include <SDL_mixer.h>
@@ -63,10 +66,13 @@ class M22Engine
 		static bool skipping;
 		
 		static bool QUIT;
+		static bool FULLSCREEN;
 
 		static int GetCharacterIndexFromName(std::string);
 		static int GetOutfitIndexFromName(std::string, int);
 		static int GetEmotionIndexFromName(std::string, int _charIndex);
+
+		static void ResetGame(void);
 
 		static void StartGame(void);
 
@@ -108,7 +114,7 @@ class M22Graphics
 		static M22Engine::Background activeMenuBackground;
 		static M22Engine::Background menuLogo;
 
-		static SDL_Texture* darkScreen;
+		static SDL_Texture* BLACK_TEXTURE;
 
 		static std::vector<SDL_Texture*> BACKGROUNDS;
 		static std::vector<std::string> backgroundIndex;
@@ -132,7 +138,8 @@ class M22Sound
 		{
 			BGM,
 			SFX,
-			VOICE
+			VOICE,
+			LOOPED_SFX
 		};
 		static std::vector<Mix_Chunk*> SOUND_FX;
 		static std::vector<Mix_Music*> MUSIC;
@@ -145,6 +152,8 @@ class M22Sound
 		static short int PlaySting(short int);
 		static short int PlaySting(short int, bool);
 		static short int PlaySting(std::string, bool);
+		static short int PlayLoopedSting(std::string);
+		static void StopLoopedStings(void);
 
 		static short int ChangeMusicTrack(short int _position);
 		static short int ChangeMusicTrack(std::string _name);
@@ -167,6 +176,8 @@ class M22Script
 			BRIGHT_SCREEN,
 			STOP_MUSIC,
 			PLAY_STING,
+			PLAY_STING_LOOPED,
+			STOP_STING_LOOPED,
 			GOTO,
 			DRAW_CHARACTER,
 			CLEAR_CHARACTERS,
@@ -174,6 +185,7 @@ class M22Script
 			SPEECH,
 			NARRATIVE
 		};
+		static const unsigned short int DARKEN_SCREEN_OPACITY = 100;
 
 		static std::string currentLine;
 		static int currentLineIndex;
@@ -190,6 +202,7 @@ class M22Script
 		static unsigned int SplitString(const std::string&, std::vector<std::string>&, char);
 		static M22Script::LINETYPE CheckLineType(std::string);
 		static bool isColon(int _char);
+		static void ClearCharacters(void);
 };
 
 class M22Interface
@@ -203,6 +216,14 @@ class M22Interface
 			MOUSEOVER,
 			CLICKED,
 			NUM_OF_BUTTON_STATES
+		};
+		enum INTERFACES
+		{
+			INGAME_INTRFC,
+			MENU_BUTTON_INTRFC,
+			MAIN_MENU_INTRFC,
+			OPTIONS_MENU_INTRFC,
+			NUM_OF_INTERFACES
 		};
 		struct Button
 		{
@@ -222,6 +243,19 @@ class M22Interface
 		{
 			std::vector<M22Interface::Button> buttons;
 			SDL_Texture* spriteSheet;
+			float alpha;
+			Interface()
+			{
+				alpha = 0.0f;
+			};
+			void Interface::FadeInAllButtons(void)
+			{
+				this->alpha = M22Graphics::Lerp( this->alpha, 255.0f, DEFAULT_LERP_SPEED/4 );
+				for(size_t i = 0; i < this->buttons.size(); i++)
+				{
+					SDL_SetTextureAlphaMod( this->buttons[i].sheet, Uint8(this->alpha) );
+				};
+			};
 		};
 		
 		static std::vector<Interface> storedInterfaces;
@@ -236,8 +270,9 @@ class M22Interface
 		static void DrawTextArea(int, int);
 		static void UpdateActiveInterfaces(int _ScrSizeX, int _ScrSizeY);
 		static bool CheckOverlap(Vec2 _pos1, Vec2 _pos2, Vec2 _size);
+		static void ResetStoredInterfaces(void);
 
-		static short int InitializeInterface(M22Interface::Interface* _interface, int _num_of_buttons, int _startline, const std::string _filename = "graphics/interface/GAME_BUTTONS.txt");
+		static short int InitializeInterface(M22Interface::Interface* _interface, int _num_of_buttons, int _startline = 0, const std::string _filename = "graphics/interface/GAME_BUTTONS.txt", bool _opaque = true);
 };
 
 #endif

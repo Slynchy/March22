@@ -1,7 +1,4 @@
+Background BLANK
 SKIP horizontal 72 32 376 368
 AUTO horizontal 72 32 448 368
 M_MENU vertical 120 32 520 368
-LOG horizontal 120 40 520 328
-OPT horizontal 120 40 520 288
-LOAD horizontal 120 40 520 248
-SAVE horizontal 120 40 520 208
