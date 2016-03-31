@@ -199,10 +199,16 @@ void M22Interface::UpdateActiveInterfaces(int _ScrSizeX, int _ScrSizeY)
 						M22Engine::QUIT = true;
 						M22Interface::activeInterfaces[i]->buttons[k].state = M22Interface::BUTTON_STATES::CLICKED;
 					}
+					else if(M22Interface::activeInterfaces[i]->buttons[k].name == "TEST_SFX")
+					{
+						M22Interface::activeInterfaces[i]->buttons[k].state = M22Interface::BUTTON_STATES::CLICKED;
+						M22Sound::PlaySting(rand()%M22Sound::SOUND_FX.size(), true);
+					}
 					else if(M22Interface::activeInterfaces[i]->buttons[k].name == "OPTIONS")
 					{
 						M22Interface::activeInterfaces[i]->buttons[k].state = M22Interface::BUTTON_STATES::CLICKED;
 						M22Interface::activeInterfaces.push_back(&M22Interface::storedInterfaces[M22Interface::INTERFACES::OPTIONS_MENU_INTRFC]);
+						M22Sound::StopMusic();
 					}
 					else if(M22Interface::activeInterfaces[i]->buttons[k].name == "RETURN_TO_TITLE")
 					{
@@ -274,7 +280,10 @@ void M22Interface::ResetStoredInterfaces(void)
 	for(size_t i = 0; i < M22Interface::storedInterfaces.size(); i++)
 	{
 		M22Interface::storedInterfaces[i].alpha = 255.0f;
-
+	};
+	for(size_t i = 0; i < M22Interface::storedInterfaces[MAIN_MENU_INTRFC].buttons.size(); i++)
+	{
+		SDL_SetTextureAlphaMod( M22Interface::storedInterfaces[MAIN_MENU_INTRFC].buttons[i].sheet, 0 );
 	};
 	return;
 };

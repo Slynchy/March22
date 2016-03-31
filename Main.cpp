@@ -20,11 +20,10 @@
 #define DEBUG_ENABLED false
 
 #define WINDOW_TITLE		"March22 Engine Prototype "
-#define VERSION				"v0.2.3"
+#define VERSION				"v0.2.4"
 
 #define FPS 60
 
-Vec2 ScrSize(640,480);
 Vec2 ScrPos(600,200);
 
 void Shutdown();
@@ -43,7 +42,7 @@ int main(int argc, char* argv[])
 
 	InitializeSDL();
 	InitializeSound();
-	M22Engine::InitializeM22(int(ScrSize.x()),int(ScrSize.y()));
+	M22Engine::InitializeM22(int(M22Engine::ScrSize.x()),int(M22Engine::ScrSize.y()));
 	M22Graphics::LoadBackgroundsFromIndex("graphics/backgrounds/index.txt");
 	M22Graphics::textFrame = IMG_LoadTexture(M22Engine::SDL_RENDERER, "graphics/frame.png");
 	M22Script::LoadScriptToCurrent("EVC_001_strings.txt");
@@ -75,7 +74,7 @@ int main(int argc, char* argv[])
 		if(M22Engine::skipping) M22Script::ChangeLine(++M22Script::currentLineIndex);
 		M22Graphics::UpdateBackgrounds();
 		M22Graphics::UpdateCharacters();
-		M22Interface::UpdateActiveInterfaces( int(ScrSize.x()), int(ScrSize.y()) );
+		M22Interface::UpdateActiveInterfaces( int(M22Engine::ScrSize.x()), int(M22Engine::ScrSize.y()) );
 		
 		SDL_RenderClear(M22Engine::SDL_RENDERER);
 
@@ -87,17 +86,7 @@ int main(int argc, char* argv[])
 				M22Interface::DrawActiveInterfaces();
 				break;
 			case M22Engine::GAMESTATES::INGAME:
-				M22Graphics::DrawBackground(M22Engine::ACTIVE_BACKGROUNDS[0].sprite);
-				if(M22Engine::ACTIVE_BACKGROUNDS[1].sprite != NULL) M22Graphics::DrawBackground(M22Engine::ACTIVE_BACKGROUNDS[1].sprite);
-				if(M22Graphics::activeCharacters.size() != 0)
-				{
-					for(size_t i = 0; i < M22Graphics::activeCharacters.size(); i++)
-					{
-						SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::activeCharacters[i].sprite, NULL, &M22Graphics::activeCharacters[i].rect);
-					};
-				};
-				SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::BLACK_TEXTURE, NULL, NULL);
-				M22Interface::DrawTextArea(int(ScrSize.x()),int(ScrSize.y()));
+				M22Graphics::DrawInGame();
 				break;
 			default:
 				break;
@@ -142,16 +131,16 @@ short int InitializeSDL()
 
 	if(M22Engine::FULLSCREEN == false)
 	{
-		M22Engine::SDL_SCREEN = SDL_CreateWindow(tempTitle.c_str(), (int)ScrPos.x(), (int)ScrPos.y(), (int)ScrSize.x(), (int)ScrSize.y(), SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
+		M22Engine::SDL_SCREEN = SDL_CreateWindow(tempTitle.c_str(), (int)ScrPos.x(), (int)ScrPos.y(), (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y(), SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
 	}
 	else
 	{
-		M22Engine::SDL_SCREEN = SDL_CreateWindow(tempTitle.c_str(), (int)ScrPos.x(), (int)ScrPos.y(), (int)ScrSize.x(), (int)ScrSize.y(), SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
+		M22Engine::SDL_SCREEN = SDL_CreateWindow(tempTitle.c_str(), (int)ScrPos.x(), (int)ScrPos.y(), (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y(), SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
 	};
 
     M22Engine::SDL_RENDERER = SDL_CreateRenderer(M22Engine::SDL_SCREEN, -1, SDL_RENDERER_ACCELERATED);
-	SDL_RenderSetLogicalSize(M22Engine::SDL_RENDERER, (int)ScrSize.x(), (int)ScrSize.y());
-	if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 )
+	SDL_RenderSetLogicalSize(M22Engine::SDL_RENDERER, (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y());
+	if( Mix_OpenAudio( MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 )
 	{
 		printf( "SDL_mixer failed to init! Error: %s\n", Mix_GetError() );
 	};

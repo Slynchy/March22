@@ -16,6 +16,8 @@ bool M22Engine::QUIT = false;
 bool M22Engine::skipping = false;
 bool M22Engine::FULLSCREEN = false;
 
+Vec2 M22Engine::ScrSize(640,480);
+
 void M22Engine::StartGame(void)
 {
 	M22Engine::GAMESTATE = M22Engine::GAMESTATES::INGAME;
@@ -216,10 +218,16 @@ short int M22Engine::InitializeM22(int ScrW, int ScrH)
 	return 0;
 };
 
-int M22Engine::GetCharacterIndexFromName(std::string _input)
+int M22Engine::GetCharacterIndexFromName(std::string _input, bool _dialogue)
 {
 	_input.erase(std::remove_if(_input.begin(), _input.end(), isspace));
+	int size = _input.size();
 	_input.erase(std::remove_if(_input.begin(), _input.end(), M22Script::isColon));
+	if(size == _input.size() && _dialogue == true)
+	{
+		// colon was not found, so must be narrative, not dialogue
+		return 0;
+	};
 	for(size_t i = 0; i < M22Engine::CHARACTERS_ARRAY.size(); i++)
 	{
 		if(M22Engine::CHARACTERS_ARRAY[i].name == _input)
@@ -267,10 +275,11 @@ void M22Engine::ResetGame(void)
 	*M22Interface::skipButtonState = M22Interface::BUTTON_STATES::RESTING;
 	*M22Interface::menuButtonState = M22Interface::BUTTON_STATES::RESTING;
 	SDL_SetTextureAlphaMod( M22Graphics::BLACK_TEXTURE, 0 );
-	M22Graphics::menuLogo.alpha = 255;
-	M22Graphics::activeMenuBackground.alpha = 255;
-	SDL_SetTextureAlphaMod( M22Graphics::activeMenuBackground.sprite, 255 );
-	SDL_SetTextureAlphaMod( M22Graphics::menuLogo.sprite, 255 );
+	M22Graphics::menuLogo.alpha = 0;
+	M22Graphics::activeMenuBackground.alpha = 0;
+	SDL_SetTextureAlphaMod( M22Graphics::activeMenuBackground.sprite, Uint8(M22Graphics::menuLogo.alpha) );
+	SDL_SetTextureAlphaMod( M22Graphics::menuLogo.sprite, Uint8(M22Graphics::activeMenuBackground.alpha) );
+	M22Interface::storedInterfaces[M22Interface::INTERFACES::MAIN_MENU_INTRFC].alpha = 0;
 	M22Interface::activeInterfaces.push_back(&M22Interface::storedInterfaces[M22Interface::INTERFACES::MAIN_MENU_INTRFC]);
 	M22Engine::GAMESTATE = M22Engine::GAMESTATES::MAIN_MENU;
 	return;

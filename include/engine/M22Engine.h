@@ -68,13 +68,15 @@ class M22Engine
 		static bool QUIT;
 		static bool FULLSCREEN;
 
-		static int GetCharacterIndexFromName(std::string);
+		static int GetCharacterIndexFromName(std::string, bool _dialogue = false);
 		static int GetOutfitIndexFromName(std::string, int);
 		static int GetEmotionIndexFromName(std::string, int _charIndex);
 
 		static void ResetGame(void);
 
 		static void StartGame(void);
+
+		static Vec2 ScrSize;
 
 		static std::vector<std::string> CHARACTER_NAMES;
 		static unsigned short int ACTIVE_BACKGROUND_INDEX;
@@ -122,6 +124,8 @@ class M22Graphics
 		static void DrawBackground(SDL_Texture* _target);
 		static void UpdateBackgrounds(void);
 		static void UpdateCharacters(void);
+		static void DrawInGame(bool _draw_black = true);
+		static void FadeToBlackFancy(void);
 
 		static void DrawArrow(int ScrW, int ScrH);
 
@@ -171,6 +175,7 @@ class M22Script
 		{
 			NEW_BACKGROUND,
 			FADE_TO_BLACK,
+			FADE_TO_BLACK_FANCY,
 			NEW_MUSIC,
 			DARK_SCREEN,
 			BRIGHT_SCREEN,

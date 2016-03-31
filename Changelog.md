@@ -1,6 +1,31 @@
 #M22/Snow Sakura++ Changelog
 ###NOTE: Please don't take this changelog as gospel; I hardly ever remember what I add per version.
 
+#### v0.2.4
+
+- Interface improvements
+	* Alpha'd the main menu buttons so they look nicer
+	* Added TEST_SFX button to options
+	* Fixed some problems with the ResetGame() function
+- Added new functions to m22 script language:
+	* FadeToBlackFancy - Hijacks the main thread to draw a nicer fade to black
+- Converted more of the first script to M22
+- Added new character parameters (Takeaki)
+- Todo list:
+	* Unicode support
+	* More transitions than simply lerping opacity
+		+ Like wiping from left to right while chatbox is down.
+	* Finish options menu
+		+ Slider bar implementation
+		+ Saving/Loading options
+		+ Tick box implementation
+		+ Convert volume/lerp speed to a modifiable value, instead of a define
+	* Quit quits too quickly; popup that says "are you sure?" should fix it; can hook into the SDL_Quit event too
+	* Bugs:
+		+ Fading characters in and out looks janky. Not as noticable when 1 to 1 changing, but gets worse with scene complexity.
+		+ Holding shift doesn't skip FadeToBlackFancy
+		+ Can click main menu options before they appear; simple check to see if opacity is > 255*0.75?
+
 #### v0.2.3
 
 - Interface improvements

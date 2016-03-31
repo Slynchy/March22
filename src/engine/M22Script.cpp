@@ -105,6 +105,7 @@ unsigned int M22Script::SplitString(const std::string &txt, std::vector<std::str
 
 void M22Script::ClearCharacters(void)
 {
+	if(M22Graphics::activeCharacters.size() == 0) return;
 	for(size_t i = 0; i < M22Graphics::activeCharacters.size(); i++)
 	{
 		M22Graphics::activeCharacters[i].clearing = true;
@@ -264,9 +265,15 @@ void M22Script::ChangeLine(int _newLine)
 		M22Script::ChangeLine(newLinePosition);
 		return;
 	}
+	else if(LINETYPE == M22Script::LINETYPE::FADE_TO_BLACK_FANCY)
+	{
+		M22Graphics::FadeToBlackFancy();
+		M22Script::ChangeLine(++_newLine);
+		return;
+	}
 	else
 	{
-		M22Script::activeSpeakerIndex = M22Engine::GetCharacterIndexFromName(type);
+		M22Script::activeSpeakerIndex = M22Engine::GetCharacterIndexFromName(type, true);
 	};
 
 	if(M22Script::activeSpeakerIndex > 0)
@@ -325,6 +332,10 @@ M22Script::LINETYPE M22Script::CheckLineType(std::string _input)
 	else if(_input == std::string("FadeToBlack"))
 	{
 		return M22Script::LINETYPE::FADE_TO_BLACK;
+	}
+	else if(_input == std::string("FadeToBlackFancy"))
+	{
+		return M22Script::LINETYPE::FADE_TO_BLACK_FANCY;
 	}
 	else if(_input == std::string("StopMusic"))
 	{

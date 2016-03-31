@@ -12,6 +12,53 @@ M22Engine::Background M22Graphics::activeMenuBackground;
 M22Engine::Background M22Graphics::menuLogo;
 SDL_Texture* M22Graphics::BLACK_TEXTURE;
 
+void M22Graphics::FadeToBlackFancy(void)
+{
+	M22Interface::DRAW_TEXT_AREA = false;
+	float fade_to_black_alpha = 0;
+	bool fadeout = false;
+	while(fade_to_black_alpha < 250.0f || Mix_PlayingMusic())
+	{
+		fade_to_black_alpha = M22Graphics::Lerp( fade_to_black_alpha, 255.0f, DEFAULT_LERP_SPEED / 8);
+		SDL_SetTextureAlphaMod( M22Graphics::BLACK_TEXTURE, Uint8(fade_to_black_alpha) );
+		M22Graphics::DrawInGame();
+		SDL_RenderPresent(M22Engine::SDL_RENDERER);
+		if(fadeout == false)
+		{
+			Mix_FadeOutMusic(2000);	
+			fadeout = true;
+		};
+		if(RENDERING_API == "direct3d") SDL_Delay(1000/60);
+	};
+	for(size_t i = 0; i < M22Graphics::backgroundIndex.size(); i++)
+	{
+		if(M22Graphics::backgroundIndex[i] == "graphics/backgrounds/BLACK.webp")
+		{
+			M22Engine::ACTIVE_BACKGROUNDS[0].sprite = M22Graphics::BACKGROUNDS[i];
+			M22Engine::ACTIVE_BACKGROUNDS[1].sprite = NULL;
+		};
+	};
+	SDL_SetTextureAlphaMod( M22Graphics::BLACK_TEXTURE, 0 );
+	M22Interface::DRAW_TEXT_AREA = true;
+	return;
+};
+
+void M22Graphics::DrawInGame(bool _draw_black)
+{
+	M22Graphics::DrawBackground(M22Engine::ACTIVE_BACKGROUNDS[0].sprite);
+	if(M22Engine::ACTIVE_BACKGROUNDS[1].sprite != NULL) M22Graphics::DrawBackground(M22Engine::ACTIVE_BACKGROUNDS[1].sprite);
+	if(M22Graphics::activeCharacters.size() != 0)
+	{
+		for(size_t i = 0; i < M22Graphics::activeCharacters.size(); i++)
+		{
+			SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::activeCharacters[i].sprite, NULL, &M22Graphics::activeCharacters[i].rect);
+		};
+	};
+	if(_draw_black) SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::BLACK_TEXTURE, NULL, NULL);
+	M22Interface::DrawTextArea((int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y());
+	return;
+};
+
 short int M22Graphics::LoadBackgroundsFromIndex(const char* _filename)
 {
 	std::fstream input(_filename);
@@ -33,6 +80,7 @@ short int M22Graphics::LoadBackgroundsFromIndex(const char* _filename)
 				return -1;
 			};
 			M22Graphics::BACKGROUNDS.push_back(temp);
+
 			// The following code is disgusting but solves conflict issues between the black background and the misc black texture
 			if(currentfile == "graphics/backgrounds/BLACK.webp") 
 			{
@@ -114,15 +162,18 @@ void M22Graphics::UpdateBackgrounds(void)
 
 void M22Graphics::UpdateCharacters(void)
 {
-	if(M22Graphics::activeCharacters.size() == 0) return;
-	for(size_t k = M22Graphics::activeCharacters.size(); k > 0; k--)
+	if(M22Graphics::activeCharacters.size() == 0)
 	{
-		int i = k-1;
+		return;
+	};
+	for(size_t i = 0; i < M22Graphics::activeCharacters.size(); i++)
+	{
+		//int i = k-1;
 		if(M22Graphics::activeCharacters[i].clearing == false)
 		{
-			if(M22Graphics::activeCharacters[i].alpha < 255.0f)
+			if(M22Graphics::activeCharacters[i].alpha < 254.5f)
 			{
-				M22Graphics::activeCharacters[i].alpha = M22Graphics::Lerp(M22Graphics::activeCharacters[i].alpha, 255.0f, DEFAULT_LERP_SPEED);
+				M22Graphics::activeCharacters[i].alpha = M22Graphics::Lerp(M22Graphics::activeCharacters[i].alpha, 255.0f, DEFAULT_LERP_SPEED*3);
 				SDL_SetTextureAlphaMod(M22Graphics::activeCharacters[i].sprite, Uint8(M22Graphics::activeCharacters[i].alpha) );
 			};
 		}
@@ -130,7 +181,7 @@ void M22Graphics::UpdateCharacters(void)
 		{
 			if(M22Graphics::activeCharacters[i].alpha > 0.5f)
 			{
-				M22Graphics::activeCharacters[i].alpha = M22Graphics::Lerp(M22Graphics::activeCharacters[i].alpha, 0.0f, DEFAULT_LERP_SPEED);
+				M22Graphics::activeCharacters[i].alpha = M22Graphics::Lerp(M22Graphics::activeCharacters[i].alpha, 0.0f, DEFAULT_LERP_SPEED*3);
 				SDL_SetTextureAlphaMod(M22Graphics::activeCharacters[i].sprite, Uint8(M22Graphics::activeCharacters[i].alpha) );
 			}
 			else
