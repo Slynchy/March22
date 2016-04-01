@@ -10,11 +10,6 @@ std::vector<std::string> M22Sound::SFX_NAMES;
 
 short int M22Sound::PlaySting(short int _position)
 {
-	/*
-		0 = success
-		-1 = sound doesn't exist
-		-2 = cannot play, already playing
-	*/
 	if(M22Sound::SOUND_FX[_position])
 	{
 		if(!Mix_Playing(M22Sound::MIXERS::SFX))
@@ -76,6 +71,11 @@ short int M22Sound::PlayLoopedSting(std::string _name)
 	return -1;
 };
 
+/*
+	0 = success
+	-1 = sound doesn't exist
+	-2 = cannot play, already playing
+*/
 short int M22Sound::PlaySting(std::string _name, bool _forceplayback)
 {
 	for(size_t i = 0; i < M22Sound::SOUND_FX.size(); i++)
@@ -90,6 +90,7 @@ short int M22Sound::PlaySting(std::string _name, bool _forceplayback)
 			return -2;
 		};
 	};
+	printf("Failed to find and play sting: %s", _name.c_str());
 	return -1;
 };
 

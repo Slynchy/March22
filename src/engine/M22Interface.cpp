@@ -6,8 +6,9 @@ bool M22Interface::DRAW_TEXT_AREA = true;
 M22Interface::BUTTON_STATES* M22Interface::skipButtonState;
 M22Interface::BUTTON_STATES* M22Interface::menuButtonState;
 bool M22Interface::menuOpen = false;
+SDL_Texture* M22Interface::ChatBoxRenderer = NULL;
 
-short int M22Interface::InitializeInterface(M22Interface::Interface* _interface, int _num_of_buttons, int _startline, const std::string _filename, bool _opaque)
+short int M22Interface::InitializeInterface(M22Interface::Interface* _interface, int _num_of_buttons, int _startline, const std::string _filename, bool _opaque, M22Interface::INTERFACES _type)
 {
 	printf("Loading %s...\n", _filename.c_str());
 
@@ -18,7 +19,7 @@ short int M22Interface::InitializeInterface(M22Interface::Interface* _interface,
 	{
 		_interface->alpha = 255.0f;
 	};
-
+	_interface->type = _type;
 	std::fstream input(_filename);
 	std::string temp;
 	std::vector<std::string> tempStr;
@@ -126,6 +127,24 @@ short int M22Interface::InitializeInterface(M22Interface::Interface* _interface,
 	return 0;	
 };
 
+void M22Interface::DrawActiveInterfacesButtons(void)
+{
+	for(size_t i = 0; i < M22Interface::activeInterfaces.size(); i++)
+	{
+		for(size_t k = 0; k < M22Interface::activeInterfaces[i]->buttons.size(); k++)
+		{
+			SDL_RenderCopyEx(
+				M22Engine::SDL_RENDERER, M22Interface::activeInterfaces[i]->buttons[k].sheet, 
+				&M22Interface::activeInterfaces[i]->buttons[k].rectSrc[M22Interface::activeInterfaces[i]->buttons[k].state], 
+				&M22Interface::activeInterfaces[i]->buttons[k].rectDst[M22Interface::activeInterfaces[i]->buttons[k].state], 
+				NULL,
+				NULL,
+				SDL_FLIP_NONE);
+		};
+	};
+	return;
+};
+
 void M22Interface::DrawActiveInterfaces(void)
 {
 	for(size_t i = 0; i < M22Interface::activeInterfaces.size(); i++)
@@ -152,11 +171,37 @@ void M22Interface::DrawTextArea(int _ScrSizeX, int _ScrSizeY)
 {
 	if(M22Interface::DRAW_TEXT_AREA == true)
 	{
-		SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::textFrame, NULL, NULL);
-		SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::characterFrameHeaders[M22Script::activeSpeakerIndex], NULL, NULL);
-		M22Graphics::DrawArrow(_ScrSizeX, _ScrSizeY);
-		M22Script::DrawCurrentLine(_ScrSizeX, _ScrSizeY);
-		M22Interface::DrawActiveInterfaces();
+		int width = 640, height = 480;
+
+		SDL_SetRenderTarget(M22Engine::SDL_RENDERER, M22Interface::ChatBoxRenderer);
+
+		SDL_SetRenderDrawColor(M22Engine::SDL_RENDERER, 0,0,0,0);
+		SDL_RenderClear(M22Engine::SDL_RENDERER);
+		
+		SDL_Rect textbox = {0, 480, 0, 0};
+		SDL_QueryTexture(M22Graphics::textFrame, NULL, NULL, &textbox.w, &textbox.h);
+		textbox.y = 480 - textbox.h;
+		SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::textFrame, NULL, &textbox);
+
+		SDL_Rect characterName = {0,368,0,0};
+		SDL_QueryTexture(M22Graphics::characterFrameHeaders[M22Script::activeSpeakerIndex], NULL, NULL, &characterName.w, &characterName.h);
+		SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::characterFrameHeaders[M22Script::activeSpeakerIndex], NULL, &characterName);
+
+		M22Graphics::DrawArrow(width, height);
+		M22Script::DrawCurrentLine(width, height);
+		M22Interface::DrawActiveInterfacesButtons();
+
+		SDL_SetRenderTarget(M22Engine::SDL_RENDERER, NULL);
+
+		SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Interface::ChatBoxRenderer, NULL, NULL);
+		for(size_t i = 0; i < M22Interface::activeInterfaces.size(); i++)
+		{
+			if(M22Interface::activeInterfaces[i]->spriteSheet != NULL)
+			{
+				SDL_RenderCopy( M22Engine::SDL_RENDERER, M22Interface::activeInterfaces[i]->spriteSheet, NULL, NULL);
+			};
+		};
+		SDL_SetRenderDrawColor(M22Engine::SDL_RENDERER, 255,255,255,255);
 	};
 	return;
 };
@@ -167,13 +212,20 @@ void M22Interface::UpdateActiveInterfaces(int _ScrSizeX, int _ScrSizeY)
 	{
 		if(M22Engine::GAMESTATE == M22Engine::GAMESTATES::MAIN_MENU)
 		{
-			//M22Interface::activeInterfaces[i]->FadeInAllButtons();
+			if(M22Interface::activeInterfaces[i]->alpha < (255*0.6))
+			{
+				return;
+			};
 		};
 
 		for(size_t k = 0; k < M22Interface::activeInterfaces[i]->buttons.size(); k++)
 		{
-			Vec2* tempButtonPos = new Vec2(M22Interface::activeInterfaces[i]->buttons[k].rectDst[M22Interface::activeInterfaces[i]->buttons[k].state].x,M22Interface::activeInterfaces[i]->buttons[k].rectDst[M22Interface::activeInterfaces[i]->buttons[k].state].y);
-			Vec2* tempButtonSize = new Vec2(M22Interface::activeInterfaces[i]->buttons[k].rectDst[M22Interface::activeInterfaces[i]->buttons[k].state].w,M22Interface::activeInterfaces[i]->buttons[k].rectDst[M22Interface::activeInterfaces[i]->buttons[k].state].h);
+			Vec2* tempButtonPos = new Vec2(0.0,0.0);
+			tempButtonPos->x(M22Interface::activeInterfaces[i]->buttons[k].rectDst[M22Interface::activeInterfaces[i]->buttons[k].state].x);
+			tempButtonPos->y(M22Interface::activeInterfaces[i]->buttons[k].rectDst[M22Interface::activeInterfaces[i]->buttons[k].state].y);
+			Vec2* tempButtonSize = new Vec2(M22Interface::activeInterfaces[i]->buttons[k].rectDst[M22Interface::activeInterfaces[i]->buttons[k].state].w,
+											M22Interface::activeInterfaces[i]->buttons[k].rectDst[M22Interface::activeInterfaces[i]->buttons[k].state].h
+											);
 			if(M22Interface::CheckOverlap(	M22Engine::MousePos, 
 											*tempButtonPos, 
 											*tempButtonSize
@@ -188,14 +240,18 @@ void M22Interface::UpdateActiveInterfaces(int _ScrSizeX, int _ScrSizeY)
 					}
 					else if(M22Interface::activeInterfaces[i]->buttons[k].name == "M_MENU")
 					{
+						M22Sound::PlaySting("sfx/stings/buttonclick.OGG", true);
 						M22Interface::menuOpen = !M22Interface::menuOpen;
 					}
 					else if(M22Interface::activeInterfaces[i]->buttons[k].name == "START")
 					{
+						M22Sound::PlaySting("sfx/stings/buttonclick.OGG", true);
 						M22Engine::StartGame();
 					}
 					else if(M22Interface::activeInterfaces[i]->buttons[k].name == "QUIT")
 					{
+						M22Sound::PlaySting("sfx/stings/buttonclick.OGG", true);
+						M22Graphics::FadeToBlackFancy();
 						M22Engine::QUIT = true;
 						M22Interface::activeInterfaces[i]->buttons[k].state = M22Interface::BUTTON_STATES::CLICKED;
 					}
@@ -206,12 +262,14 @@ void M22Interface::UpdateActiveInterfaces(int _ScrSizeX, int _ScrSizeY)
 					}
 					else if(M22Interface::activeInterfaces[i]->buttons[k].name == "OPTIONS")
 					{
+						M22Sound::PlaySting("sfx/stings/buttonclick.OGG", true);
 						M22Interface::activeInterfaces[i]->buttons[k].state = M22Interface::BUTTON_STATES::CLICKED;
 						M22Interface::activeInterfaces.push_back(&M22Interface::storedInterfaces[M22Interface::INTERFACES::OPTIONS_MENU_INTRFC]);
 						M22Sound::StopMusic();
 					}
 					else if(M22Interface::activeInterfaces[i]->buttons[k].name == "RETURN_TO_TITLE")
 					{
+						M22Sound::PlaySting("sfx/stings/buttonclick.OGG", true);
 						M22Engine::ResetGame();
 						return;
 					}
@@ -222,7 +280,11 @@ void M22Interface::UpdateActiveInterfaces(int _ScrSizeX, int _ScrSizeY)
 				}
 				else
 				{
-					M22Interface::activeInterfaces[i]->buttons[k].state = M22Interface::BUTTON_STATES::MOUSEOVER;
+					if(M22Interface::activeInterfaces[i]->buttons[k].state == M22Interface::BUTTON_STATES::RESTING)
+					{
+						M22Interface::activeInterfaces[i]->buttons[k].state = M22Interface::BUTTON_STATES::MOUSEOVER;
+						M22Sound::PlaySting("sfx/stings/mouseover.OGG", true);
+					};
 				};
 				//break;
 			}

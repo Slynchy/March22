@@ -1,4 +1,5 @@
-3
 sfx/music/SILENCE.OGG
 sfx/music/MENU.OGG
+sfx/music/MP02.OGG
 sfx/music/MP03.OGG
+sfx/music/MP04.OGG

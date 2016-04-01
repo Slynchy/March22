@@ -1,6 +1,34 @@
 #M22/Snow Sakura++ Changelog
 ###NOTE: Please don't take this changelog as gospel; I hardly ever remember what I add per version.
 
+#### v0.3.0
+
+- Added commenting to the M22 scripts
+	* Single line, same as C++ ("//")
+- Added new functions to m22 script language:
+	* ClearCharactersBrutal - Clears characters with no lerp effect; just immediately clears the vector
+	* DrawCharacterBrutal - Draws character with no lerp effect
+	* Wait ( _millisecs ) - Waits the specified time before going to the next line
+- Indirectly fixed janky character transition with the two brutal functions
+- Fixed main menu buttons being clickable before appearing
+- Holding shift now skips FadeToBlackFancy but this might be reverted, since it bugs out a bit
+- Added new SFX/BGM
+- Optimized SFX volume to be configurable on a channel basis
+- Removed SFX line count
+- Removed RENDERER shorthand since I never bloody used it...
+- Switched back to Direct3D
+	* While OpenGL makes more sense it was a CPU hog
+	* Direct3D uses practically no CPU power, but is a RAM hog
+	* RAM < CPU, so OGL is out for now
+- Fixed bilinear filtering distorting the chat box
+	* Chat box is drawn independently then blitted onscreen; probably sucks perf-wise
+- Converted more of script to M22
+- Todo list:
+	* Finish options menu
+	* More transitions
+	* Unicode support
+	* Write a tool that extracts/formats SFX/images from Snow Sakura
+
 #### v0.2.4
 
 - Interface improvements

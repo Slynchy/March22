@@ -1,6 +1,6 @@
 #include "M22Engine.h"
 
-M22Engine::GAMESTATES M22Engine::GAMESTATE = M22Engine::GAMESTATES::MAIN_MENU;
+M22Engine::GAMESTATES M22Engine::GAMESTATE = M22Engine::GAMESTATES::INGAME;
 SDL_Window* M22Engine::SDL_SCREEN = NULL;
 SDL_Renderer *M22Engine::SDL_RENDERER = NULL;
 SDL_Event M22Engine::SDL_EVENTS;
@@ -15,6 +15,8 @@ bool M22Engine::LMB_Pressed;
 bool M22Engine::QUIT = false;
 bool M22Engine::skipping = false;
 bool M22Engine::FULLSCREEN = false;
+Uint32 M22Engine::last = 0, M22Engine::DELTA_TIME = 0;
+Uint32 M22Engine::TIMER_CURR = 0, M22Engine::TIMER_TARGET = 0;
 
 Vec2 M22Engine::ScrSize(640,480);
 
@@ -100,7 +102,7 @@ short int M22Engine::InitializeM22(int ScrW, int ScrH)
 		temp.clear();
 		temp = "graphics/text_frames/";
 		temp += M22Engine::CHARACTERS_ARRAY[i].name;
-		temp += ".webp";
+		temp += ".png";
 		M22Graphics::characterFrameHeaders.push_back(IMG_LoadTexture(M22Engine::SDL_RENDERER, temp.c_str()));
 		temp.clear();
 	};

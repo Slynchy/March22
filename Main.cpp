@@ -20,7 +20,7 @@
 #define DEBUG_ENABLED false
 
 #define WINDOW_TITLE		"March22 Engine Prototype "
-#define VERSION				"v0.2.4"
+#define VERSION				"v0.3.0"
 
 #define FPS 60
 
@@ -35,6 +35,7 @@ void UpdateKeyboard();
 void UpdateEvents();
 void UpdateSound();
 void DrawBackground(short int);
+void InitTextBox();
 
 int main(int argc, char* argv[]) 
 {
@@ -44,15 +45,15 @@ int main(int argc, char* argv[])
 	InitializeSound();
 	M22Engine::InitializeM22(int(M22Engine::ScrSize.x()),int(M22Engine::ScrSize.y()));
 	M22Graphics::LoadBackgroundsFromIndex("graphics/backgrounds/index.txt");
-	M22Graphics::textFrame = IMG_LoadTexture(M22Engine::SDL_RENDERER, "graphics/frame.png");
+	InitTextBox();
 	M22Script::LoadScriptToCurrent("EVC_001_strings.txt");
-	M22Graphics::textFont = TTF_OpenFont( "graphics/FONT.ttf", int(19.0f * M22Script::fontSize) );
+	M22Graphics::textFont = TTF_OpenFont( "graphics/FONT.ttf", 19);//int(19.0f * M22Script::fontSize) );
 
 	M22Interface::storedInterfaces.resize(M22Interface::INTERFACES::NUM_OF_INTERFACES);
-	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[M22Interface::INTERFACES::INGAME_INTRFC], 3, 0);
-	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[M22Interface::INTERFACES::MENU_BUTTON_INTRFC], 4, 0, "graphics/interface/MENU_BUTTONS.txt");
-	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[M22Interface::INTERFACES::MAIN_MENU_INTRFC], 3, 0, "graphics/mainmenu/BUTTONS.txt", false);
-	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[M22Interface::INTERFACES::OPTIONS_MENU_INTRFC], 4, 0, "graphics/optionsmenu/BUTTONS.txt", true);
+	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[M22Interface::INTERFACES::INGAME_INTRFC], 3, 0, "graphics/interface/GAME_BUTTONS.txt", true, M22Interface::INTERFACES::INGAME_INTRFC);
+	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[M22Interface::INTERFACES::MENU_BUTTON_INTRFC], 4, 0, "graphics/interface/MENU_BUTTONS.txt", true, M22Interface::INTERFACES::MENU_BUTTON_INTRFC);
+	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[M22Interface::INTERFACES::MAIN_MENU_INTRFC], 3, 0, "graphics/mainmenu/BUTTONS.txt", false, M22Interface::INTERFACES::MAIN_MENU_INTRFC);
+	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[M22Interface::INTERFACES::OPTIONS_MENU_INTRFC], 4, 0, "graphics/optionsmenu/BUTTONS.txt", true, M22Interface::INTERFACES::OPTIONS_MENU_INTRFC);
 
 	SDL_SetRenderDrawColor(M22Engine::SDL_RENDERER, 255, 255, 255, 255);
 
@@ -69,9 +70,26 @@ int main(int argc, char* argv[])
 
 	while( !M22Engine::QUIT )
 	{
+		Uint32 now = SDL_GetTicks();  
+		M22Engine::DELTA_TIME = now - M22Engine::last; 
+		M22Engine::last = now; 
+
 		UpdateEvents();
 		UpdateSound();
 		if(M22Engine::skipping) M22Script::ChangeLine(++M22Script::currentLineIndex);
+		if(M22Engine::TIMER_TARGET != 0)
+		{
+			if(M22Engine::TIMER_CURR < M22Engine::TIMER_TARGET)
+			{
+				M22Engine::TIMER_CURR += M22Engine::DELTA_TIME;
+			}
+			else
+			{
+				M22Engine::TIMER_CURR = 0;
+				M22Engine::TIMER_TARGET = 0;
+				M22Script::ChangeLine(++M22Script::currentLineIndex);
+			};
+		};
 		M22Graphics::UpdateBackgrounds();
 		M22Graphics::UpdateCharacters();
 		M22Interface::UpdateActiveInterfaces( int(M22Engine::ScrSize.x()), int(M22Engine::ScrSize.y()) );
@@ -138,13 +156,18 @@ short int InitializeSDL()
 		M22Engine::SDL_SCREEN = SDL_CreateWindow(tempTitle.c_str(), (int)ScrPos.x(), (int)ScrPos.y(), (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y(), SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
 	};
 
-    M22Engine::SDL_RENDERER = SDL_CreateRenderer(M22Engine::SDL_SCREEN, -1, SDL_RENDERER_ACCELERATED);
+    M22Engine::SDL_RENDERER = SDL_CreateRenderer(M22Engine::SDL_SCREEN, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
 	SDL_RenderSetLogicalSize(M22Engine::SDL_RENDERER, (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y());
-	if( Mix_OpenAudio( MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 )
+	if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 4096 ) < 0 )
 	{
 		printf( "SDL_mixer failed to init! Error: %s\n", Mix_GetError() );
 	};
+
 	Mix_VolumeMusic(int(MIX_MAX_VOLUME*M22Sound::MUSIC_VOLUME));
+	//Mix_Volume(M22Sound::MIXERS::BGM,int(MIX_MAX_VOLUME*M22Sound::MUSIC_VOLUME));
+	Mix_Volume(M22Sound::MIXERS::SFX,int(MIX_MAX_VOLUME*M22Sound::SFX_VOLUME));
+	Mix_Volume(M22Sound::MIXERS::LOOPED_SFX,int(MIX_MAX_VOLUME*M22Sound::SFX_VOLUME));
+
 	if( TTF_Init() < 0 )
     {
 		printf( "SDL_TTF failed to init! Error: %s\n", TTF_GetError() );
@@ -162,7 +185,9 @@ short int InitializeMusic()
 	int length;
 	if(input)
 	{
-		input >> length;
+		length=int(std::count(std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>(), '\n'));
+		length++; // Linecount is number of '\n' + 1
+		input.seekg(0, std::ios::beg);
 		for(int i = 0; i < length; i++)
 		{
 			std::string currentfile;
@@ -207,7 +232,7 @@ short int InitializeSFX()
 			};
 			M22Sound::SOUND_FX.push_back(temp);
 			M22Sound::SFX_NAMES.push_back(currentfile);
-			Mix_VolumeChunk(M22Sound::SOUND_FX[i], int(MIX_MAX_VOLUME*M22Sound::SFX_VOLUME));
+			//Mix_VolumeChunk(M22Sound::SOUND_FX[i], int(MIX_MAX_VOLUME*M22Sound::SFX_VOLUME));
 		};
 	}
 	else
@@ -251,13 +276,14 @@ void UpdateKeyboard()
 	{
 		M22Engine::QUIT=true;
 	};
-	if(M22Engine::SDL_KEYBOARDSTATE[SDL_SCANCODE_RETURN] && M22Interface::DRAW_TEXT_AREA == true && M22Engine::GAMESTATE == M22Engine::GAMESTATES::INGAME)
-	{
-		M22Script::ChangeLine(++M22Script::currentLineIndex);
-	};
 	if(M22Engine::SDL_KEYBOARDSTATE[SDL_SCANCODE_SPACE] && M22Engine::GAMESTATE == M22Engine::GAMESTATES::INGAME)
 	{
 		M22Interface::DRAW_TEXT_AREA = !M22Interface::DRAW_TEXT_AREA;
+	};
+	if(M22Engine::TIMER_TARGET != 0) return;
+	if(M22Engine::SDL_KEYBOARDSTATE[SDL_SCANCODE_RETURN] && M22Interface::DRAW_TEXT_AREA == true && M22Engine::GAMESTATE == M22Engine::GAMESTATES::INGAME)
+	{
+		M22Script::ChangeLine(++M22Script::currentLineIndex);
 	};
 	return;
 };
@@ -318,5 +344,20 @@ void DrawBackground(short int _index)
 		// Backgrounds match the 640x480 resolution, so no need for scaling... for now.
 		SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUNDS[_index], NULL, NULL);
 	};
+	return;
+};
+
+void InitTextBox()
+{
+	// load texture
+	M22Graphics::textFrame = IMG_LoadTexture(M22Engine::SDL_RENDERER, "graphics/frame.png");
+
+	// init the render target texture
+	M22Interface::ChatBoxRenderer = SDL_CreateTexture( M22Engine::SDL_RENDERER, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET , 640, 480 );
+
+	// allow alpha channels
+	SDL_SetTextureBlendMode(M22Graphics::textFrame, SDL_BLENDMODE_BLEND);
+	SDL_SetTextureBlendMode(M22Interface::ChatBoxRenderer, SDL_BLENDMODE_BLEND);
+
 	return;
 };

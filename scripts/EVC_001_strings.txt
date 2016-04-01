@@ -3,6 +3,7 @@ DrawBackground mystery_girl_s
 PlayMusic MP03
 Girl: "Do you know about the Snow Sakura?"
 Snow Sakura?
+//Goto 180
 Girl: "Once a year, its flowers bloom in the chill of winter."
 Even though it's a cherry tree?
 Girl: "Yes, even though it's a cherry tree."
@@ -28,6 +29,7 @@ It was the familiar sound of my alarm clock.
 I opened my eyes sleepily.
 DrawBackground bedroom_day
 StopLoopedStings
+PlayMusic MP02
 Yuuji: "........."
 I don't recognize this ceiling.
 I don't recognize this room, either.
@@ -52,6 +54,7 @@ Unknown: "What are you mumbling about? Come on, get up!"
 PlaySting blanket_removal
 Whoosh!
 DrawBackground bedroom_day
+PlayMusic MP04
 The blankets were pulled from my body.
 Yuuji: "AAAHH!!"
 It's incredibly cold!
@@ -70,8 +73,8 @@ ClearCharacters
 DrawCharacter Saki Indoors_1 ANGRY 0
 Saki: "That's no excuse!"
 Yuuji: "I don't want breakfast! I just want to sleep straight through to Saturday morning."
-ClearCharacters
-DrawCharacter Saki Indoors_1 ANGRY_B 0
+ClearCharactersBrutal
+DrawCharacterBrutal Saki Indoors_1 ANGRY_B 0
 Saki: "Stop being such a lazy bum!"
 ClearCharacters
 DrawBackground saki_punch_indoors
@@ -92,12 +95,12 @@ ClearCharacters
 DrawCharacter Saki Indoors_1 HAPPY 0
 Saki: "I'm lying."
 Yuuji: "Why, you..."
-ClearCharacters
-DrawCharacter Saki Indoors_1 NORMAL 0
+ClearCharactersBrutal
+DrawCharacterBrutal Saki Indoors_1 NORMAL 0
 Saki: "Did you believe me, just a little bit?"
 Yuuji: "No way!"
-ClearCharacters
-DrawCharacter Saki Indoors_1 SNEAKY 0
+ClearCharactersBrutal
+DrawCharacterBrutal Saki Indoors_1 SNEAKY 0
 Saki: "This is why I hate smartasses who grew up in the city."
 Smartasses!?
 Will I be able to survive in this place?
@@ -188,7 +191,7 @@ Takeaki: "Have a seat."
 Yuuji: "Whew..."
 I hesitantly sat on the floor.
 Takeaki: "There's no need to hold back. This is just a shabby old shut-down inn. Let everything hang out!"
-ClearCharacters
+ClearCharactersBrutal
 DrawCharacter Saki Indoors_1 DETERMINED_HAPPY 200
 DrawCharacter Takeaki Indoors HAPPY -200
 Saki: "You shouldn't talk about your own home like that!"

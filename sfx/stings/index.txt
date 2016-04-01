@@ -2,3 +2,5 @@ sfx/stings/SE001.OGG
 sfx/stings/whack.OGG
 sfx/stings/blanket_removal.OGG
 sfx/stings/alarm.OGG
+sfx/stings/mouseover.OGG
+sfx/stings/buttonclick.OGG

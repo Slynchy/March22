@@ -1,18 +1,12 @@
 #ifndef M22ENGINE_H
 #define M22ENGINE_H
 
-/*
-	RENDERER == SDL_RENDERER
-	Shorthand
-*/
-#define RENDERER SDL_RENDERER
-
 #define DEFAULT_MUSIC_VOLUME_MULT 0.25f
-#define DEFAULT_SFX_VOLUME_MULT 0.05f
+#define DEFAULT_SFX_VOLUME_MULT 0.35f
 #define DEFAULT_LERP_SPEED 0.15f
 
-#define RENDERING_API		"opengl"
-#define BILINEAR_FILTERING	"0"
+#define RENDERING_API		"direct3d"
+#define BILINEAR_FILTERING	"1"
 
 #include "SDL.h"
 #include <SDL_image.h>
@@ -85,6 +79,9 @@ class M22Engine
 		static std::vector<Character> CHARACTERS_ARRAY;
 		static std::vector<std::string> CHARACTER_EMOTIONS;
 
+		static Uint32 last, DELTA_TIME; 
+		static Uint32 TIMER_CURR, TIMER_TARGET;
+
 		static M22Engine::GAMESTATES GAMESTATE;
 		static SDL_Window* SDL_SCREEN;
 		static SDL_Renderer *SDL_RENDERER;
@@ -126,6 +123,7 @@ class M22Graphics
 		static void UpdateCharacters(void);
 		static void DrawInGame(bool _draw_black = true);
 		static void FadeToBlackFancy(void);
+		static void AddActiveCharacter(int _charindex, int _outfitindex, int _emotionindex, int _xPosition, bool _brutal = false);
 
 		static void DrawArrow(int ScrW, int ScrH);
 
@@ -186,8 +184,12 @@ class M22Script
 			GOTO,
 			DRAW_CHARACTER,
 			CLEAR_CHARACTERS,
+			CLEAR_CHARACTERS_BRUTAL,
+			DRAW_CHARACTER_BRUTAL,
 			LOAD_SCRIPT,
 			SPEECH,
+			COMMENT,
+			WAIT,
 			NARRATIVE
 		};
 		static const unsigned short int DARKEN_SCREEN_OPACITY = 100;
@@ -208,6 +210,7 @@ class M22Script
 		static M22Script::LINETYPE CheckLineType(std::string);
 		static bool isColon(int _char);
 		static void ClearCharacters(void);
+		static void FadeToBlack(void);
 };
 
 class M22Interface
@@ -249,6 +252,7 @@ class M22Interface
 			std::vector<M22Interface::Button> buttons;
 			SDL_Texture* spriteSheet;
 			float alpha;
+			M22Interface::INTERFACES type;
 			Interface()
 			{
 				alpha = 0.0f;
@@ -267,17 +271,19 @@ class M22Interface
 		static std::vector<Interface*> activeInterfaces;
 		static M22Interface::BUTTON_STATES* skipButtonState;
 		static M22Interface::BUTTON_STATES* menuButtonState;
+		static SDL_Texture* ChatBoxRenderer;
 
 		static bool menuOpen;
 
 		static void DrawActiveInterfaces(void);
+		static void DrawActiveInterfacesButtons(void);
 		static bool DRAW_TEXT_AREA;
 		static void DrawTextArea(int, int);
 		static void UpdateActiveInterfaces(int _ScrSizeX, int _ScrSizeY);
 		static bool CheckOverlap(Vec2 _pos1, Vec2 _pos2, Vec2 _size);
 		static void ResetStoredInterfaces(void);
 
-		static short int InitializeInterface(M22Interface::Interface* _interface, int _num_of_buttons, int _startline = 0, const std::string _filename = "graphics/interface/GAME_BUTTONS.txt", bool _opaque = true);
+		static short int InitializeInterface(M22Interface::Interface* _interface, int _num_of_buttons, int _startline = 0, const std::string _filename = "graphics/interface/GAME_BUTTONS.txt", bool _opaque = true, M22Interface::INTERFACES _type = M22Interface::INTERFACES::INGAME_INTRFC);
 };
 
 #endif

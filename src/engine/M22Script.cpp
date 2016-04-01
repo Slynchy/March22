@@ -24,6 +24,11 @@ short int M22Script::LoadScriptToCurrent(const char* _filename)
 		for(int i = 0; i < length; i++)
 		{
 			getline(input,temp);
+			if(temp[0] == '/' && temp[1] == '/')
+			{
+				// it's a comment! Store only two chars to save space
+				temp = "//";
+			};
 			M22Script::currentScript.push_back(temp);
 		};
 	}
@@ -49,12 +54,12 @@ void M22Script::DrawCurrentLine(int ScrW, int ScrH)
 	M22Script::currentLineSurfaceShadow =	TTF_RenderText_Blended_Wrapped( M22Graphics::textFont, M22Script::currentLine.c_str(), tempCol2,	ScrW-12 );
 	M22Script::currentLineSurface =			TTF_RenderText_Blended_Wrapped( M22Graphics::textFont, M22Script::currentLine.c_str(), tempCol,		ScrW-12 );
 	
-	if(M22Script::currentLineSurfaceShadow == NULL)
+	if(M22Script::currentLineSurfaceShadow == NULL && M22Script::currentLine != "")
 	{
 		printf("Failed to draw message shadow!\n");
 		return;
 	};
-	if(M22Script::currentLineSurface == NULL)
+	if(M22Script::currentLineSurface == NULL && M22Script::currentLine != "")
 	{
 		printf("Failed to draw message!\n");
 		return;
@@ -63,8 +68,10 @@ void M22Script::DrawCurrentLine(int ScrW, int ScrH)
 	SDL_Texture* temp2 =	SDL_CreateTextureFromSurface(M22Engine::SDL_RENDERER, M22Script::currentLineSurfaceShadow);
 	SDL_Texture* temp =		SDL_CreateTextureFromSurface(M22Engine::SDL_RENDERER, M22Script::currentLineSurface);
 	
-	SDL_Rect tempDst2= {(int)(ScrW*0.01875)+int(1.0f*M22Script::fontSize),(int)(ScrH*0.8416666666666667f)+int(1.0f*M22Script::fontSize),0,0};
-	SDL_Rect tempDst = {(int)(ScrW*0.01875),(int)(ScrH*0.8416666666666667f),0,0};
+//	SDL_Rect tempDst2= {(int)(ScrW*0.01875)+int(1.0f*M22Script::fontSize),(int)(ScrH*0.8416666666666667f)+int(1.0f*M22Script::fontSize),0,0};
+//	SDL_Rect tempDst = {(int)(ScrW*0.01875),(int)(ScrH*0.8416666666666667f),0,0};
+	SDL_Rect tempDst2 = {8+1,404+1,0,0};
+	SDL_Rect tempDst = {8,404,0,0};
 	
 	SDL_QueryTexture(temp2, NULL, NULL, &tempDst2.w, &tempDst2.h);
 	SDL_QueryTexture(temp, NULL, NULL, &tempDst.w, &tempDst.h);
@@ -173,24 +180,9 @@ void M22Script::ChangeLine(int _newLine)
 	}
 	else if(LINETYPE == M22Script::LINETYPE::FADE_TO_BLACK)
 	{
-		for(size_t i = 0; i < M22Graphics::backgroundIndex.size(); i++)
-		{
-			if(M22Graphics::backgroundIndex[i] == "graphics/backgrounds/BLACK.webp")
-			{
-				if(M22Engine::ACTIVE_BACKGROUNDS[0].sprite)
-				{
-					M22Engine::ACTIVE_BACKGROUNDS[1].sprite = M22Graphics::BACKGROUNDS[i];
-					SDL_SetTextureBlendMode(M22Engine::ACTIVE_BACKGROUNDS[1].sprite, SDL_BLENDMODE_BLEND);
-					SDL_SetTextureAlphaMod( M22Engine::ACTIVE_BACKGROUNDS[1].sprite, 0 );
-				}
-				else
-				{
-					M22Engine::ACTIVE_BACKGROUNDS[0].sprite = M22Graphics::BACKGROUNDS[i];
-				};
-				M22Script::ChangeLine(++_newLine);
-				return;
-			};
-		};
+		M22Script::FadeToBlack();
+		M22Script::ChangeLine(++_newLine);
+		return;
 	}
 	else if(LINETYPE == M22Script::LINETYPE::PLAY_STING)
 	{
@@ -203,18 +195,27 @@ void M22Script::ChangeLine(int _newLine)
 	}
 	else if(LINETYPE == M22Script::LINETYPE::DRAW_CHARACTER)
 	{
-		M22Engine::CharacterReference tempChar;
+		/*M22Engine::CharacterReference tempChar;
 		int charIndex, outfitIndex, emotionIndex;
 		charIndex = M22Engine::GetCharacterIndexFromName(temp[1]);
 		outfitIndex = M22Engine::GetOutfitIndexFromName(temp[2], charIndex);
 		emotionIndex = M22Engine::GetEmotionIndexFromName(temp[3], charIndex);
 		tempChar.sprite = M22Engine::CHARACTERS_ARRAY[charIndex].sprites[outfitIndex][emotionIndex];
-
 		SDL_QueryTexture(tempChar.sprite, NULL, NULL, &tempChar.rect.w, &tempChar.rect.h);
 		tempChar.rect.x = atoi(temp[4].c_str());
 		tempChar.rect.y = 0;
-
-		M22Graphics::activeCharacters.push_back(tempChar);
+		M22Graphics::activeCharacters.push_back(tempChar);*/
+		int charIndex;
+		charIndex = M22Engine::GetCharacterIndexFromName(temp[1]);
+		M22Graphics::AddActiveCharacter(charIndex, M22Engine::GetOutfitIndexFromName(temp[2], charIndex), M22Engine::GetEmotionIndexFromName(temp[3], charIndex), atoi(temp[4].c_str()), false);
+		M22Script::ChangeLine(++_newLine);
+		return;
+	}
+	else if(LINETYPE == M22Script::LINETYPE::DRAW_CHARACTER_BRUTAL)
+	{
+		int charIndex;
+		charIndex = M22Engine::GetCharacterIndexFromName(temp[1]);
+		M22Graphics::AddActiveCharacter(charIndex, M22Engine::GetOutfitIndexFromName(temp[2], charIndex), M22Engine::GetEmotionIndexFromName(temp[3], charIndex), atoi(temp[4].c_str()), true);
 		M22Script::ChangeLine(++_newLine);
 		return;
 	}
@@ -222,6 +223,13 @@ void M22Script::ChangeLine(int _newLine)
 	{
 		M22Script::ClearCharacters();
 		M22Script::ChangeLine(++_newLine);
+		return;
+	}
+	else if(LINETYPE == M22Script::LINETYPE::WAIT)
+	{
+		M22Script::currentLine = "";
+		M22Engine::TIMER_CURR = 0;
+		M22Engine::TIMER_TARGET = atoi(temp[1].c_str());
 		return;
 	}
 	else if(LINETYPE == M22Script::LINETYPE::LOAD_SCRIPT)
@@ -265,9 +273,27 @@ void M22Script::ChangeLine(int _newLine)
 		M22Script::ChangeLine(newLinePosition);
 		return;
 	}
+	else if(LINETYPE == M22Script::LINETYPE::COMMENT)
+	{
+		M22Script::ChangeLine(++_newLine);
+		return;
+	}
+	else if(LINETYPE == M22Script::LINETYPE::CLEAR_CHARACTERS_BRUTAL)
+	{
+		M22Graphics::activeCharacters.clear();
+		M22Script::ChangeLine(++_newLine);
+		return;
+	}
 	else if(LINETYPE == M22Script::LINETYPE::FADE_TO_BLACK_FANCY)
 	{
-		M22Graphics::FadeToBlackFancy();
+		if(!M22Engine::skipping)
+		{
+			M22Graphics::FadeToBlackFancy();
+		}
+		else
+		{
+			M22Script::FadeToBlack();
+		};
 		M22Script::ChangeLine(++_newLine);
 		return;
 	}
@@ -298,6 +324,28 @@ bool M22Script::isColon(int _char)
 	};
 };
 
+void M22Script::FadeToBlack(void)
+{
+	for(size_t i = 0; i < M22Graphics::backgroundIndex.size(); i++)
+	{
+		if(M22Graphics::backgroundIndex[i] == "graphics/backgrounds/BLACK.webp")
+		{
+			if(M22Engine::ACTIVE_BACKGROUNDS[0].sprite)
+			{
+				M22Engine::ACTIVE_BACKGROUNDS[1].sprite = M22Graphics::BACKGROUNDS[i];
+				SDL_SetTextureBlendMode(M22Engine::ACTIVE_BACKGROUNDS[1].sprite, SDL_BLENDMODE_BLEND);
+				SDL_SetTextureAlphaMod( M22Engine::ACTIVE_BACKGROUNDS[1].sprite, 0 );
+			}
+			else
+			{
+				M22Engine::ACTIVE_BACKGROUNDS[0].sprite = M22Graphics::BACKGROUNDS[i];
+			};
+			return;
+		};
+	};
+	return;
+};
+
 /*
 	Checks the string against database of character names
 	and returns the character's enumerator
@@ -321,9 +369,17 @@ M22Script::LINETYPE M22Script::CheckLineType(std::string _input)
 	{
 		return M22Script::LINETYPE::DRAW_CHARACTER;
 	}
+	else if(_input == std::string("DrawCharacterBrutal"))
+	{
+		return M22Script::LINETYPE::DRAW_CHARACTER_BRUTAL;
+	}
 	else if(_input == std::string("ClearCharacters"))
 	{
 		return M22Script::LINETYPE::CLEAR_CHARACTERS;
+	}
+	else if(_input == std::string("ClearCharactersBrutal"))
+	{
+		return M22Script::LINETYPE::CLEAR_CHARACTERS_BRUTAL;
 	}
 	else if(_input == std::string("LoadScript"))
 	{
@@ -360,6 +416,14 @@ M22Script::LINETYPE M22Script::CheckLineType(std::string _input)
 	else if(_input == std::string("StopLoopedStings"))
 	{
 		return M22Script::LINETYPE::STOP_STING_LOOPED;
+	}
+	else if(_input == std::string("//"))
+	{
+		return M22Script::LINETYPE::COMMENT;
+	}
+	else if(_input == std::string("Wait"))
+	{
+		return M22Script::LINETYPE::WAIT;
 	};
 	return M22Script::LINETYPE::SPEECH;
 };

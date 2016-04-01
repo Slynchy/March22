@@ -143,9 +143,9 @@ void M22Graphics::UpdateBackgrounds(void)
 	{
 		if(M22Engine::ACTIVE_BACKGROUNDS[1].sprite != NULL)
 		{
-			if(M22Engine::ACTIVE_BACKGROUNDS[1].alpha < 255)
+			if(M22Engine::ACTIVE_BACKGROUNDS[1].alpha < 254)
 			{
-				M22Engine::ACTIVE_BACKGROUNDS[1].alpha = M22Graphics::Lerp(M22Engine::ACTIVE_BACKGROUNDS[1].alpha, 255.0f, DEFAULT_LERP_SPEED);
+				M22Engine::ACTIVE_BACKGROUNDS[1].alpha = M22Graphics::Lerp(M22Engine::ACTIVE_BACKGROUNDS[1].alpha, 255.0f, DEFAULT_LERP_SPEED*1.5);
 			}
 			else
 			{
@@ -157,6 +157,21 @@ void M22Graphics::UpdateBackgrounds(void)
 		SDL_SetTextureAlphaMod( M22Engine::ACTIVE_BACKGROUNDS[0].sprite, Uint8(M22Engine::ACTIVE_BACKGROUNDS[0].alpha) );
 		SDL_SetTextureAlphaMod( M22Engine::ACTIVE_BACKGROUNDS[1].sprite, Uint8(M22Engine::ACTIVE_BACKGROUNDS[1].alpha) );
 	};
+	return;
+};
+
+void M22Graphics::AddActiveCharacter(int _charindex, int _outfitindex, int _emotionindex, int _xPosition, bool _brutal)
+{
+	M22Engine::CharacterReference tempChar;
+	tempChar.sprite = M22Engine::CHARACTERS_ARRAY[_charindex].sprites[_outfitindex][_emotionindex];
+	SDL_QueryTexture(tempChar.sprite, NULL, NULL, &tempChar.rect.w, &tempChar.rect.h);
+	tempChar.rect.x = _xPosition;
+	tempChar.rect.y = 0;
+	if(_brutal)
+	{
+		tempChar.alpha = 255.0f;
+	};
+	M22Graphics::activeCharacters.push_back(tempChar);
 	return;
 };
 
@@ -173,7 +188,12 @@ void M22Graphics::UpdateCharacters(void)
 		{
 			if(M22Graphics::activeCharacters[i].alpha < 254.5f)
 			{
-				M22Graphics::activeCharacters[i].alpha = M22Graphics::Lerp(M22Graphics::activeCharacters[i].alpha, 255.0f, DEFAULT_LERP_SPEED*3);
+				M22Graphics::activeCharacters[i].alpha = M22Graphics::Lerp(M22Graphics::activeCharacters[i].alpha, 255.0f, DEFAULT_LERP_SPEED);
+				SDL_SetTextureAlphaMod(M22Graphics::activeCharacters[i].sprite, Uint8(M22Graphics::activeCharacters[i].alpha) );
+			}
+			else
+			{
+				M22Graphics::activeCharacters[i].alpha = 255.0f;
 				SDL_SetTextureAlphaMod(M22Graphics::activeCharacters[i].sprite, Uint8(M22Graphics::activeCharacters[i].alpha) );
 			};
 		}
@@ -181,7 +201,7 @@ void M22Graphics::UpdateCharacters(void)
 		{
 			if(M22Graphics::activeCharacters[i].alpha > 0.5f)
 			{
-				M22Graphics::activeCharacters[i].alpha = M22Graphics::Lerp(M22Graphics::activeCharacters[i].alpha, 0.0f, DEFAULT_LERP_SPEED*3);
+				M22Graphics::activeCharacters[i].alpha = M22Graphics::Lerp(M22Graphics::activeCharacters[i].alpha, 0.0f, DEFAULT_LERP_SPEED);
 				SDL_SetTextureAlphaMod(M22Graphics::activeCharacters[i].sprite, Uint8(M22Graphics::activeCharacters[i].alpha) );
 			}
 			else
@@ -212,7 +232,10 @@ void M22Graphics::DrawArrow(int ScrW, int ScrH)
 		By multiplying by the new resolution, we can get the scale/size/position at any scale (but not aspect)
 	*/
 	SDL_Rect tempSrc = { 22*((int)std::floor(M22Graphics::arrow.frame)+1), 0, 22, 22};
-	SDL_Rect tempDst = { int(ScrW*0.9625f), int(ScrH*0.9541666666666667f), int(ScrW*0.034375f), int(ScrH*0.0458333333333333f)};
+	SDL_Rect tempDst = { 616, 458, 0, 0};
+	SDL_QueryTexture(M22Graphics::arrow.sprite, NULL, NULL, &tempDst.w, &tempDst.h);
+
+	tempDst.w /= 7;
 
 	SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::arrow.sprite, &tempSrc, &tempDst);
 	return;

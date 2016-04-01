@@ -11,3 +11,4 @@ graphics/backgrounds/school_staff_day.webp
 graphics/backgrounds/yuujis_dad.webp
 graphics/backgrounds/snow_road_day.webp
 graphics/backgrounds/saki_punch_indoors.webp
+graphics/backgrounds/dining_room_day.webp
