@@ -1,6 +1,15 @@
 #M22/Snow Sakura++ Changelog
 ###NOTE: Please don't take this changelog as gospel; I hardly ever remember what I add per version.
 
+#### v0.3.1
+
+- Fixed options menu inaccuracies
+- Added windowed/fullscreen to options menu
+- Added options file saving/loading/updating functions
+	* Also support for fullscreen/windowed-borderless
+- Reverted back to OpenGL...
+	* The high CPU-usage is caused by whatever method of framelimiting/VSync they use. SDL_Delay(1000/60) brings CPU usage back to normal with no damage to framerate
+
 #### v0.3.0
 
 - Added commenting to the M22 scripts

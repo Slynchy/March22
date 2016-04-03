@@ -2,8 +2,8 @@
 
 std::vector<Mix_Chunk*> M22Sound::SOUND_FX;
 std::vector<Mix_Music*> M22Sound::MUSIC;
-float M22Sound::MUSIC_VOLUME = DEFAULT_MUSIC_VOLUME_MULT;
-float M22Sound::SFX_VOLUME = (float)DEFAULT_SFX_VOLUME_MULT;
+float* M22Sound::MUSIC_VOLUME = &M22Engine::OPTIONS.MUSIC_VOLUME;
+float* M22Sound::SFX_VOLUME = &M22Engine::OPTIONS.SFX_VOLUME;
 int M22Sound::currentTrack = 0;
 std::vector<std::string> M22Sound::MUSIC_NAMES;
 std::vector<std::string> M22Sound::SFX_NAMES;

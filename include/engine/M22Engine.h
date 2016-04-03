@@ -5,7 +5,7 @@
 #define DEFAULT_SFX_VOLUME_MULT 0.35f
 #define DEFAULT_LERP_SPEED 0.15f
 
-#define RENDERING_API		"direct3d"
+#define RENDERING_API		"opengl"
 #define BILINEAR_FILTERING	"1"
 
 #include "SDL.h"
@@ -23,6 +23,30 @@ class M22Engine
 {
 	private:
 	public:
+		enum WINDOW_STATES
+		{
+			WINDOWED,
+			FULLSCREEN,
+			FULLSCREEN_BORDERLESS,
+			NUM_OF_STATES
+		};
+		struct OPTIONS_STRUCTURE
+		{
+			Uint8 WINDOWED;
+			float AUTO_SPEED;
+			float MUSIC_VOLUME;
+			float SFX_VOLUME;
+			OPTIONS_STRUCTURE()
+			{
+				WINDOWED = 0;
+				AUTO_SPEED = 1.0f;
+				MUSIC_VOLUME = DEFAULT_MUSIC_VOLUME_MULT;
+				SFX_VOLUME = DEFAULT_SFX_VOLUME_MULT;
+			};
+		};
+
+		static OPTIONS_STRUCTURE OPTIONS;
+
 		struct Character
 		{
 			std::string name;
@@ -60,15 +84,17 @@ class M22Engine
 		static bool skipping;
 		
 		static bool QUIT;
-		static bool FULLSCREEN;
 
 		static int GetCharacterIndexFromName(std::string, bool _dialogue = false);
 		static int GetOutfitIndexFromName(std::string, int);
 		static int GetEmotionIndexFromName(std::string, int _charIndex);
 
 		static void ResetGame(void);
-
 		static void StartGame(void);
+
+		static void SaveOptions(void);
+		static void LoadOptions(void);
+		static void UpdateOptions(void);
 
 		static Vec2 ScrSize;
 
@@ -112,6 +138,7 @@ class M22Graphics
 		static std::vector<SDL_Texture*> mainMenuBackgrounds;
 		static M22Engine::Background activeMenuBackground;
 		static M22Engine::Background menuLogo;
+		static SDL_Texture* OPTION_BAR;
 
 		static SDL_Texture* BLACK_TEXTURE;
 
@@ -147,8 +174,8 @@ class M22Sound
 		static std::vector<Mix_Music*> MUSIC;
 		static std::vector<std::string> MUSIC_NAMES;
 		static std::vector<std::string> SFX_NAMES;
-		static float MUSIC_VOLUME;
-		static float SFX_VOLUME;
+		static float* MUSIC_VOLUME;
+		static float* SFX_VOLUME;
 		static int currentTrack;
 
 		static short int PlaySting(short int);

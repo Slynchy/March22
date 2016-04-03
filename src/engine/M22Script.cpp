@@ -43,8 +43,7 @@ short int M22Script::LoadScriptToCurrent(const char* _filename)
 
 /*
 	An extremely slow function (comparitively) for drawing decent-looking text.
-	Goes from 9999+ FPS to 7000FPS when uncapped.
-	Works fine for visual novels though, since there's two pieces of text drawn at any time.
+	Draws text then a "shadow" 1px adjacent @ 640x480
 */
 void M22Script::DrawCurrentLine(int ScrW, int ScrH)
 {

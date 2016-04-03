@@ -20,7 +20,7 @@
 #define DEBUG_ENABLED false
 
 #define WINDOW_TITLE		"March22 Engine Prototype "
-#define VERSION				"v0.3.0"
+#define VERSION				"v0.3.1"
 
 #define FPS 60
 
@@ -41,6 +41,20 @@ int main(int argc, char* argv[])
 {
 	srand((unsigned int)time(NULL));
 
+	std::fstream input("OPTIONS.SAV");
+	if(!input)
+	{
+		printf("OPTIONS.SAV doesn't exist; creating...\n");
+		M22Engine::SaveOptions();
+	}
+	else
+	{
+		input.close();
+		printf("Loading OPTIONS.SAV\n");
+		M22Engine::LoadOptions();
+		M22Engine::UpdateOptions();
+	};
+
 	InitializeSDL();
 	InitializeSound();
 	M22Engine::InitializeM22(int(M22Engine::ScrSize.x()),int(M22Engine::ScrSize.y()));
@@ -53,7 +67,7 @@ int main(int argc, char* argv[])
 	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[M22Interface::INTERFACES::INGAME_INTRFC], 3, 0, "graphics/interface/GAME_BUTTONS.txt", true, M22Interface::INTERFACES::INGAME_INTRFC);
 	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[M22Interface::INTERFACES::MENU_BUTTON_INTRFC], 4, 0, "graphics/interface/MENU_BUTTONS.txt", true, M22Interface::INTERFACES::MENU_BUTTON_INTRFC);
 	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[M22Interface::INTERFACES::MAIN_MENU_INTRFC], 3, 0, "graphics/mainmenu/BUTTONS.txt", false, M22Interface::INTERFACES::MAIN_MENU_INTRFC);
-	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[M22Interface::INTERFACES::OPTIONS_MENU_INTRFC], 4, 0, "graphics/optionsmenu/BUTTONS.txt", true, M22Interface::INTERFACES::OPTIONS_MENU_INTRFC);
+	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[M22Interface::INTERFACES::OPTIONS_MENU_INTRFC], 7, 0, "graphics/optionsmenu/BUTTONS.txt", true, M22Interface::INTERFACES::OPTIONS_MENU_INTRFC);
 
 	SDL_SetRenderDrawColor(M22Engine::SDL_RENDERER, 255, 255, 255, 255);
 
@@ -65,7 +79,7 @@ int main(int argc, char* argv[])
 	{
 		std::string tempPath = "sfx/music/MENU.OGG";
 		M22Sound::ChangeMusicTrack(tempPath);
-		M22Interface::activeInterfaces.push_back(&M22Interface::storedInterfaces[2]);
+		M22Interface::activeInterfaces.push_back(&M22Interface::storedInterfaces[M22Interface::INTERFACES::MAIN_MENU_INTRFC]);
 	};
 
 	while( !M22Engine::QUIT )
@@ -112,7 +126,8 @@ int main(int argc, char* argv[])
 
 		M22Engine::LMB_Pressed = false;
 		SDL_RenderPresent(M22Engine::SDL_RENDERER);
-		if(RENDERING_API == "direct3d") SDL_Delay(1000/FPS);
+		//if(RENDERING_API == "direct3d" || RENDERING_API == "opengl") 
+		SDL_Delay(1000/FPS);
 	};
 
 	Shutdown();
@@ -147,13 +162,17 @@ short int InitializeSDL()
 	std::string tempTitle = WINDOW_TITLE;
 	tempTitle += VERSION;
 
-	if(M22Engine::FULLSCREEN == false)
+	if(M22Engine::OPTIONS.WINDOWED == M22Engine::WINDOW_STATES::FULLSCREEN)
 	{
-		M22Engine::SDL_SCREEN = SDL_CreateWindow(tempTitle.c_str(), (int)ScrPos.x(), (int)ScrPos.y(), (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y(), SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
+		M22Engine::SDL_SCREEN = SDL_CreateWindow(tempTitle.c_str(), (int)ScrPos.x(), (int)ScrPos.y(), (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y(), SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
+	}
+	else if(M22Engine::OPTIONS.WINDOWED == M22Engine::WINDOW_STATES::FULLSCREEN_BORDERLESS)
+	{
+		M22Engine::SDL_SCREEN = SDL_CreateWindow(tempTitle.c_str(), (int)ScrPos.x(), (int)ScrPos.y(), (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y(), SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
 	}
 	else
 	{
-		M22Engine::SDL_SCREEN = SDL_CreateWindow(tempTitle.c_str(), (int)ScrPos.x(), (int)ScrPos.y(), (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y(), SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
+		M22Engine::SDL_SCREEN = SDL_CreateWindow(tempTitle.c_str(), (int)ScrPos.x(), (int)ScrPos.y(), (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y(), SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
 	};
 
     M22Engine::SDL_RENDERER = SDL_CreateRenderer(M22Engine::SDL_SCREEN, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
@@ -163,10 +182,9 @@ short int InitializeSDL()
 		printf( "SDL_mixer failed to init! Error: %s\n", Mix_GetError() );
 	};
 
-	Mix_VolumeMusic(int(MIX_MAX_VOLUME*M22Sound::MUSIC_VOLUME));
-	//Mix_Volume(M22Sound::MIXERS::BGM,int(MIX_MAX_VOLUME*M22Sound::MUSIC_VOLUME));
-	Mix_Volume(M22Sound::MIXERS::SFX,int(MIX_MAX_VOLUME*M22Sound::SFX_VOLUME));
-	Mix_Volume(M22Sound::MIXERS::LOOPED_SFX,int(MIX_MAX_VOLUME*M22Sound::SFX_VOLUME));
+	Mix_VolumeMusic(int(MIX_MAX_VOLUME* *M22Sound::MUSIC_VOLUME));
+	Mix_Volume(M22Sound::MIXERS::SFX,int(MIX_MAX_VOLUME* *M22Sound::SFX_VOLUME));
+	Mix_Volume(M22Sound::MIXERS::LOOPED_SFX,int(MIX_MAX_VOLUME* *M22Sound::SFX_VOLUME));
 
 	if( TTF_Init() < 0 )
     {

@@ -1,6 +1,7 @@
 #include "M22Engine.h"
 
 M22Engine::GAMESTATES M22Engine::GAMESTATE = M22Engine::GAMESTATES::INGAME;
+M22Engine::OPTIONS_STRUCTURE  M22Engine::OPTIONS;
 SDL_Window* M22Engine::SDL_SCREEN = NULL;
 SDL_Renderer *M22Engine::SDL_RENDERER = NULL;
 SDL_Event M22Engine::SDL_EVENTS;
@@ -14,7 +15,6 @@ Vec2 M22Engine::MousePos;
 bool M22Engine::LMB_Pressed;
 bool M22Engine::QUIT = false;
 bool M22Engine::skipping = false;
-bool M22Engine::FULLSCREEN = false;
 Uint32 M22Engine::last = 0, M22Engine::DELTA_TIME = 0;
 Uint32 M22Engine::TIMER_CURR = 0, M22Engine::TIMER_TARGET = 0;
 
@@ -36,7 +36,8 @@ void M22Engine::StartGame(void)
 			Mix_FadeOutMusic(2000);	
 			fadeout = true;
 		};
-		if(RENDERING_API == "direct3d") SDL_Delay(1000/60);
+		//if(RENDERING_API == "direct3d") 
+		SDL_Delay(1000/60);
 	};
 	SDL_SetTextureAlphaMod( M22Graphics::BLACK_TEXTURE, 0 );
 	SDL_SetTextureAlphaMod( M22Graphics::activeMenuBackground.sprite, 0 );
@@ -50,7 +51,7 @@ void M22Engine::StartGame(void)
 short int M22Engine::InitializeM22(int ScrW, int ScrH)
 {
 	printf("Initializing M22...\n");
-	
+
 	printf("Loading CHARACTER_NAMES...\n");
 	std::fstream input("scripts/CHARACTER_NAMES.txt");
 	int length;
@@ -284,5 +285,49 @@ void M22Engine::ResetGame(void)
 	M22Interface::storedInterfaces[M22Interface::INTERFACES::MAIN_MENU_INTRFC].alpha = 0;
 	M22Interface::activeInterfaces.push_back(&M22Interface::storedInterfaces[M22Interface::INTERFACES::MAIN_MENU_INTRFC]);
 	M22Engine::GAMESTATE = M22Engine::GAMESTATES::MAIN_MENU;
+	return;
+};
+
+void M22Engine::LoadOptions(void)
+{
+	std::ifstream input("OPTIONS.SAV", std::ios::binary | std::ios::in);
+	if(input)
+	{
+		input.read( (char*) (&M22Engine::OPTIONS), sizeof( M22Engine::OPTIONS_STRUCTURE ) );
+		input.close();
+	};
+	return;
+};
+
+void M22Engine::UpdateOptions(void)
+{
+	switch(M22Engine::OPTIONS.WINDOWED)
+	{
+		case M22Engine::WINDOW_STATES::WINDOWED:
+			SDL_SetWindowFullscreen(M22Engine::SDL_SCREEN, 0);
+			break;
+		case M22Engine::WINDOW_STATES::FULLSCREEN:
+			SDL_SetWindowFullscreen(M22Engine::SDL_SCREEN, SDL_WINDOW_FULLSCREEN);
+			break;
+		case M22Engine::WINDOW_STATES::FULLSCREEN_BORDERLESS:
+			SDL_SetWindowFullscreen(M22Engine::SDL_SCREEN, SDL_WINDOW_FULLSCREEN_DESKTOP );
+			break;
+		default:
+			break;
+	};
+	Mix_VolumeMusic(int(MIX_MAX_VOLUME* *M22Sound::MUSIC_VOLUME));
+	Mix_Volume(M22Sound::MIXERS::SFX,int(MIX_MAX_VOLUME* *M22Sound::SFX_VOLUME));
+	Mix_Volume(M22Sound::MIXERS::LOOPED_SFX,int(MIX_MAX_VOLUME* *M22Sound::SFX_VOLUME));
+	return;
+};
+
+void M22Engine::SaveOptions(void)
+{
+	std::ofstream output("OPTIONS.SAV", std::ios::binary | std::ios::out);
+	if(output)
+	{
+		output.write( reinterpret_cast <const char*> (&M22Engine::OPTIONS), sizeof(M22Engine::OPTIONS_STRUCTURE) );
+		output.close();
+	};
 	return;
 };

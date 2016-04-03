@@ -11,6 +11,7 @@ std::vector<SDL_Texture*> M22Graphics::mainMenuBackgrounds;
 M22Engine::Background M22Graphics::activeMenuBackground;
 M22Engine::Background M22Graphics::menuLogo;
 SDL_Texture* M22Graphics::BLACK_TEXTURE;
+SDL_Texture* M22Graphics::OPTION_BAR;
 
 void M22Graphics::FadeToBlackFancy(void)
 {
@@ -28,7 +29,8 @@ void M22Graphics::FadeToBlackFancy(void)
 			Mix_FadeOutMusic(2000);	
 			fadeout = true;
 		};
-		if(RENDERING_API == "direct3d") SDL_Delay(1000/60);
+		//if(RENDERING_API == "direct3d") 
+		SDL_Delay(1000/60);
 	};
 	for(size_t i = 0; i < M22Graphics::backgroundIndex.size(); i++)
 	{
@@ -38,7 +40,7 @@ void M22Graphics::FadeToBlackFancy(void)
 			M22Engine::ACTIVE_BACKGROUNDS[1].sprite = NULL;
 		};
 	};
-	SDL_SetTextureAlphaMod( M22Graphics::BLACK_TEXTURE, 0 );
+	SDL_SetTextureAlphaMod( M22Graphics::BLACK_TEXTURE, 255 );
 	M22Interface::DRAW_TEXT_AREA = true;
 	return;
 };

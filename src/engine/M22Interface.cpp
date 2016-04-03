@@ -189,11 +189,6 @@ void M22Interface::DrawTextArea(int _ScrSizeX, int _ScrSizeY)
 
 		M22Graphics::DrawArrow(width, height);
 		M22Script::DrawCurrentLine(width, height);
-		M22Interface::DrawActiveInterfacesButtons();
-
-		SDL_SetRenderTarget(M22Engine::SDL_RENDERER, NULL);
-
-		SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Interface::ChatBoxRenderer, NULL, NULL);
 		for(size_t i = 0; i < M22Interface::activeInterfaces.size(); i++)
 		{
 			if(M22Interface::activeInterfaces[i]->spriteSheet != NULL)
@@ -201,6 +196,11 @@ void M22Interface::DrawTextArea(int _ScrSizeX, int _ScrSizeY)
 				SDL_RenderCopy( M22Engine::SDL_RENDERER, M22Interface::activeInterfaces[i]->spriteSheet, NULL, NULL);
 			};
 		};
+		M22Interface::DrawActiveInterfacesButtons();
+
+		SDL_SetRenderTarget(M22Engine::SDL_RENDERER, NULL);
+
+		SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Interface::ChatBoxRenderer, NULL, NULL);
 		SDL_SetRenderDrawColor(M22Engine::SDL_RENDERER, 255,255,255,255);
 	};
 	return;
@@ -248,7 +248,7 @@ void M22Interface::UpdateActiveInterfaces(int _ScrSizeX, int _ScrSizeY)
 						M22Sound::PlaySting("sfx/stings/buttonclick.OGG", true);
 						M22Engine::StartGame();
 					}
-					else if(M22Interface::activeInterfaces[i]->buttons[k].name == "QUIT")
+					else if(M22Interface::activeInterfaces[i]->buttons[k].name == "QUIT" || M22Interface::activeInterfaces[i]->buttons[k].name == "QUIT_GAME")
 					{
 						M22Sound::PlaySting("sfx/stings/buttonclick.OGG", true);
 						M22Graphics::FadeToBlackFancy();
@@ -263,14 +263,50 @@ void M22Interface::UpdateActiveInterfaces(int _ScrSizeX, int _ScrSizeY)
 					else if(M22Interface::activeInterfaces[i]->buttons[k].name == "OPTIONS")
 					{
 						M22Sound::PlaySting("sfx/stings/buttonclick.OGG", true);
-						M22Interface::activeInterfaces[i]->buttons[k].state = M22Interface::BUTTON_STATES::CLICKED;
+						M22Interface::activeInterfaces.clear();
+						M22Interface::menuOpen = false;
 						M22Interface::activeInterfaces.push_back(&M22Interface::storedInterfaces[M22Interface::INTERFACES::OPTIONS_MENU_INTRFC]);
-						M22Sound::StopMusic();
+						return;
 					}
 					else if(M22Interface::activeInterfaces[i]->buttons[k].name == "RETURN_TO_TITLE")
 					{
 						M22Sound::PlaySting("sfx/stings/buttonclick.OGG", true);
 						M22Engine::ResetGame();
+						return;
+					}
+					else if(M22Interface::activeInterfaces[i]->buttons[k].name == "FULLSCREEN")
+					{
+						M22Sound::PlaySting("sfx/stings/buttonclick.OGG", true);
+						M22Engine::OPTIONS.WINDOWED = M22Engine::WINDOW_STATES::FULLSCREEN_BORDERLESS;
+						M22Interface::activeInterfaces[i]->buttons[k].state = M22Interface::BUTTON_STATES::CLICKED;
+						return;
+					}
+					else if(M22Interface::activeInterfaces[i]->buttons[k].name == "WINDOWED")
+					{
+						M22Sound::PlaySting("sfx/stings/buttonclick.OGG", true);
+						M22Engine::OPTIONS.WINDOWED = M22Engine::WINDOW_STATES::WINDOWED;
+						M22Interface::activeInterfaces[i]->buttons[k].state = M22Interface::BUTTON_STATES::CLICKED;
+						return;
+					}
+					else if(M22Interface::activeInterfaces[i]->buttons[k].name == "CANCEL_SHADED" || M22Interface::activeInterfaces[i]->buttons[k].name == "OK_SHADED")
+					{
+						M22Sound::PlaySting("sfx/stings/buttonclick.OGG", true);
+						if(M22Interface::activeInterfaces[i]->buttons[k].name == "OK_SHADED")
+						{
+							M22Engine::SaveOptions();
+							M22Engine::UpdateOptions();
+						};
+						M22Interface::activeInterfaces.clear();
+						if(M22Engine::GAMESTATE == M22Engine::GAMESTATES::INGAME)
+						{
+							M22Interface::activeInterfaces.push_back(&M22Interface::storedInterfaces[M22Interface::INTERFACES::INGAME_INTRFC]);
+							M22Interface::activeInterfaces.push_back(&M22Interface::storedInterfaces[M22Interface::INTERFACES::MENU_BUTTON_INTRFC]);
+							M22Interface::menuOpen = true;
+						}
+						else if(M22Engine::GAMESTATE == M22Engine::GAMESTATES::MAIN_MENU)
+						{
+							M22Interface::activeInterfaces.push_back(&M22Interface::storedInterfaces[M22Interface::INTERFACES::MAIN_MENU_INTRFC]);
+						};
 						return;
 					}
 					else
@@ -314,6 +350,26 @@ void M22Interface::UpdateActiveInterfaces(int _ScrSizeX, int _ScrSizeY)
 		if(M22Interface::activeInterfaces.size() > 1 && M22Engine::GAMESTATE == M22Engine::GAMESTATES::INGAME)
 		{
 			M22Interface::activeInterfaces.pop_back();
+		};
+	};
+
+
+	for(size_t i = 0; i < M22Interface::activeInterfaces.size(); i++)
+	{
+		for(size_t k = 0; k < M22Interface::activeInterfaces[i]->buttons.size(); k++)
+		{
+			if(M22Interface::activeInterfaces[i]->buttons[k].name == "WINDOWED" && M22Engine::OPTIONS.WINDOWED == M22Engine::WINDOW_STATES::WINDOWED)
+			{
+				M22Interface::activeInterfaces[i]->buttons[k].state = M22Interface::BUTTON_STATES::CLICKED;
+				i = INT_MAX;
+				break;
+			};
+			if(M22Interface::activeInterfaces[i]->buttons[k].name == "FULLSCREEN" && M22Engine::OPTIONS.WINDOWED == M22Engine::WINDOW_STATES::FULLSCREEN_BORDERLESS)
+			{
+				M22Interface::activeInterfaces[i]->buttons[k].state = M22Interface::BUTTON_STATES::CLICKED;
+				i = INT_MAX;
+				break;
+			};
 		};
 	};
 
