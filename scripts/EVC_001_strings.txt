@@ -3,7 +3,6 @@ DrawBackground mystery_girl_s
 PlayMusic MP03
 Girl: "Do you know about the Snow Sakura?"
 Snow Sakura?
-Goto 622
 Girl: "Once a year, its flowers bloom in the chill of winter."
 Even though it's a cherry tree?
 Girl: "Yes, even though it's a cherry tree."
@@ -26,8 +25,9 @@ PlayLoopedSting alarm
 Beep beep beep beep! Beep beep beep beep!
 Yuuji: "Ugh..."
 It was the familiar sound of my alarm clock.
-I opened my eyes sleepily.
+PlaySting alarmclick
 StopLoopedStings
+I opened my eyes sleepily.
 DrawBackground bedroom_day
 PlayMusic MP02
 Yuuji: "........."
@@ -35,6 +35,7 @@ I don't recognize this ceiling.
 I don't recognize this room, either.
 For a moment I thought I was still dreaming.
 I looked out the window to make sure.
+SetActiveTransition SwipeToLeft
 DrawBackground snow_road_day
 There was snow as far as the eye could see.
 It drifted lightly from above.
@@ -44,6 +45,7 @@ Just a few days ago, I was in Tokyo.
 The warm air, the tall rows of buildings...
 But...
 Why am I now in this land of snow?
+SetActiveTransition SwipeToRight
 DrawBackground bedroom_day
 Yuuji: "I just don't get it..."
 I buried myself under my blanket once again in hopes that this really would turn out to be a dream.
@@ -164,6 +166,7 @@ Uncle was standing before me.
 ClearCharacters
 DrawCharacter Takeaki Indoors NORMAL 0
 Takeaki: "YUUJI!! ARE YOU AWAKE!?"
+PlaySting pickup
 ClearCharacters
 I could have sworn I heard some ribs break when he hugged me.
 Yuuji: "Urgh!"
@@ -192,8 +195,8 @@ Yuuji: "Whew..."
 I hesitantly sat on the floor.
 Takeaki: "There's no need to hold back. This is just a shabby old shut-down inn. Let everything hang out!"
 ClearCharactersBrutal
-DrawCharacter Saki Indoors_1 DETERMINED_HAPPY 200
-DrawCharacter Takeaki Indoors HAPPY -200
+DrawCharacter Saki Indoors_1 DETERMINED_HAPPY 150
+DrawCharacter Takeaki Indoors HAPPY -150
 Saki: "You shouldn't talk about your own home like that!"
 Saki sat down, grinning sarcastically.
 Yuuji: "Oh? The inn is closed?"
@@ -201,22 +204,23 @@ I thought it was only temporarily closed for the winter months.
 Saki: "I didn't tell you?"
 I haven't heard a thing.
 ClearCharactersBrutal
-DrawCharacter Saki Indoors_1 DETERMINED_HAPPY 200
-DrawCharacter Takeaki Indoors NORMAL -200
+DrawCharacter Saki Indoors_1 DETERMINED_HAPPY 150
+DrawCharacter Takeaki Indoors NORMAL -150
 Takeaki: "We just weren't getting any customers, so I decided to close up shop last summer."
 Saki: "The waitress who worked here quit as well."
 Saki: "So now Dad and I live here all alone."
 My aunt passed away ten years ago.
 So I guess with me here, we're a family of three.
-//PlaySting phone_ringing
+PlayLoopedSting phone_ringing_2
 Riiiiing!
 Takeaki: "Hm? Saki, could you get the phone, please?"
 Saki: "Okay."
 ClearCharactersBrutal
-DrawCharacter Takeaki Indoors NORMAL -200
+DrawCharacter Takeaki Indoors NORMAL -150
 Saki left the room.
 ClearCharactersBrutal
-DrawCharacter Takeaki Indoors DETERMINED_DRUNK -200
+DrawCharacter Takeaki Indoors DETERMINED_DRUNK -150
+StopLoopedStings
 Takeaki: "So, what do you think?"
 Yuuji: "Huh? About what?"
 Takeaki: "About Saki! Don't you think she's grown?"
@@ -226,16 +230,16 @@ Takeaki: "I don't know who she takes after, but her breasts sure haven't grown a
 PlaySting whack
 Bonk!
 ClearCharactersBrutal
-DrawCharacter Takeaki Indoors SAD -200
+DrawCharacter Takeaki Indoors SAD -150
 Takeaki: "Gurh!?"
 ClearCharactersBrutal
-DrawCharacter Saki Indoors_1 ANGRY_B 200
-DrawCharacter Takeaki Indoors SAD -200
+DrawCharacter Saki Indoors_1 ANGRY_B 150
+DrawCharacter Takeaki Indoors SAD -150
 Saki: "Don't be so rude!!"
 Saki: "Anyway, the phone! It's for you!"
 Takeaki: "Owww!!"
 ClearCharactersBrutal
-DrawCharacter Saki Indoors_1 ANGRY_B 200
+DrawCharacter Saki Indoors_1 ANGRY_B 150
 Uncle left the room, rubbing his head.
 ClearCharactersBrutal
 DrawCharacter Saki Indoors_1 ANGRY 0
@@ -262,6 +266,7 @@ Saki: "There are trains here, you know! Though they only leave a few times a day
 Yes, this town was about as far in the boondocks as you could get.
 Yukito town, population 88.
 It's actually more of a village than a town.
+PlaySting footsteps
 Step step step step...
 Uncle came back.
 ClearCharactersBrutal
@@ -279,6 +284,7 @@ Saki: "You have three seconds."
 Yuuji: "........."
 ClearCharactersBrutal
 DrawBackground outside_house_day
+PlayMusic MP14
 I put on my thick down jacket and went outside.
 Yuuji: "It's cold!"
 DrawCharacter Saki Outdoors NORMAL 0
@@ -292,6 +298,7 @@ Yuuji: "Yes, ma'am."
 I followed Saki along the snowy path.
 DrawBackground BLACK
 DrawBackground train_day
+PlayLoopedSting train_ambience
 Rumble rumble... Rumble rumble...
 It takes about an hour to get to school by train.
 This train looks really old and shabby.
@@ -301,6 +308,7 @@ There's even an old gas heater inside the car.
 It looks like I've stepped into some kind of alternate reality.
 Will I be able to survive in this world?
 DrawBackground BLACK
+StopLoopedStings
 DrawBackground school_exterior_day
 I arrived at school.
 The school building looks decent enough.
@@ -331,6 +339,7 @@ This is a very strange world indeed.
 Saki: "Come on, let's go!"
 Yuuji: "Yeah..."
 DrawBackground school_staff_day
+StopMusic
 We entered the faculty office.
 The smell of burning kerosene filled the air.
 DrawCharacter Saki Indoors_1 HAPPY 0
@@ -341,6 +350,7 @@ DrawCharacter Saki Indoors_1 NORMAL 0
 Saki: "Teacher! Miss Misato!"
 ClearCharacters
 DrawCharacter Misato Indoors SHOCK_2 0
+PlayMusic MP05
 Unknown: "Y-yes!? I'm awake!! I'm not sleeping!!"
 A surprised voice came from the far side of the room.
 ClearCharacters
@@ -350,6 +360,7 @@ ClearCharacters
 DrawCharacter Misato Indoors HAPPY 0
 Misato: "Oh, yes, I see, I see, oh my..."
 ClearCharacters
+PlaySting crash_3
 Thump! Crash!
 There was a sudden crash, and the dull "thud" of a body hitting the ground.
 DrawCharacter Misato Indoors SHY_6 0
@@ -461,6 +472,8 @@ Misato: "Okay! Be careful!"
 I said my parting words and left the faculty office.
 DrawBackground school_corridor_day
 DrawCharacter Saki Indoors_1 NORMAL 0
+StopMusic
+PlayMusic MP14
 Saki: "Five minutes until the train leaves!"
 Yuuji: "Five minutes!?"
 Saki: "If we dash, we'll make it in time!"
@@ -469,10 +482,12 @@ She grabbed my arm.
 ClearCharacters
 DrawCharacter Saki Indoors_1 DETERMINED 0
 Saki: "Run for it!"
+PlaySting footsteps_many_quick
 Step step step step step...
 Yuuji: "AAAAAHH!!"
 DrawBackground BLACK
 DrawBackground train_day
+PlayLoopedSting train_ambience
 Huff, puff, wheeze...
 I'm exhausted!
 DrawCharacter Saki Outdoors NORMAL 0
@@ -502,9 +517,12 @@ DrawCharacter Saki Outdoors SHOCK 0
 Saki: "Wha!? He's ignoring me!?"
 I've had enough of you for now...
 FadeToBlackFancy
+StopLoopedStings
+StopMusic
 ClearCharacters
 By the time we returned to the inn, the sun was already beginning to set.
 DrawBackground bedroom_night
+PlayMusic MP02
 Whew...
 I've had to walk a lot more that I'm used to since I came here.
 My feet hurt.
@@ -527,6 +545,7 @@ I bowed.
 ClearCharacters
 DrawCharacter Takeaki Indoors HAPPY 0
 Takeaki: "Hahaha! Don't worry about a thing!"
+PlaySting whack_2
 Whack!!
 Aaargh! My back!
 Takeaki: "Why don't you relax until dinner is ready? I'll call you."
@@ -545,14 +564,18 @@ There wasn't a letter or any macadamia nuts or anything.
 The label on the tape merely said "From Dad."
 He probably wants me to play it.
 Yuuji: "What the hell is he thinking, anyway?"
+PlaySting vcr_loading_tape
 I put the tape into my VCR.
 I pressed the play button.
+StopMusic
 DrawBackground static
 Frrrssshhh...
+PlayMusic MP05
 Keijiro: "Ahhh, ahhh. Testing, testing."
 Keijiro: "Is this thing even recording?"
 Keijiro: "Oh, I forgot to turn on the display."
 There was a clicking sound, and the screen suddenly changed.
+SetActiveTransition Fade
 DrawBackground yuujis_dad
 It showed a beautiful beach.
 Keijiro: "Bwahahaha! Hey, Son! It's been a while!"
@@ -596,15 +619,19 @@ This is pretty heavy stuff...
 Keijiro: "Oh, I almost forgot. One more thing..."
 Yuuji: "What!?"
 Keijiro: "This tape will self-destruct."
+SetActiveTransition SwipeToRight
+PlaySting vcr_self_destruct
 FROOOOSH!!
 DrawBackground bedroom_night
 Yuuji: "Cough, cough!!"
 Smoke billowed out of the VCR.
 Dad, you asshole!
+PlaySting door_slide_open
 Rattle rattle...
 I quickly opened the window.
 But the smoke didn't go out!
 That's right! They have double windows here!
+PlaySting door_slide_open
 Rattle rattle!
 Finally, the smoke began to dissipate outside.
 My VCR was totally destroyed.
@@ -622,6 +649,6 @@ Saki and Uncle came running into my room.
 Amidst the ruckus...
 ...my life in this noisy, exasperating snowy country had truly begun.
 FadeToBlackFancy
-//ExitGame
-MainMenu
+ExitGame
+//MainMenu
 //LoadScript EVC_002_strings.txt

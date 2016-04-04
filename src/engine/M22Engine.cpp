@@ -294,8 +294,8 @@ void M22Engine::ResetGame(void)
 	M22Interface::ResetStoredInterfaces();
 	M22Interface::menuOpen = false;
 	M22Engine::skipping = false;
-	*M22Interface::skipButtonState = M22Interface::BUTTON_STATES::RESTING;
-	*M22Interface::menuButtonState = M22Interface::BUTTON_STATES::RESTING;
+	if(M22Interface::skipButtonState) *M22Interface::skipButtonState = M22Interface::BUTTON_STATES::RESTING;
+	if(M22Interface::menuButtonState) *M22Interface::menuButtonState = M22Interface::BUTTON_STATES::RESTING;
 	SDL_SetTextureAlphaMod( M22Graphics::BLACK_TEXTURE, 0 );
 	M22Graphics::menuLogo.alpha = 0;
 	M22Graphics::activeMenuBackground.alpha = 0;

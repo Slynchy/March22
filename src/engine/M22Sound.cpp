@@ -100,7 +100,7 @@ short int M22Sound::ChangeMusicTrack(std::string _name)
 	{
 		if(_name == M22Sound::MUSIC_NAMES[i])
 		{
-			Mix_PlayMusic( M22Sound::MUSIC[i], M22Sound::MIXERS::BGM );
+			Mix_PlayMusic( M22Sound::MUSIC[i], -1 );
 			return 0;
 		};
 	};
@@ -112,7 +112,7 @@ short int M22Sound::ChangeMusicTrack(short int _position)
 {
 	if(M22Sound::MUSIC[_position])
 	{
-		Mix_PlayMusic( M22Sound::MUSIC[_position], M22Sound::MIXERS::BGM );
+		Mix_PlayMusic( M22Sound::MUSIC[_position], -1 );
 		return 0;
 	}
 	else

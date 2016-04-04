@@ -174,6 +174,19 @@ class M22Graphics
 		static SDL_Rect* wipePosition;
 		static SDL_Texture* wipeBlack;
 		static SDL_Rect wipeBlackRect;
+
+		enum TRANSITIONS
+		{
+			SWIPE_TO_RIGHT,
+			SWIPE_DOWN,
+			SWIPE_TO_LEFT,
+			FADEIN,
+			NUMBER_OF_TRANSITIONS
+		};
+
+		static const std::string TRANSITION_NAMES[NUMBER_OF_TRANSITIONS];
+
+		static Uint8 activeTransition;
 };
 
 class M22Sound
@@ -235,6 +248,7 @@ class M22Script
 			COMMENT,
 			WAIT,
 			EXITGAME,
+			SET_ACTIVE_TRANSITION,
 			EXITTOMAINMENU,
 			NARRATIVE
 		};

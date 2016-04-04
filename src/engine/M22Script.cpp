@@ -282,6 +282,19 @@ void M22Script::ChangeLine(int _newLine)
 		M22Script::ChangeLine(++_newLine);
 		return;
 	}
+	else if(LINETYPE == M22Script::LINETYPE::SET_ACTIVE_TRANSITION)
+	{
+		for(size_t i = 0; i < M22Graphics::TRANSITIONS::NUMBER_OF_TRANSITIONS; i++)
+		{
+			if(temp[1] == M22Graphics::TRANSITION_NAMES[i])
+			{
+				M22Graphics::activeTransition = i;
+				break;
+			};
+		};
+		M22Script::ChangeLine(++_newLine);
+		return;
+	}
 	else if(LINETYPE == M22Script::LINETYPE::CLEAR_CHARACTERS_BRUTAL)
 	{
 		ClearCharacters();
@@ -290,14 +303,14 @@ void M22Script::ChangeLine(int _newLine)
 	}
 	else if(LINETYPE == M22Script::LINETYPE::FADE_TO_BLACK_FANCY)
 	{
-		if(!M22Engine::skipping)
-		{
+		//if(!M22Engine::skipping)
+		//{
 			M22Graphics::FadeToBlackFancy();
-		}
-		else
-		{
-			M22Script::FadeToBlack();
-		};
+		//}
+		//else
+		//{
+		//	M22Script::FadeToBlack();
+		//};
 		M22Script::ChangeLine(++_newLine);
 		return;
 	}
@@ -432,6 +445,10 @@ M22Script::LINETYPE M22Script::CheckLineType(std::string _input)
 	else if(_input == std::string("MainMenu"))
 	{
 		return M22Script::LINETYPE::EXITTOMAINMENU;
+	}
+	else if(_input == std::string("SetActiveTransition"))
+	{
+		return M22Script::LINETYPE::SET_ACTIVE_TRANSITION;
 	}
 	else if(_input == std::string("Wait"))
 	{

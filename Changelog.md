@@ -1,6 +1,26 @@
 #M22/Snow Sakura++ Changelog
 ###NOTE: Please don't take this changelog as gospel; I hardly ever remember what I add per version.
 
+#### v0.4.4
+
+- New transition system
+	* Transitions are hard-coded, but relatively easy to add new ones
+		+ Add an entry to the TRANSITIONS enum
+		+ Add the text entry to TRANSITION_NAMES array
+		+ Add a case for it in "DrawInGame()" function, similar to others
+	* Transitions are state-driven, so there is an active transition that is used all the time
+	* Use script functions to change this
+- Added new functions to m22 script language:
+	* SetActiveTransition ( _name ) - changes the active transition method
+- Entirely ported the first script to M22 language; released a very cut-down demo to demonstrate release method
+- Known bugs:
+	* "MENU" button is not the same color as surrounding UI
+	* Many options in options menu is missing
+	* When quitting, you might quickly see a background after fading to black
+	* All buttons except "MENU" and "OPTIONS" are removed
+		+ SKIP doesn't work properly; holding shift works fine though
+		+ AUTO, SAVE, LOAD, LOG does nothing anyway
+
 #### v0.4.0
 
 - Overhauled background drawing system

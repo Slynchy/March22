@@ -20,7 +20,7 @@
 #define DEBUG_ENABLED false
 
 #define WINDOW_TITLE		"March22 Engine Prototype "
-#define VERSION				"v0.4.0"
+#define VERSION				"v0.4.4"
 
 #define FPS 60
 
@@ -290,7 +290,7 @@ short int InitializeSound()
 
 void UpdateSound()
 {
-	if( (!Mix_PlayingMusic()) && DEBUG_ENABLED == false)
+	if( !Mix_PlayingMusic() )
 	{
 		M22Sound::ChangeMusicTrack(M22Sound::currentTrack);
 	};

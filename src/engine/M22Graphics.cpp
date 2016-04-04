@@ -19,6 +19,8 @@ float M22Graphics::NEXT_BACKGROUND_ALPHA = 0.0f;
 SDL_Rect* M22Graphics::wipePosition;
 SDL_Texture* M22Graphics::wipeBlack;
 SDL_Rect M22Graphics::wipeBlackRect;
+Uint8 M22Graphics::activeTransition = M22Graphics::TRANSITIONS::SWIPE_TO_RIGHT;
+const std::string M22Graphics::TRANSITION_NAMES[M22Graphics::TRANSITIONS::NUMBER_OF_TRANSITIONS] = { "SwipeToRight", "SwipeDown", "SwipeToLeft", "Fade" };
 
 void M22Graphics::FadeToBlackFancy(void)
 {
@@ -70,30 +72,103 @@ void M22Graphics::DrawInGame(bool _draw_black)
 		case NONE:
 			break;
 		case BACKGROUND:
-			SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, NULL, NULL);
-			SDL_SetRenderTarget(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET);
-			SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET, NULL, NULL);
-			M22Graphics::wipePosition->x += 24;
-			M22Graphics::wipeBlackRect.x = ( ( M22Graphics::wipePosition->x + 640 ) - (M22Graphics::wipeBlackRect.w/2) );
-
-			SDL_SetRenderDrawColor(M22Engine::SDL_RENDERER, 0,0,0,0);
-
-			SDL_RenderFillRect(M22Engine::SDL_RENDERER, M22Graphics::wipePosition);
-			
-			SDL_SetRenderDrawColor(M22Engine::SDL_RENDERER, 255,255,255,255);
-
-			//SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::wipeBlack, NULL, &M22Graphics::wipeBlackRect);
-
-			SDL_SetRenderTarget(M22Engine::SDL_RENDERER, NULL);
-
-			if(M22Graphics::wipePosition->x > 56)
+			switch(M22Graphics::activeTransition)
 			{
-				M22Graphics::changeQueued = NONE;
-				M22Graphics::wipePosition->x = (0 - 658);
-				SDL_SetRenderTarget(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET);
-				SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, NULL, NULL);
-				SDL_SetRenderTarget(M22Engine::SDL_RENDERER, NULL);
-				M22Script::ChangeLine(++M22Script::currentLineIndex);
+				case M22Graphics::TRANSITIONS::SWIPE_TO_RIGHT:
+					SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, NULL, NULL);
+					SDL_SetRenderTarget(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET);
+					SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET, NULL, NULL);
+					M22Graphics::wipePosition->x += 24;
+					M22Graphics::wipeBlackRect.x = ( ( M22Graphics::wipePosition->x + 640 ) - (M22Graphics::wipeBlackRect.w/2) );
+
+					SDL_SetRenderDrawColor(M22Engine::SDL_RENDERER, 0,0,0,0);
+
+					SDL_RenderFillRect(M22Engine::SDL_RENDERER, M22Graphics::wipePosition);
+			
+					SDL_SetRenderDrawColor(M22Engine::SDL_RENDERER, 255,255,255,255);
+
+					//SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::wipeBlack, NULL, &M22Graphics::wipeBlackRect);
+
+					SDL_SetRenderTarget(M22Engine::SDL_RENDERER, NULL);
+
+					if(M22Graphics::wipePosition->x > 56)
+					{
+						M22Graphics::changeQueued = NONE;
+						M22Graphics::wipePosition->x = (0 - 658);
+						//M22Graphics::wipePosition->y = (0 - 521);
+						SDL_SetRenderTarget(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET);
+						SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, NULL, NULL);
+						SDL_SetRenderTarget(M22Engine::SDL_RENDERER, NULL);
+						M22Script::ChangeLine(++M22Script::currentLineIndex);
+					};
+					break;
+				case M22Graphics::TRANSITIONS::SWIPE_TO_LEFT:
+					SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, NULL, NULL);
+					SDL_SetRenderTarget(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET);
+					SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET, NULL, NULL);
+					if(M22Graphics::wipePosition->x == -658) M22Graphics::wipePosition->x = 658; // odd number so it can never == 0
+					M22Graphics::wipePosition->x -= 24;
+
+					SDL_SetRenderDrawColor(M22Engine::SDL_RENDERER, 0,0,0,0);
+
+					SDL_RenderFillRect(M22Engine::SDL_RENDERER, M22Graphics::wipePosition);
+			
+					SDL_SetRenderDrawColor(M22Engine::SDL_RENDERER, 255,255,255,255);
+
+					SDL_SetRenderTarget(M22Engine::SDL_RENDERER, NULL);
+
+					if(M22Graphics::wipePosition->x < -28)
+					{
+						M22Graphics::changeQueued = NONE;
+						M22Graphics::wipePosition->x = (0 - 658);
+						SDL_SetRenderTarget(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET);
+						SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, NULL, NULL);
+						SDL_SetRenderTarget(M22Engine::SDL_RENDERER, NULL);
+						M22Script::ChangeLine(++M22Script::currentLineIndex);
+					};
+					break;
+				case M22Graphics::TRANSITIONS::SWIPE_DOWN:
+					SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, NULL, NULL);
+					SDL_SetRenderTarget(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET);
+					SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET, NULL, NULL);
+					M22Graphics::wipePosition->x = 0;
+					if(M22Graphics::wipePosition->y == 0) M22Graphics::wipePosition->y -= 521; // odd number so it can never == 0
+					M22Graphics::wipePosition->y += 8;
+
+					SDL_SetRenderDrawColor(M22Engine::SDL_RENDERER, 0,0,0,0);
+
+					SDL_RenderFillRect(M22Engine::SDL_RENDERER, M22Graphics::wipePosition);
+			
+					SDL_SetRenderDrawColor(M22Engine::SDL_RENDERER, 255,255,255,255);
+
+					SDL_SetRenderTarget(M22Engine::SDL_RENDERER, NULL);
+
+					if(M22Graphics::wipePosition->y > 28)
+					{
+						M22Graphics::changeQueued = NONE;
+						//M22Graphics::wipePosition->x = (0 - 658);
+						M22Graphics::wipePosition->y = (0 - 521);
+						SDL_SetRenderTarget(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET);
+						SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, NULL, NULL);
+						SDL_SetRenderTarget(M22Engine::SDL_RENDERER, NULL);
+						M22Script::ChangeLine(++M22Script::currentLineIndex);
+					};
+					break;
+				case M22Graphics::TRANSITIONS::FADEIN:
+					M22Graphics::NEXT_BACKGROUND_ALPHA += 8.0f;
+					SDL_SetTextureAlphaMod(M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, Uint8(M22Graphics::NEXT_BACKGROUND_ALPHA));
+					SDL_SetRenderTarget(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET);
+					SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, NULL, NULL);
+					SDL_SetRenderTarget(M22Engine::SDL_RENDERER, NULL);
+					if(M22Graphics::NEXT_BACKGROUND_ALPHA > 255.0f)
+					{
+						M22Graphics::changeQueued = NONE;
+						M22Graphics::NEXT_BACKGROUND_ALPHA = 0.0f;
+						M22Script::ChangeLine(++M22Script::currentLineIndex);
+					};
+					break;
+				default:
+					break;
 			};
 			break;
 		case CHARACTER:
