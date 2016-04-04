@@ -1,6 +1,6 @@
 #include "M22Engine.h"
 
-M22Engine::GAMESTATES M22Engine::GAMESTATE = M22Engine::GAMESTATES::INGAME;
+M22Engine::GAMESTATES M22Engine::GAMESTATE = M22Engine::GAMESTATES::MAIN_MENU;
 M22Engine::OPTIONS_STRUCTURE  M22Engine::OPTIONS;
 SDL_Window* M22Engine::SDL_SCREEN = NULL;
 SDL_Renderer *M22Engine::SDL_RENDERER = NULL;
@@ -43,6 +43,25 @@ void M22Engine::StartGame(void)
 	SDL_SetTextureAlphaMod( M22Graphics::activeMenuBackground.sprite, 0 );
 	SDL_SetTextureAlphaMod( M22Graphics::menuLogo.sprite, 0 );
 	M22Interface::activeInterfaces.clear();
+	for(size_t i = 0; i < M22Graphics::backgroundIndex.size(); i++)
+	{
+		if(M22Graphics::backgroundIndex[i] == "graphics/backgrounds/BLACK.webp")
+		{
+			M22Engine::ACTIVE_BACKGROUNDS[0].sprite = M22Graphics::BACKGROUNDS[i];
+			M22Engine::ACTIVE_BACKGROUNDS[1].sprite = M22Graphics::BACKGROUNDS[i];
+
+			SDL_SetRenderTarget(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET);
+			SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUNDS[i], NULL, NULL);
+			SDL_SetRenderTarget(M22Engine::SDL_RENDERER, NULL);
+
+			SDL_SetRenderTarget(M22Engine::SDL_RENDERER, M22Graphics::NEXT_BACKGROUND_RENDER_TARGET);
+			SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUNDS[i], NULL, NULL);
+			SDL_SetRenderTarget(M22Engine::SDL_RENDERER, NULL);
+
+			SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET, NULL, NULL);
+			break;
+		};
+	};
 	M22Script::ChangeLine(0);
 	M22Interface::activeInterfaces.push_back(&M22Interface::storedInterfaces[0]);
 	return;

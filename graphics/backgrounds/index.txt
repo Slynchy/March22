@@ -12,3 +12,7 @@ graphics/backgrounds/yuujis_dad.webp
 graphics/backgrounds/snow_road_day.webp
 graphics/backgrounds/saki_punch_indoors.webp
 graphics/backgrounds/dining_room_day.webp
+graphics/backgrounds/outside_house_day.webp
+graphics/backgrounds/outside_house_night.webp
+graphics/backgrounds/train_day.webp
+graphics/backgrounds/static.webp

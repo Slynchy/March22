@@ -10,8 +10,15 @@ std::vector<M22Engine::CharacterReference> M22Graphics::activeCharacters;
 std::vector<SDL_Texture*> M22Graphics::mainMenuBackgrounds;
 M22Engine::Background M22Graphics::activeMenuBackground;
 M22Engine::Background M22Graphics::menuLogo;
-SDL_Texture* M22Graphics::BLACK_TEXTURE;
-SDL_Texture* M22Graphics::OPTION_BAR;
+SDL_Texture* M22Graphics::BLACK_TEXTURE = NULL;
+SDL_Texture* M22Graphics::OPTION_BAR = NULL;
+SDL_Texture* M22Graphics::BACKGROUND_RENDER_TARGET = NULL;
+SDL_Texture* M22Graphics::NEXT_BACKGROUND_RENDER_TARGET = NULL;
+M22Graphics::BACKGROUND_UPDATE_TYPES M22Graphics::changeQueued = M22Graphics::BACKGROUND_UPDATE_TYPES::NONE;
+float M22Graphics::NEXT_BACKGROUND_ALPHA = 0.0f;
+SDL_Rect* M22Graphics::wipePosition;
+SDL_Texture* M22Graphics::wipeBlack;
+SDL_Rect M22Graphics::wipeBlackRect;
 
 void M22Graphics::FadeToBlackFancy(void)
 {
@@ -20,7 +27,8 @@ void M22Graphics::FadeToBlackFancy(void)
 	bool fadeout = false;
 	while(fade_to_black_alpha < 250.0f || Mix_PlayingMusic())
 	{
-		fade_to_black_alpha = M22Graphics::Lerp( fade_to_black_alpha, 255.0f, DEFAULT_LERP_SPEED / 8);
+		//fade_to_black_alpha = M22Graphics::Lerp( fade_to_black_alpha, 255.0f, DEFAULT_LERP_SPEED / 8);
+		fade_to_black_alpha += 2.0f;
 		SDL_SetTextureAlphaMod( M22Graphics::BLACK_TEXTURE, Uint8(fade_to_black_alpha) );
 		M22Graphics::DrawInGame();
 		SDL_RenderPresent(M22Engine::SDL_RENDERER);
@@ -37,32 +45,123 @@ void M22Graphics::FadeToBlackFancy(void)
 		if(M22Graphics::backgroundIndex[i] == "graphics/backgrounds/BLACK.webp")
 		{
 			M22Engine::ACTIVE_BACKGROUNDS[0].sprite = M22Graphics::BACKGROUNDS[i];
-			M22Engine::ACTIVE_BACKGROUNDS[1].sprite = NULL;
+			M22Engine::ACTIVE_BACKGROUNDS[1].sprite = M22Graphics::BACKGROUNDS[i];
+
+			SDL_SetRenderTarget(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET);
+			SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUNDS[i], NULL, NULL);
+			SDL_SetRenderTarget(M22Engine::SDL_RENDERER, NULL);
+
+			SDL_SetRenderTarget(M22Engine::SDL_RENDERER, M22Graphics::NEXT_BACKGROUND_RENDER_TARGET);
+			SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUNDS[i], NULL, NULL);
+			SDL_SetRenderTarget(M22Engine::SDL_RENDERER, NULL);
+
+			SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET, NULL, NULL);
+			break;
 		};
 	};
-	SDL_SetTextureAlphaMod( M22Graphics::BLACK_TEXTURE, 255 );
 	M22Interface::DRAW_TEXT_AREA = true;
 	return;
 };
 
 void M22Graphics::DrawInGame(bool _draw_black)
 {
-	M22Graphics::DrawBackground(M22Engine::ACTIVE_BACKGROUNDS[0].sprite);
-	if(M22Engine::ACTIVE_BACKGROUNDS[1].sprite != NULL) M22Graphics::DrawBackground(M22Engine::ACTIVE_BACKGROUNDS[1].sprite);
-	if(M22Graphics::activeCharacters.size() != 0)
+	switch(M22Graphics::changeQueued)
 	{
-		for(size_t i = 0; i < M22Graphics::activeCharacters.size(); i++)
-		{
-			SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::activeCharacters[i].sprite, NULL, &M22Graphics::activeCharacters[i].rect);
-		};
+		case NONE:
+			break;
+		case BACKGROUND:
+			SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, NULL, NULL);
+			SDL_SetRenderTarget(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET);
+			SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET, NULL, NULL);
+			M22Graphics::wipePosition->x += 24;
+			M22Graphics::wipeBlackRect.x = ( ( M22Graphics::wipePosition->x + 640 ) - (M22Graphics::wipeBlackRect.w/2) );
+
+			SDL_SetRenderDrawColor(M22Engine::SDL_RENDERER, 0,0,0,0);
+
+			SDL_RenderFillRect(M22Engine::SDL_RENDERER, M22Graphics::wipePosition);
+			
+			SDL_SetRenderDrawColor(M22Engine::SDL_RENDERER, 255,255,255,255);
+
+			//SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::wipeBlack, NULL, &M22Graphics::wipeBlackRect);
+
+			SDL_SetRenderTarget(M22Engine::SDL_RENDERER, NULL);
+
+			if(M22Graphics::wipePosition->x > 56)
+			{
+				M22Graphics::changeQueued = NONE;
+				M22Graphics::wipePosition->x = (0 - 658);
+				SDL_SetRenderTarget(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET);
+				SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, NULL, NULL);
+				SDL_SetRenderTarget(M22Engine::SDL_RENDERER, NULL);
+				M22Script::ChangeLine(++M22Script::currentLineIndex);
+			};
+			break;
+		case CHARACTER:
+			M22Graphics::NEXT_BACKGROUND_ALPHA += 8.0f;
+			SDL_SetTextureAlphaMod(M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, Uint8(M22Graphics::NEXT_BACKGROUND_ALPHA));
+			SDL_SetRenderTarget(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET);
+			SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, NULL, NULL);
+			SDL_SetRenderTarget(M22Engine::SDL_RENDERER, NULL);
+			if(M22Graphics::NEXT_BACKGROUND_ALPHA > 255.0f)
+			{
+				M22Graphics::changeQueued = NONE;
+				M22Graphics::NEXT_BACKGROUND_ALPHA = 0.0f;
+			};
+			break;
+		default:
+			break;
 	};
+	
+	SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET, NULL, NULL);
+
 	if(_draw_black) SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::BLACK_TEXTURE, NULL, NULL);
-	M22Interface::DrawTextArea((int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y());
+	if(M22Graphics::changeQueued == M22Graphics::BACKGROUND_UPDATE_TYPES::NONE) M22Interface::DrawTextArea((int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y());
+	return;
+};
+
+void M22Graphics::UpdateBackgroundRenderTarget(void)
+{
+	SDL_SetRenderTarget(M22Engine::SDL_RENDERER, M22Graphics::NEXT_BACKGROUND_RENDER_TARGET);
+	SDL_SetRenderDrawColor(M22Engine::SDL_RENDERER, 0,0,0,0);
+	SDL_RenderClear(M22Engine::SDL_RENDERER);
+	
+	SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Engine::ACTIVE_BACKGROUNDS[0].sprite, NULL, NULL);
+	SDL_SetTextureAlphaMod( M22Graphics::BLACK_TEXTURE, 0 );
+
+	SDL_SetRenderTarget(M22Engine::SDL_RENDERER, NULL);
+	SDL_SetRenderDrawColor(M22Engine::SDL_RENDERER, 255,255,255,255);
+
+	M22Graphics::changeQueued = BACKGROUND;
+
+	return;
+};
+
+void M22Graphics::AddCharacterToBackgroundRenderTarget(int _charindex, int _outfitindex, int _emotionindex, int _xPosition, bool _brutal)
+{
+	int width = 640, height = 480;
+
+	SDL_SetRenderTarget(M22Engine::SDL_RENDERER, M22Graphics::NEXT_BACKGROUND_RENDER_TARGET);
+	
+	SDL_Rect* tempRect = new SDL_Rect();
+	SDL_QueryTexture(M22Engine::CHARACTERS_ARRAY[_charindex].sprites[_outfitindex][_emotionindex], NULL, NULL, &tempRect->w, &tempRect->h);
+	tempRect->x = _xPosition;
+	tempRect->y = 0;
+	SDL_SetTextureBlendMode(M22Engine::CHARACTERS_ARRAY[_charindex].sprites[_outfitindex][_emotionindex], SDL_BLENDMODE_BLEND);
+	SDL_SetTextureAlphaMod( M22Engine::CHARACTERS_ARRAY[_charindex].sprites[_outfitindex][_emotionindex], 255 );
+	SDL_RenderCopyEx(M22Engine::SDL_RENDERER, M22Engine::CHARACTERS_ARRAY[_charindex].sprites[_outfitindex][_emotionindex], NULL, tempRect, NULL, NULL, SDL_FLIP_NONE);
+
+	SDL_SetRenderTarget(M22Engine::SDL_RENDERER, NULL);
+	M22Graphics::changeQueued = CHARACTER;
+
 	return;
 };
 
 short int M22Graphics::LoadBackgroundsFromIndex(const char* _filename)
 {
+	M22Graphics::BACKGROUND_RENDER_TARGET = SDL_CreateTexture( M22Engine::SDL_RENDERER, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET , 640, 480 );
+	SDL_SetTextureBlendMode(M22Graphics::BACKGROUND_RENDER_TARGET, SDL_BLENDMODE_BLEND);
+	M22Graphics::NEXT_BACKGROUND_RENDER_TARGET = SDL_CreateTexture( M22Engine::SDL_RENDERER, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET , 640, 480 );
+	SDL_SetTextureBlendMode(M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, SDL_BLENDMODE_BLEND);
 	std::fstream input(_filename);
 	int length;
 	if(input)
@@ -140,24 +239,6 @@ void M22Graphics::UpdateBackgrounds(void)
 			SDL_SetTextureAlphaMod( M22Graphics::menuLogo.sprite, Uint8(M22Graphics::menuLogo.alpha) );
 			M22Interface::activeInterfaces[0]->FadeInAllButtons();
 		};
-	}
-	else
-	{
-		if(M22Engine::ACTIVE_BACKGROUNDS[1].sprite != NULL)
-		{
-			if(M22Engine::ACTIVE_BACKGROUNDS[1].alpha < 254)
-			{
-				M22Engine::ACTIVE_BACKGROUNDS[1].alpha = M22Graphics::Lerp(M22Engine::ACTIVE_BACKGROUNDS[1].alpha, 255.0f, DEFAULT_LERP_SPEED*1.5);
-			}
-			else
-			{
-				M22Engine::ACTIVE_BACKGROUNDS[0] = M22Engine::ACTIVE_BACKGROUNDS[1];
-				M22Engine::ACTIVE_BACKGROUNDS[1].sprite = NULL;
-				M22Engine::ACTIVE_BACKGROUNDS[1].alpha = NULL;
-			};
-		};
-		SDL_SetTextureAlphaMod( M22Engine::ACTIVE_BACKGROUNDS[0].sprite, Uint8(M22Engine::ACTIVE_BACKGROUNDS[0].alpha) );
-		SDL_SetTextureAlphaMod( M22Engine::ACTIVE_BACKGROUNDS[1].sprite, Uint8(M22Engine::ACTIVE_BACKGROUNDS[1].alpha) );
 	};
 	return;
 };

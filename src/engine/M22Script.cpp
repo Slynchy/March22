@@ -111,11 +111,18 @@ unsigned int M22Script::SplitString(const std::string &txt, std::vector<std::str
 
 void M22Script::ClearCharacters(void)
 {
-	if(M22Graphics::activeCharacters.size() == 0) return;
-	for(size_t i = 0; i < M22Graphics::activeCharacters.size(); i++)
-	{
-		M22Graphics::activeCharacters[i].clearing = true;
-	};
+	SDL_SetRenderTarget(M22Engine::SDL_RENDERER, M22Graphics::NEXT_BACKGROUND_RENDER_TARGET);
+	SDL_SetRenderDrawColor(M22Engine::SDL_RENDERER, 0,0,0,0);
+	SDL_RenderClear(M22Engine::SDL_RENDERER);
+	
+	SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Engine::ACTIVE_BACKGROUNDS[0].sprite, NULL, NULL);
+	SDL_SetTextureAlphaMod( M22Graphics::BLACK_TEXTURE, 0 );
+
+	SDL_SetRenderTarget(M22Engine::SDL_RENDERER, NULL);
+	SDL_SetRenderDrawColor(M22Engine::SDL_RENDERER, 255,255,255,255);
+
+	M22Graphics::changeQueued = M22Graphics::BACKGROUND_UPDATE_TYPES::CHARACTER;
+
 	return;
 };
 
@@ -147,17 +154,15 @@ void M22Script::ChangeLine(int _newLine)
 			tempPath += ".webp";
 			if(tempPath == M22Graphics::backgroundIndex[i])
 			{
-				if(M22Engine::ACTIVE_BACKGROUNDS[0].sprite)
-				{
-					M22Engine::ACTIVE_BACKGROUNDS[1].sprite = M22Graphics::BACKGROUNDS[i];
-					SDL_SetTextureBlendMode(M22Engine::ACTIVE_BACKGROUNDS[1].sprite, SDL_BLENDMODE_BLEND);
-					SDL_SetTextureAlphaMod( M22Engine::ACTIVE_BACKGROUNDS[1].sprite, 0 );
-				}
-				else
-				{
-					M22Engine::ACTIVE_BACKGROUNDS[0].sprite = M22Graphics::BACKGROUNDS[i];
-				};
-				M22Script::ChangeLine(++_newLine);
+				M22Engine::ACTIVE_BACKGROUNDS[0].sprite = M22Graphics::BACKGROUNDS[i];
+				SDL_SetTextureAlphaMod(M22Engine::ACTIVE_BACKGROUNDS[0].sprite, 255);
+				SDL_SetTextureAlphaMod(M22Engine::ACTIVE_BACKGROUNDS[1].sprite, 255);
+				SDL_SetTextureAlphaMod(M22Graphics::BACKGROUND_RENDER_TARGET, 255);
+				SDL_SetTextureAlphaMod(M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, 255);
+				M22Graphics::UpdateBackgroundRenderTarget();
+				SDL_SetTextureAlphaMod(M22Graphics::BACKGROUND_RENDER_TARGET, 255);
+				SDL_SetTextureAlphaMod(M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, 255);
+				//M22Script::ChangeLine(++_newLine);
 				return;
 			};
 		};
@@ -180,7 +185,7 @@ void M22Script::ChangeLine(int _newLine)
 	else if(LINETYPE == M22Script::LINETYPE::FADE_TO_BLACK)
 	{
 		M22Script::FadeToBlack();
-		M22Script::ChangeLine(++_newLine);
+		//M22Script::ChangeLine(++_newLine);
 		return;
 	}
 	else if(LINETYPE == M22Script::LINETYPE::PLAY_STING)
@@ -194,19 +199,9 @@ void M22Script::ChangeLine(int _newLine)
 	}
 	else if(LINETYPE == M22Script::LINETYPE::DRAW_CHARACTER)
 	{
-		/*M22Engine::CharacterReference tempChar;
-		int charIndex, outfitIndex, emotionIndex;
-		charIndex = M22Engine::GetCharacterIndexFromName(temp[1]);
-		outfitIndex = M22Engine::GetOutfitIndexFromName(temp[2], charIndex);
-		emotionIndex = M22Engine::GetEmotionIndexFromName(temp[3], charIndex);
-		tempChar.sprite = M22Engine::CHARACTERS_ARRAY[charIndex].sprites[outfitIndex][emotionIndex];
-		SDL_QueryTexture(tempChar.sprite, NULL, NULL, &tempChar.rect.w, &tempChar.rect.h);
-		tempChar.rect.x = atoi(temp[4].c_str());
-		tempChar.rect.y = 0;
-		M22Graphics::activeCharacters.push_back(tempChar);*/
 		int charIndex;
 		charIndex = M22Engine::GetCharacterIndexFromName(temp[1]);
-		M22Graphics::AddActiveCharacter(charIndex, M22Engine::GetOutfitIndexFromName(temp[2], charIndex), M22Engine::GetEmotionIndexFromName(temp[3], charIndex), atoi(temp[4].c_str()), false);
+		M22Graphics::AddCharacterToBackgroundRenderTarget(charIndex, M22Engine::GetOutfitIndexFromName(temp[2], charIndex), M22Engine::GetEmotionIndexFromName(temp[3], charIndex), atoi(temp[4].c_str()), false);
 		M22Script::ChangeLine(++_newLine);
 		return;
 	}
@@ -214,7 +209,7 @@ void M22Script::ChangeLine(int _newLine)
 	{
 		int charIndex;
 		charIndex = M22Engine::GetCharacterIndexFromName(temp[1]);
-		M22Graphics::AddActiveCharacter(charIndex, M22Engine::GetOutfitIndexFromName(temp[2], charIndex), M22Engine::GetEmotionIndexFromName(temp[3], charIndex), atoi(temp[4].c_str()), true);
+		M22Graphics::AddCharacterToBackgroundRenderTarget(charIndex, M22Engine::GetOutfitIndexFromName(temp[2], charIndex), M22Engine::GetEmotionIndexFromName(temp[3], charIndex), atoi(temp[4].c_str()), true);
 		M22Script::ChangeLine(++_newLine);
 		return;
 	}
@@ -272,6 +267,16 @@ void M22Script::ChangeLine(int _newLine)
 		M22Script::ChangeLine(newLinePosition);
 		return;
 	}
+	else if(LINETYPE == M22Script::LINETYPE::EXITGAME)
+	{
+		M22Engine::QUIT = true;
+		return;
+	}
+	else if(LINETYPE == M22Script::LINETYPE::EXITTOMAINMENU)
+	{
+		M22Engine::ResetGame();
+		return;
+	}
 	else if(LINETYPE == M22Script::LINETYPE::COMMENT)
 	{
 		M22Script::ChangeLine(++_newLine);
@@ -279,7 +284,7 @@ void M22Script::ChangeLine(int _newLine)
 	}
 	else if(LINETYPE == M22Script::LINETYPE::CLEAR_CHARACTERS_BRUTAL)
 	{
-		M22Graphics::activeCharacters.clear();
+		ClearCharacters();
 		M22Script::ChangeLine(++_newLine);
 		return;
 	}
@@ -419,6 +424,14 @@ M22Script::LINETYPE M22Script::CheckLineType(std::string _input)
 	else if(_input == std::string("//"))
 	{
 		return M22Script::LINETYPE::COMMENT;
+	}
+	else if(_input == std::string("ExitGame"))
+	{
+		return M22Script::LINETYPE::EXITGAME;
+	}
+	else if(_input == std::string("MainMenu"))
+	{
+		return M22Script::LINETYPE::EXITTOMAINMENU;
 	}
 	else if(_input == std::string("Wait"))
 	{

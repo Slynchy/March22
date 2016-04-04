@@ -121,6 +121,12 @@ class M22Graphics
 {
 	private:
 	public:
+		enum BACKGROUND_UPDATE_TYPES
+		{
+			NONE,
+			BACKGROUND,
+			CHARACTER
+		};
 		struct ArrowObj
 		{
 			SDL_Texture* sprite;
@@ -131,6 +137,11 @@ class M22Graphics
 				frame = 0.0f;
 			};
 		};
+		static SDL_Texture* BACKGROUND_RENDER_TARGET;
+		static SDL_Texture* NEXT_BACKGROUND_RENDER_TARGET;
+		static float NEXT_BACKGROUND_ALPHA;
+		static BACKGROUND_UPDATE_TYPES changeQueued;
+
 		static SDL_Texture* textFrame;
 		static ArrowObj arrow;
 		static std::vector<SDL_Texture*> characterFrameHeaders;
@@ -151,12 +162,18 @@ class M22Graphics
 		static void DrawInGame(bool _draw_black = true);
 		static void FadeToBlackFancy(void);
 		static void AddActiveCharacter(int _charindex, int _outfitindex, int _emotionindex, int _xPosition, bool _brutal = false);
+		static void UpdateBackgroundRenderTarget(void);
+		static void AddCharacterToBackgroundRenderTarget(int _charindex, int _outfitindex, int _emotionindex, int _xPosition, bool _brutal = false);
 
 		static void DrawArrow(int ScrW, int ScrH);
 
 		static float Lerp(float _var1, float _var2, float _t); 
 
 		static TTF_Font *textFont;
+
+		static SDL_Rect* wipePosition;
+		static SDL_Texture* wipeBlack;
+		static SDL_Rect wipeBlackRect;
 };
 
 class M22Sound
@@ -217,6 +234,8 @@ class M22Script
 			SPEECH,
 			COMMENT,
 			WAIT,
+			EXITGAME,
+			EXITTOMAINMENU,
 			NARRATIVE
 		};
 		static const unsigned short int DARKEN_SCREEN_OPACITY = 100;

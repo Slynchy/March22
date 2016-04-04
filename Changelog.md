@@ -1,6 +1,35 @@
 #M22/Snow Sakura++ Changelog
 ###NOTE: Please don't take this changelog as gospel; I hardly ever remember what I add per version.
 
+#### v0.4.0
+
+- Overhauled background drawing system
+	* Instead of drawing a background and layering characters on top of it, the background is composited off-screen into a single texture
+	* Background + Characters = new background
+	* New background is then phased into current background
+	* Current background does not get updated until it needs to be (state-based)
+	* The following M22 functions are therefore deprecated for now:
+		+ ClearCharactersBrutal
+		+ DrawCharactersBrutal
+		+ FadeToBlack
+- Added basis of transition system
+	* At the moment only wipe-from-right
+- Fixed character fading to an acceptable standard
+- Ported all of the first script with some inaccuracies
+	* Incorrect/no music
+	* Not all/many SFX
+	* Saki is wearing incorrect indoor outfit at the school; should be wearing Indoors_2
+- Added new functions to m22 script language:
+	* ExitGame - Exits the game!
+	* MainMenu - Exits to main menu!
+- Bugs:
+	* Clicking "QUIT" from main menu doesn't fade to black; solid black
+	* The script problems mentioned above
+	* Sometimes when transitioning between scenes, a black line is visible after the transition
+	* Only one transition
+		+ Add more transitions
+		+ Need to add parameter to DrawBackground to specify the type of transition
+
 #### v0.3.1
 
 - Fixed options menu inaccuracies

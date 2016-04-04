@@ -20,7 +20,7 @@
 #define DEBUG_ENABLED false
 
 #define WINDOW_TITLE		"March22 Engine Prototype "
-#define VERSION				"v0.3.1"
+#define VERSION				"v0.4.0"
 
 #define FPS 60
 
@@ -63,6 +63,10 @@ int main(int argc, char* argv[])
 	M22Script::LoadScriptToCurrent("EVC_001_strings.txt");
 	M22Graphics::textFont = TTF_OpenFont( "graphics/FONT.ttf", 19);//int(19.0f * M22Script::fontSize) );
 
+	M22Graphics::wipeBlack = IMG_LoadTexture(M22Engine::SDL_RENDERER, "graphics/wipeblack.png");
+	SDL_QueryTexture(M22Graphics::wipeBlack, NULL, NULL, &M22Graphics::wipeBlackRect.w, &M22Graphics::wipeBlackRect.h);
+	M22Graphics::wipeBlackRect.w /= 3;
+
 	M22Interface::storedInterfaces.resize(M22Interface::INTERFACES::NUM_OF_INTERFACES);
 	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[M22Interface::INTERFACES::INGAME_INTRFC], 3, 0, "graphics/interface/GAME_BUTTONS.txt", true, M22Interface::INTERFACES::INGAME_INTRFC);
 	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[M22Interface::INTERFACES::MENU_BUTTON_INTRFC], 4, 0, "graphics/interface/MENU_BUTTONS.txt", true, M22Interface::INTERFACES::MENU_BUTTON_INTRFC);
@@ -70,6 +74,12 @@ int main(int argc, char* argv[])
 	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[M22Interface::INTERFACES::OPTIONS_MENU_INTRFC], 7, 0, "graphics/optionsmenu/BUTTONS.txt", true, M22Interface::INTERFACES::OPTIONS_MENU_INTRFC);
 
 	SDL_SetRenderDrawColor(M22Engine::SDL_RENDERER, 255, 255, 255, 255);
+
+	M22Graphics::wipePosition = new SDL_Rect();
+	M22Graphics::wipePosition->x = (0 - 640);
+	M22Graphics::wipePosition->y = 0;
+	M22Graphics::wipePosition->w = 640;
+	M22Graphics::wipePosition->h = 480;
 
 	if(M22Engine::GAMESTATE == M22Engine::GAMESTATES::INGAME)
 	{
@@ -104,7 +114,7 @@ int main(int argc, char* argv[])
 				M22Script::ChangeLine(++M22Script::currentLineIndex);
 			};
 		};
-		M22Graphics::UpdateBackgrounds();
+		if(M22Engine::GAMESTATE == M22Engine::GAMESTATES::MAIN_MENU) M22Graphics::UpdateBackgrounds();
 		M22Graphics::UpdateCharacters();
 		M22Interface::UpdateActiveInterfaces( int(M22Engine::ScrSize.x()), int(M22Engine::ScrSize.y()) );
 		
@@ -123,9 +133,10 @@ int main(int argc, char* argv[])
 			default:
 				break;
 		};
+		//SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::testmask, NULL, NULL);
 
 		M22Engine::LMB_Pressed = false;
-		SDL_RenderPresent(M22Engine::SDL_RENDERER);
+		if(!M22Engine::QUIT) SDL_RenderPresent(M22Engine::SDL_RENDERER);
 		//if(RENDERING_API == "direct3d" || RENDERING_API == "opengl") 
 		SDL_Delay(1000/FPS);
 	};
@@ -332,12 +343,12 @@ void UpdateEvents()
 				};
 				break;
 			case SDL_KEYDOWN:
-				if(M22Engine::SDL_EVENTS.key.keysym.scancode == SDL_SCANCODE_RSHIFT && M22Engine::GAMESTATE == M22Engine::GAMESTATES::INGAME)
+				if(M22Engine::SDL_EVENTS.key.keysym.scancode == SDL_SCANCODE_RSHIFT && M22Engine::GAMESTATE == M22Engine::GAMESTATES::INGAME && M22Graphics::changeQueued == M22Graphics::BACKGROUND_UPDATE_TYPES::NONE)
 				{
 					//M22Script::ChangeLine(++M22Script::currentLineIndex);
 					M22Engine::skipping = true;
 				}
-				else if(M22Engine::SDL_EVENTS.key.repeat == 0)
+				else if(M22Engine::SDL_EVENTS.key.repeat == 0 && M22Graphics::changeQueued == M22Graphics::BACKGROUND_UPDATE_TYPES::NONE)
 				{
 					UpdateKeyboard();
 				};

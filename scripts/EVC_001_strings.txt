@@ -3,7 +3,7 @@ DrawBackground mystery_girl_s
 PlayMusic MP03
 Girl: "Do you know about the Snow Sakura?"
 Snow Sakura?
-//Goto 180
+Goto 622
 Girl: "Once a year, its flowers bloom in the chill of winter."
 Even though it's a cherry tree?
 Girl: "Yes, even though it's a cherry tree."
@@ -27,8 +27,8 @@ Beep beep beep beep! Beep beep beep beep!
 Yuuji: "Ugh..."
 It was the familiar sound of my alarm clock.
 I opened my eyes sleepily.
-DrawBackground bedroom_day
 StopLoopedStings
+DrawBackground bedroom_day
 PlayMusic MP02
 Yuuji: "........."
 I don't recognize this ceiling.
@@ -69,7 +69,7 @@ She may look cute, but don't be fooled!
 BrightenScreen
 Saki: "Come on, get up and eat your breakfast."
 Yuuji: "No way! I'm cold!"
-ClearCharacters
+ClearCharactersBrutal
 DrawCharacter Saki Indoors_1 ANGRY 0
 Saki: "That's no excuse!"
 Yuuji: "I don't want breakfast! I just want to sleep straight through to Saturday morning."
@@ -200,33 +200,53 @@ Yuuji: "Oh? The inn is closed?"
 I thought it was only temporarily closed for the winter months.
 Saki: "I didn't tell you?"
 I haven't heard a thing.
+ClearCharactersBrutal
+DrawCharacter Saki Indoors_1 DETERMINED_HAPPY 200
+DrawCharacter Takeaki Indoors NORMAL -200
 Takeaki: "We just weren't getting any customers, so I decided to close up shop last summer."
 Saki: "The waitress who worked here quit as well."
 Saki: "So now Dad and I live here all alone."
 My aunt passed away ten years ago.
 So I guess with me here, we're a family of three.
+//PlaySting phone_ringing
 Riiiiing!
 Takeaki: "Hm? Saki, could you get the phone, please?"
 Saki: "Okay."
+ClearCharactersBrutal
+DrawCharacter Takeaki Indoors NORMAL -200
 Saki left the room.
+ClearCharactersBrutal
+DrawCharacter Takeaki Indoors DETERMINED_DRUNK -200
 Takeaki: "So, what do you think?"
 Yuuji: "Huh? About what?"
 Takeaki: "About Saki! Don't you think she's grown?"
 Takeaki: "You know, like an hourglass figure!"
 Takeaki: "Hmm, well... Maybe not quite an hourglass."
 Takeaki: "I don't know who she takes after, but her breasts sure haven't grown an inch!"
+PlaySting whack
 Bonk!
+ClearCharactersBrutal
+DrawCharacter Takeaki Indoors SAD -200
 Takeaki: "Gurh!?"
+ClearCharactersBrutal
+DrawCharacter Saki Indoors_1 ANGRY_B 200
+DrawCharacter Takeaki Indoors SAD -200
 Saki: "Don't be so rude!!"
 Saki: "Anyway, the phone! It's for you!"
 Takeaki: "Owww!!"
+ClearCharactersBrutal
+DrawCharacter Saki Indoors_1 ANGRY_B 200
 Uncle left the room, rubbing his head.
+ClearCharactersBrutal
+DrawCharacter Saki Indoors_1 ANGRY 0
 Saki: "Yuuji, when he does stuff like that, you should put him in some wrestling holds!"
 Yuuji: "There's no way I could do that!"
 Saki: "Oh, come on..."
 Saki plopped down on the floor.
 Now that you mention it, maybe she has grown up a bit.
 Too bad her breasts haven't...
+ClearCharactersBrutal
+DrawCharacter Saki Indoors_1 NORMAL 0
 Saki: "Hm? Did you say something?"
 Yuuji: "Nope, not a thing."
 She'd kill me if I said that out loud.
@@ -244,21 +264,34 @@ Yukito town, population 88.
 It's actually more of a village than a town.
 Step step step step...
 Uncle came back.
+ClearCharactersBrutal
+DrawCharacter Takeaki Indoors NORMAL 0
 Takeaki: "Yuuji, I know you just woke up, but..."
 Takeaki: "I want you to go to school and deliver these papers."
 Takeaki: "Along the way, you can pick up your uniform. Saki, go with him."
+ClearCharactersBrutal
+DrawCharacter Saki Indoors_1 DETERMINED_HAPPY 0
 Saki: "Okay."
 Yuuji: "Huh? But I haven't eaten breakfast yet!"
+ClearCharactersBrutal
+DrawCharacter Saki Indoors_1 DETERMINED 0
 Saki: "You have three seconds."
 Yuuji: "........."
+ClearCharactersBrutal
+DrawBackground outside_house_day
 I put on my thick down jacket and went outside.
 Yuuji: "It's cold!"
+DrawCharacter Saki Outdoors NORMAL 0
 Saki: "What are you talking about? It's cold because we're in Hokkaido. Quit complaining!"
 We do live in Hokkaido, but... it's still really cold!!
 It's so cold you could freeze a banana and use it to hammer nails!
+ClearCharactersBrutal
+DrawCharacter Saki Outdoors HAPPY 0
 Saki: "Well, let's go! Follow me."
 Yuuji: "Yes, ma'am."
 I followed Saki along the snowy path.
+DrawBackground BLACK
+DrawBackground train_day
 Rumble rumble... Rumble rumble...
 It takes about an hour to get to school by train.
 This train looks really old and shabby.
@@ -267,18 +300,28 @@ The floor is made of wood.
 There's even an old gas heater inside the car.
 It looks like I've stepped into some kind of alternate reality.
 Will I be able to survive in this world?
+DrawBackground BLACK
+DrawBackground school_exterior_day
 I arrived at school.
 The school building looks decent enough.
 Its construction is rather old-fashioned, but it's got flavor.
+DrawCharacter Saki Outdoors NORMAL 0
 Saki: "This is the faculty office."
 Yuuji: "I know, I know!"
 I know how to find my way around school by now, at least.
+DrawBackground BLACK
+DrawBackground school_corridor_day
 I walked through the school with Saki.
 Yuuji: "Huh?"
+DrawCharacter Saki Indoors_1 NORMAL 0
 Saki: "What's wrong?"
 Yuuji: "These windows have two layers of glass."
+ClearCharacters
+DrawCharacter Saki Indoors_1 SHOCK 0
 Saki: "You just noticed that?"
 Yuuji: "Yeah, just now."
+ClearCharacters
+DrawCharacter Saki Indoors_1 NORMAL 0
 Saki: "Most windows in Hokkaido are made like that."
 Yuuji: "Why? Because it's cold?"
 Saki: "Hmm... Well, I guess that's one reason."
@@ -287,22 +330,41 @@ Icicles...
 This is a very strange world indeed.
 Saki: "Come on, let's go!"
 Yuuji: "Yeah..."
+DrawBackground school_staff_day
 We entered the faculty office.
 The smell of burning kerosene filled the air.
+DrawCharacter Saki Indoors_1 HAPPY 0
 Saki: "Teacher, he's here."
 .........
+ClearCharacters
+DrawCharacter Saki Indoors_1 NORMAL 0
 Saki: "Teacher! Miss Misato!"
+ClearCharacters
+DrawCharacter Misato Indoors SHOCK_2 0
 Unknown: "Y-yes!? I'm awake!! I'm not sleeping!!"
 A surprised voice came from the far side of the room.
+ClearCharacters
+DrawCharacter Saki Indoors_1 NORMAL 0
 Saki: "He's here."
+ClearCharacters
+DrawCharacter Misato Indoors HAPPY 0
 Misato: "Oh, yes, I see, I see, oh my..."
+ClearCharacters
 Thump! Crash!
 There was a sudden crash, and the dull "thud" of a body hitting the ground.
+DrawCharacter Misato Indoors SHY_6 0
 Misato: "Owwwww..."
+ClearCharacters
+DrawCharacter Saki Indoors_1 NORMAL 150
+DrawCharacter Misato Indoors SHY_6 -150
 Saki: "Are you okay?"
 Misato: "I'm okay! Owww..."
 She's a klutz...
+ClearCharacters
+DrawCharacter Saki Indoors_1 NORMAL 150
+DrawCharacter Misato Indoors CUTE_HAPPY -150
 Misato: "I'm sorry for calling you all the way out here on a Sunday..."
+DarkenScreen
 She smiled.
 She has a very kind smile.
 She's quite beautiful.
@@ -310,12 +372,27 @@ This teacher is Misato Souya.
 She's my home room teacher, and she teaches history.
 Mental Note: She's a major ditz.
 You might say she's a few cards short of a full deck.
+BrightenScreen
 Saki: "Here's the paperwork you wanted from Dad."
+ClearCharacters
+DrawCharacter Saki Indoors_1 NORMAL 150
+DrawCharacter Misato Indoors CUTE -150
 Misato: "Yes, this is it..."
 Saki: "Teacher, you've got some drool on your chin."
+ClearCharacters
+DrawCharacter Saki Indoors_1 NORMAL 150
+DrawCharacter Misato Indoors SHY_4 -150
 Misato: "Huh? Oh, my!"
+ClearCharacters
+DrawCharacter Saki Indoors_1 NORMAL 150
 Wipe, wipe.
+ClearCharacters
+DrawCharacter Saki Indoors_1 NORMAL 150
+DrawCharacter Misato Indoors CUTE_HAPPY -150
 Misato: "Ah, hahaha. I must look like quite a mess."
+ClearCharacters
+DrawCharacter Saki Indoors_1 NORMAL 150
+DrawCharacter Misato Indoors CUTE -150
 Misato: "Let's see... Here's your new uniform. Please wear it starting tomorrow."
 I took my uniform.
 My hand brushed against hers.
@@ -328,25 +405,49 @@ Misato: "Tachibana, please hold still for a moment..."
 Suddenly, Miss Misato began to run her hands all over my body.
 Yuuji: "W-what are you doing?"
 Misato: "While you're here, I'm going to take your measurements for your gym clothes."
+ClearCharacters
+DrawCharacter Saki Indoors_1 NORMAL 150
 Grope, grope...
 Misato: "Let's see, your inseam is..."
 Her hand just barely touched my crotch.
 Yuuji: "AAHHHHH!!"
+ClearCharacters
+DrawCharacter Saki Indoors_1 NORMAL 150
+DrawCharacter Misato Indoors SHOCK -150
 Misato: "AHHH!?"
+ClearCharacters
+DrawCharacter Saki Indoors_1 DETERMINED 150
+DrawCharacter Misato Indoors SHOCK -150
 Saki: "Hey, you're not supposed to move!"
 Yuuji: "B-but..."
+ClearCharacters
+DrawCharacter Saki Indoors_1 DETERMINED 150
+DrawCharacter Misato Indoors DETERMINED -150
 Misato: "Now, please hold still."
+ClearCharacters
+DrawCharacter Saki Indoors_1 DETERMINED 150
 Mmph...
 Grope, grope...
 Touch, touch...
 It's kind of ticklish.
+ClearCharacters
+DrawCharacter Saki Indoors_1 NORMAL 150
 Saki: "You're not thinking anything dirty, are you?"
 Yuuji: "I'm not!!"
 Damn it...
+ClearCharacters
+DrawCharacter Saki Indoors_1 NORMAL 150
+DrawCharacter Misato Indoors CUTE_HAPPY -150
 Misato: "Okay, all done!"
 She finally released me.
+ClearCharacters
+DrawCharacter Saki Indoors_1 NORMAL 150
+DrawCharacter Misato Indoors CUTE -150
 Misato: "Unlike your uniform, your gym clothes are ready-made, so they'll arrive soon."
 Yuuji: "Thank you very much."
+ClearCharacters
+DrawCharacter Saki Indoors_1 NORMAL 150
+DrawCharacter Misato Indoors CUTE_HAPPY -150
 Misato: "No problem!"
 She smiled.
 Her smile is so innocent and childlike.
@@ -358,20 +459,31 @@ Why didn't you say so sooner?
 Yuuji: "Excuse me."
 Misato: "Okay! Be careful!"
 I said my parting words and left the faculty office.
+DrawBackground school_corridor_day
+DrawCharacter Saki Indoors_1 NORMAL 0
 Saki: "Five minutes until the train leaves!"
 Yuuji: "Five minutes!?"
 Saki: "If we dash, we'll make it in time!"
 Yoink!
 She grabbed my arm.
+ClearCharacters
+DrawCharacter Saki Indoors_1 DETERMINED 0
 Saki: "Run for it!"
 Step step step step step...
 Yuuji: "AAAAAHH!!"
+DrawBackground BLACK
+DrawBackground train_day
 Huff, puff, wheeze...
 I'm exhausted!
+DrawCharacter Saki Outdoors NORMAL 0
 Saki: "Oh, you sure look tired!"
 Yuuji: "It's been a long time since I've had to run like that!"
+ClearCharacters
+DrawCharacter Saki Outdoors ANGRY 0
 Saki: "What kind of life have you lived before now?"
 I can't believe it.
+ClearCharacters
+DrawCharacter Saki Outdoors NORMAL 0
 Saki: "Hey... What do you think?"
 Yuuji: "About what?"
 Saki: "Our school."
@@ -380,16 +492,24 @@ I can't really say anything yet.
 I like the school.
 I really like the fact Saki and I are going to school together.
 Though it is a little far away...
+ClearCharacters
+DrawCharacter Saki Outdoors HAPPY 0
 Saki: "Our school has a lot of cute girls."
 Saki: "With me at the head of the list, of course!"
 Yuuji: "It's snowing again today. It's all white outside."
+ClearCharacters
+DrawCharacter Saki Outdoors SHOCK 0
 Saki: "Wha!? He's ignoring me!?"
 I've had enough of you for now...
+FadeToBlackFancy
+ClearCharacters
 By the time we returned to the inn, the sun was already beginning to set.
+DrawBackground bedroom_night
 Whew...
 I've had to walk a lot more that I'm used to since I came here.
 My feet hurt.
 I can feel the pain of my sedentary lifestyle.
+DrawCharacter Takeaki Indoors NORMAL 0
 Takeaki: "Hey, Yuuji!"
 Uncle appeared.
 Yuuji: "What?"
@@ -404,10 +524,13 @@ Yuuji: "Uncle..."
 Takeaki: "Hmmm?"
 Yuuji: "Please take good care of me."
 I bowed.
+ClearCharacters
+DrawCharacter Takeaki Indoors HAPPY 0
 Takeaki: "Hahaha! Don't worry about a thing!"
 Whack!!
 Aaargh! My back!
 Takeaki: "Why don't you relax until dinner is ready? I'll call you."
+ClearCharacters
 The floor creaked under Uncle's weight as he walked away.
 He's an... interesting person.
 Yuuji: "Well, now..."
@@ -424,11 +547,13 @@ He probably wants me to play it.
 Yuuji: "What the hell is he thinking, anyway?"
 I put the tape into my VCR.
 I pressed the play button.
+DrawBackground static
 Frrrssshhh...
 Keijiro: "Ahhh, ahhh. Testing, testing."
 Keijiro: "Is this thing even recording?"
 Keijiro: "Oh, I forgot to turn on the display."
 There was a clicking sound, and the screen suddenly changed.
+DrawBackground yuujis_dad
 It showed a beautiful beach.
 Keijiro: "Bwahahaha! Hey, Son! It's been a while!"
 Yuuji: .........
@@ -472,6 +597,7 @@ Keijiro: "Oh, I almost forgot. One more thing..."
 Yuuji: "What!?"
 Keijiro: "This tape will self-destruct."
 FROOOOSH!!
+DrawBackground bedroom_night
 Yuuji: "Cough, cough!!"
 Smoke billowed out of the VCR.
 Dad, you asshole!
@@ -488,9 +614,14 @@ My forehead twitched slightly.
 "You'll have to live your own life from now on."
 In other words, he doesn't want to have any responsibility for me.
 That bastard...
+DrawCharacter Saki Indoors_1 SHOCK -150
+DrawCharacter Takeaki Indoors UNSURE_SAD 150
 Saki: "Whoa! What's going on in here!? Cough, cough..."
 Takeaki: "Hey! You shouldn't light fireworks indoors!"
 Saki and Uncle came running into my room.
 Amidst the ruckus...
 ...my life in this noisy, exasperating snowy country had truly begun.
-LoadScript EVC_002_strings.txt
+FadeToBlackFancy
+//ExitGame
+MainMenu
+//LoadScript EVC_002_strings.txt
