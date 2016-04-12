@@ -1,6 +1,0 @@
-2
-Indoors_1
-Outdoors
-Indoors_2
-Indoors_3
-School
