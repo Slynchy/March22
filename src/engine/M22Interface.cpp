@@ -167,6 +167,21 @@ void M22Interface::DrawActiveInterfaces(void)
 	return;
 };
 
+void M22Interface::InitTextBox(void)
+{
+	// load texture
+	M22Graphics::textFrame = IMG_LoadTexture(M22Engine::SDL_RENDERER, "graphics/frame.png");
+
+	// init the render target texture
+	M22Interface::ChatBoxRenderer = SDL_CreateTexture( M22Engine::SDL_RENDERER, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET , 640, 480 );
+
+	// allow alpha channels
+	SDL_SetTextureBlendMode(M22Graphics::textFrame, SDL_BLENDMODE_BLEND);
+	SDL_SetTextureBlendMode(M22Interface::ChatBoxRenderer, SDL_BLENDMODE_BLEND);
+
+	return;
+};
+
 void M22Interface::DrawTextArea(int _ScrSizeX, int _ScrSizeY)
 {
 	if(M22Interface::DRAW_TEXT_AREA == true)

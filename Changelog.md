@@ -1,6 +1,18 @@
 #M22/Snow Sakura++ Changelog
 ###NOTE: Please don't take this changelog as gospel; I hardly ever remember what I add per version.
 
+#### v0.4.7
+
+- Behind-the-scenes improvements to the engine
+	* Added SDL_DisplayMode getter, could be useful later
+	* Made Main.cpp a lot smaller, so more of the grunt is on the engine
+	* Other stuff I forgot.
+- Bug/to-do list:
+	* Shift still crashes the game if there is no skip button; add a quick if-null check to fix.
+	* More transitions
+	* Add documentation for M22 language
+	* Make a "skeleton" project
+
 #### v0.4.4
 
 - New transition system

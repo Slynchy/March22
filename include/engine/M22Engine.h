@@ -30,6 +30,7 @@
 #include <algorithm>
 #include <iostream>
 #include <string>
+#include <chrono>
 
 /// \class 		M22Engine M22Engine.h "include/M22Engine.h"
 /// \brief 		The main class of M22.
@@ -127,17 +128,57 @@ class M22Engine
 		static bool skipping;		///< Is player currently skipping dialogue?
 		
 		static bool QUIT;			///< Exit the program?
-
+		
+		/// Finds the index of the character from the string
+		///
+		/// \param _name Character's name.
+		/// \param _dialogue Don't know; just leave it blank!
+		/// \return Index of character, 0 if narrative
 		static int GetCharacterIndexFromName(std::string, bool _dialogue = false); 
+
+		/// Finds the outfit index for the specified character
+		///
+		/// \param _input Outfit's name.
+		/// \param _charIndex Index of character
+		/// \return Index of outfit
 		static int GetOutfitIndexFromName(std::string, int);
+		
+		/// Finds the emotion index for the specified character
+		///
+		/// \param _input Emotion name.
+		/// \param _charIndex Index of character
+		/// \return Index of emotion
 		static int GetEmotionIndexFromName(std::string, int _charIndex);
 
+		/// Resets the game + variables
 		static void ResetGame(void);
+
+		/// Starts the game
 		static void StartGame(void);
 
+		/// Saves the current configuration of options to OPTIONS.SAV
 		static void SaveOptions(void);
+
+		/// Loads the current configuration of options to OPTIONS.SAV
 		static void LoadOptions(void);
+		
+		/// Updates OPTIONS struct + file with new settings
 		static void UpdateOptions(void);
+		
+		/// Shuts down the engine, SDL, and destroys variables
+		static void Shutdown(void);
+		
+		/// Updates delta time variables
+		static void UpdateDeltaTime(void);
+		
+		/// Updates SDL Events
+		static void UpdateEvents(void);
+		
+		/// Updates keyboard input array
+		static void UpdateKeyboard(void);
+		
+		/// Initializes OPTIONS data by saving if it doesn't exist, loading if it does
+		static void OptionsFileInitializer(void);
 
 		static Vec2 ScrSize; 		///< Logical screen resolution to render at
 
@@ -156,8 +197,22 @@ class M22Engine
 		static SDL_Renderer *SDL_RENDERER;						///< Context for the SDL Renderer
 		static SDL_Event SDL_EVENTS;							///< Context for the SDL Events
 		static const Uint8 *SDL_KEYBOARDSTATE;					///< Current keyboard button states
-
+		static SDL_DisplayMode SDL_DISPLAYMODE;
+		
+		/// Initializes the M22 engine
+		///
+		/// \param ScrW Screen width
+		/// \param ScrH Screen height
+		/// \return Error code, if 0 then init'd fine
 		static short int InitializeM22(int ScrW, int ScrH);
+		
+		/// Initializes the SDL part of the engine
+		///
+		/// \param _windowTitle Title of window
+		/// \param _version Version of software
+		/// \param ScrPos Position window should be when initialized if windowed
+		/// \return Error code, if 0 then init'd fine
+		static short int InitializeSDL(const std::string _windowTitle, const std::string _version, Vec2 ScrPos);
 };
 
 /// \class 		M22Graphics M22Engine.h "include/M22Engine.h"
@@ -312,6 +367,21 @@ class M22Sound
 			static void PauseMusic();
 		/// Resumes whatever is paused in the \a LOOPED_SFX mixer
 			static void ResumeMusic();
+
+		/// Updates the sound, checking whether to loop
+			static void UpdateSound(void);
+
+		/// Initializes music+SFX
+		/// \return -1 if music fails, -2 if SFX fails, 0 if fine
+			static short int InitializeSound(void);
+
+		/// Initializes music
+		/// \return Anything other than 0 means an error
+			static short int InitializeMusic(void);
+
+		/// Initializes SFX
+		/// \return Anything other than 0 means an error
+			static short int InitializeSFX(void);
 			
 		/// EMPTY FUNCTION, QUEUED FOR REMOVAL
 			static short int StartMusic(short int _position);
@@ -488,10 +558,7 @@ class M22Interface
 		/// Draws the buttons of the active interfaces
 			static void DrawActiveInterfacesButtons(void);
 			
-		/// Checks and returns if the character is a colon ( : )
-		///
-		/// \param _char Character to check
-			static bool DRAW_TEXT_AREA;
+		static bool DRAW_TEXT_AREA;								///< Draw the text area?
 			
 		/// Draws the text box, name of person talking, current line; off-screen then into the main renderer
 		/// \param _ScrSizeX Screen width
@@ -512,6 +579,9 @@ class M22Interface
 			
 		/// Resets all stored (and by extension, active) interfaces to default settings
 			static void ResetStoredInterfaces(void);
+
+		/// Initializes the text box and sprites
+			static void InitTextBox(void);
 
 		/// Initializes an interface from buttons file + constants
 		///

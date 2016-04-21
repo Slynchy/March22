@@ -17,6 +17,7 @@ bool M22Engine::QUIT = false;
 bool M22Engine::skipping = false;
 Uint32 M22Engine::last = 0, M22Engine::DELTA_TIME = 0;
 Uint32 M22Engine::TIMER_CURR = 0, M22Engine::TIMER_TARGET = 0;
+SDL_DisplayMode M22Engine::SDL_DISPLAYMODE = {NULL, NULL, NULL, NULL, NULL};;
 
 Vec2 M22Engine::ScrSize(640,480);
 
@@ -62,8 +63,172 @@ void M22Engine::StartGame(void)
 			break;
 		};
 	};
+	M22Engine::LMB_Pressed = false;
 	M22Script::ChangeLine(0);
 	M22Interface::activeInterfaces.push_back(&M22Interface::storedInterfaces[0]);
+	return;
+};
+
+void M22Engine::Shutdown()
+{
+	SDL_Quit();
+	M22Engine::SDL_RENDERER = NULL;
+	M22Engine::SDL_SCREEN = NULL;
+	M22Engine::SDL_KEYBOARDSTATE = NULL;
+	M22Sound::SOUND_FX.clear();
+	M22Sound::MUSIC.clear();
+	M22Graphics::BACKGROUNDS.clear();
+	M22Graphics::characterFrameHeaders.clear();
+	M22Graphics::textFrame = NULL;
+	M22Graphics::textFont = NULL;
+	M22Engine::CHARACTERS_ARRAY.clear();
+	TTF_Quit();
+	return;
+};
+
+void M22Engine::OptionsFileInitializer(void)
+{
+	std::fstream input("OPTIONS.SAV");
+	if(!input)
+	{
+		printf("OPTIONS.SAV doesn't exist; creating...\n");
+		M22Engine::SaveOptions();
+	}
+	else
+	{
+		input.close();
+		printf("Loading OPTIONS.SAV\n");
+		M22Engine::LoadOptions();
+		M22Engine::UpdateOptions();
+	};
+	return;
+};
+
+short int M22Engine::InitializeSDL(const std::string _windowTitle, const std::string _version, Vec2 ScrPos)
+{
+	srand((unsigned int)time(NULL));
+	SDL_Init( SDL_INIT_EVERYTHING );
+	SDL_SetHint (SDL_HINT_RENDER_DRIVER, RENDERING_API);
+	std::string tempTitle = _windowTitle;
+	tempTitle += _version;
+
+	if(M22Engine::OPTIONS.WINDOWED == M22Engine::WINDOW_STATES::FULLSCREEN)
+	{
+		M22Engine::SDL_SCREEN = SDL_CreateWindow(tempTitle.c_str(), (int)ScrPos.x(), (int)ScrPos.y(), (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y(), SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
+	}
+	else if(M22Engine::OPTIONS.WINDOWED == M22Engine::WINDOW_STATES::FULLSCREEN_BORDERLESS)
+	{
+		M22Engine::SDL_SCREEN = SDL_CreateWindow(tempTitle.c_str(), (int)ScrPos.x(), (int)ScrPos.y(), (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y(), SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
+	}
+	else
+	{
+		M22Engine::SDL_SCREEN = SDL_CreateWindow(tempTitle.c_str(), (int)ScrPos.x(), (int)ScrPos.y(), (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y(), SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
+	};
+
+    M22Engine::SDL_RENDERER = SDL_CreateRenderer(M22Engine::SDL_SCREEN, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
+	SDL_RenderSetLogicalSize(M22Engine::SDL_RENDERER, (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y());
+	if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 4096 ) < 0 )
+	{
+		printf( "SDL_mixer failed to init! Error: %s\n", Mix_GetError() );
+	};
+
+	Mix_VolumeMusic(int(MIX_MAX_VOLUME* *M22Sound::MUSIC_VOLUME));
+	Mix_Volume(M22Sound::MIXERS::SFX,int(MIX_MAX_VOLUME* *M22Sound::SFX_VOLUME));
+	Mix_Volume(M22Sound::MIXERS::LOOPED_SFX,int(MIX_MAX_VOLUME* *M22Sound::SFX_VOLUME));
+
+	if( TTF_Init() < 0 )
+    {
+		printf( "SDL_TTF failed to init! Error: %s\n", TTF_GetError() );
+    }
+
+	// linear filter; works on all platforms
+	SDL_SetHint (SDL_HINT_RENDER_SCALE_QUALITY, BILINEAR_FILTERING);
+
+	// Display data
+	for(int i = 0; i < SDL_GetNumVideoDisplays(); i++)
+	{
+		int x = SDL_GetDesktopDisplayMode(i, &M22Engine::SDL_DISPLAYMODE);
+		if(x == 0)
+		{
+			break;
+		};
+	};
+
+	return 0;
+};
+
+void M22Engine::UpdateEvents(void)
+{
+	while( SDL_PollEvent( &M22Engine::SDL_EVENTS ) )
+	{
+		switch( M22Engine::SDL_EVENTS.type )
+		{
+			case SDL_QUIT:
+				M22Engine::QUIT = true;
+				break;
+			case SDL_MOUSEMOTION:
+				M22Engine::MousePos.x(M22Engine::SDL_EVENTS.motion.x);
+				M22Engine::MousePos.y(M22Engine::SDL_EVENTS.motion.y);
+				break;
+			case SDL_MOUSEBUTTONDOWN:
+				if(M22Engine::SDL_EVENTS.button.button == SDL_BUTTON_LEFT)
+				{
+					M22Engine::LMB_Pressed = true;
+				};
+				break;
+			case SDL_MOUSEBUTTONUP:
+				if(M22Engine::SDL_EVENTS.button.button == SDL_BUTTON_LEFT)
+				{
+					M22Engine::LMB_Pressed = false;
+				};
+				break;
+			case SDL_KEYDOWN:
+				if(M22Engine::SDL_EVENTS.key.keysym.scancode == SDL_SCANCODE_RSHIFT && M22Engine::GAMESTATE == M22Engine::GAMESTATES::INGAME && M22Graphics::changeQueued == M22Graphics::BACKGROUND_UPDATE_TYPES::NONE)
+				{
+					M22Engine::skipping = true;
+				}
+				else if(M22Engine::SDL_EVENTS.key.repeat == 0 && M22Graphics::changeQueued == M22Graphics::BACKGROUND_UPDATE_TYPES::NONE)
+				{
+					M22Engine::UpdateKeyboard();
+				};
+				break;
+			case SDL_KEYUP:
+				if(M22Engine::SDL_EVENTS.key.keysym.scancode == SDL_SCANCODE_RSHIFT)
+				{
+					M22Engine::skipping = false;
+				};
+				break;
+			default:
+				break;
+		}
+	};
+	return;
+};
+
+void M22Engine::UpdateKeyboard()
+{
+	M22Engine::SDL_KEYBOARDSTATE = SDL_GetKeyboardState(NULL);
+	if(M22Engine::SDL_KEYBOARDSTATE[SDL_SCANCODE_ESCAPE])
+	{
+		M22Engine::QUIT=true;
+	};
+	if(M22Engine::SDL_KEYBOARDSTATE[SDL_SCANCODE_SPACE] && M22Engine::GAMESTATE == M22Engine::GAMESTATES::INGAME)
+	{
+		M22Interface::DRAW_TEXT_AREA = !M22Interface::DRAW_TEXT_AREA;
+	};
+	if(M22Engine::TIMER_TARGET != 0) return;
+	if(M22Engine::SDL_KEYBOARDSTATE[SDL_SCANCODE_RETURN] && M22Interface::DRAW_TEXT_AREA == true && M22Engine::GAMESTATE == M22Engine::GAMESTATES::INGAME)
+	{
+		M22Script::ChangeLine(++M22Script::currentLineIndex);
+	};
+	return;
+};
+
+void M22Engine::UpdateDeltaTime(void)
+{
+	Uint32 now = SDL_GetTicks();  
+	M22Engine::DELTA_TIME = now - M22Engine::last; 
+	M22Engine::last = now; 
 	return;
 };
 
@@ -222,7 +387,7 @@ short int M22Engine::InitializeM22(int ScrW, int ScrH)
 	}
 	else
 	{
-		std::cout << "Failed to load script file: " << "graphics/characters/CHARACTERS.txt" << std::endl;
+		std::cout << "Failed to load script file: " << "graphics/mainmenu/BACKGROUNDS.txt" << std::endl;
 		return -1;
 	};
 	input.close();
@@ -237,6 +402,7 @@ short int M22Engine::InitializeM22(int ScrW, int ScrH)
 
 	M22Engine::ACTIVE_BACKGROUNDS.resize(2);
 	M22Graphics::arrow.sprite = IMG_LoadTexture(M22Engine::SDL_RENDERER, "graphics/arrow.png");
+	M22Graphics::OPTION_BAR = IMG_LoadTexture(M22Engine::SDL_RENDERER, "graphics/optionsmenu/bar.png");
 	return 0;
 };
 

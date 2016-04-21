@@ -28,6 +28,95 @@ short int M22Sound::PlaySting(short int _position)
 	};
 };
 
+short int M22Sound::InitializeMusic()
+{
+	std::fstream input("sfx/music/index.txt");
+	int length;
+	if(input)
+	{
+		length=int(std::count(std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>(), '\n'));
+		length++; // Linecount is number of '\n' + 1
+		input.seekg(0, std::ios::beg);
+		for(int i = 0; i < length; i++)
+		{
+			std::string currentfile;
+			input >> currentfile;
+			Mix_Music *temp = Mix_LoadMUS(currentfile.c_str());
+			if(!temp)
+			{
+				std::cout << "Failed to load file: " << currentfile << std::endl;
+				return -1;
+			};
+			M22Sound::MUSIC_NAMES.push_back(currentfile);
+			M22Sound::MUSIC.push_back(temp);
+		};
+	}
+	else
+	{
+		std::cout << "Failed to load index file for music!" << std::endl;
+		return -1;
+	};
+	input.close();
+	return 0;
+};
+
+short int M22Sound::InitializeSFX()
+{
+	std::fstream input("sfx/stings/index.txt");
+	int length;
+	if(input)
+	{
+		length=int(std::count(std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>(), '\n'));
+		length++; // Linecount is number of '\n' + 1
+		input.seekg(0, std::ios::beg);
+		for(int i = 0; i < length; i++)
+		{
+			std::string currentfile;
+			input >> currentfile;
+			Mix_Chunk *temp = Mix_LoadWAV(currentfile.c_str());
+			if(!temp)
+			{
+				std::cout << "Failed to load file: " << currentfile << std::endl;
+				return -1;
+			};
+			M22Sound::SOUND_FX.push_back(temp);
+			M22Sound::SFX_NAMES.push_back(currentfile);
+			//Mix_VolumeChunk(M22Sound::SOUND_FX[i], int(MIX_MAX_VOLUME*M22Sound::SFX_VOLUME));
+		};
+	}
+	else
+	{
+		std::cout << "Failed to load index file for music!" << std::endl;
+		return -1;
+	};
+	input.close();
+	return 0;
+};
+
+short int M22Sound::InitializeSound()
+{
+	if(M22Sound::InitializeMusic() != 0)
+	{
+		printf("Failed to initialize music!");
+		return -1;		
+	};
+	if(M22Sound::InitializeSFX() != 0)
+	{
+		printf("Failed to initialize SFX!");
+		return -2;		
+	};
+	return 0;
+};
+
+void M22Sound::UpdateSound()
+{
+	if( !Mix_PlayingMusic() )
+	{
+		M22Sound::ChangeMusicTrack(M22Sound::currentTrack);
+	};
+	return;
+};
+
 short int M22Sound::PlaySting(short int _position, bool _forceplayback)
 {
 	if(M22Sound::SOUND_FX[_position])
