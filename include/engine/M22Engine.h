@@ -1,12 +1,24 @@
+/// \file 		M22Engine.h
+/// \author 	Sam Lynch
+/// \brief 		Header file for entire M22 engine
+/// \version 	0.4.4
+/// \date 		April 2016
+/// \details	The header file for declaring the engine and its functions/variables.
+
 #ifndef M22ENGINE_H
 #define M22ENGINE_H
 
 #define DEFAULT_MUSIC_VOLUME_MULT 0.25f
+	/*!< The default volume of music playback. */
 #define DEFAULT_SFX_VOLUME_MULT 0.35f
+	/*!< The default volume of \a SFX. */
 #define DEFAULT_LERP_SPEED 0.15f
+	/*!< Defines the speed of any \a lerp function. */
 
 #define RENDERING_API		"opengl"
+	/*!< Defines which rendering API to use; generally \a direct3d or \a opengl. */
 #define BILINEAR_FILTERING	"1"
+	/*!< Set to 1 for bilinear filtering, 0 for not. Must be a string. */
 
 #include "SDL.h"
 #include <SDL_image.h>
@@ -19,23 +31,38 @@
 #include <iostream>
 #include <string>
 
+/// \class 		M22Engine M22Engine.h "include/M22Engine.h"
+/// \brief 		The main class of M22.
+///
+/// \details 	This class holds most barebones functions/variables for basic operation (SDL window, renderer, etc.)
+///
 class M22Engine
 {
 	private:
 	public:
+		/// Different window states for the renderer
 		enum WINDOW_STATES
 		{
 			WINDOWED,
+				///< Screen is windowed and resizable.
 			FULLSCREEN,
+				///< Screen is fullscreen at the application resolution.
 			FULLSCREEN_BORDERLESS,
+				///< Screen is windowed but fullscreen-borderless.
 			NUM_OF_STATES
 		};
+		
+		/// Data structure of the options file
 		struct OPTIONS_STRUCTURE
 		{
 			Uint8 WINDOWED;
+				///< Refers to M22Engine::WINDOW_STATES for what state the window should be in.
 			float AUTO_SPEED;
+				///< Speed to auto-click/progress at. \a CURRENTLY UNUSED.
 			float MUSIC_VOLUME;
+				///< Volume to play music at.
 			float SFX_VOLUME;
+				///< Volume to play \a SFX at.
 			OPTIONS_STRUCTURE()
 			{
 				WINDOWED = 0;
@@ -45,21 +72,31 @@ class M22Engine
 			};
 		};
 
-		static OPTIONS_STRUCTURE OPTIONS;
+		static OPTIONS_STRUCTURE OPTIONS; ///< Current game options, initialized to default, later loaded.
 
+		/// Data structure of loaded characters
 		struct Character
 		{
 			std::string name;
+				///< Characters name (e.g. "Yuuji")
 			std::vector<std::vector<SDL_Texture*>> sprites;
+				///< 2D array of sprites; y = outfit, x = emotion
 			std::vector<std::string> emotions;
+				///< Emotion names (for file-loading, e.g. "Happy_1" -> "Happy_1.png")
 			std::vector<std::string> outfits;
+				///< Outfit names (for file-loading, e.g. "School" -> "School/Happy_1.png")
 		};
+		/// Structure for characters to draw on-screen.
 		struct CharacterReference
 		{
 			SDL_Texture* sprite;
+				///< The active sprite
 			SDL_Rect rect;
+				///< Position to draw to screen
 			float alpha;
+				///< Current alpha amount
 			bool clearing;
+				///< Is this character currently being erased off the screen?
 			CharacterReference()
 			{
 				alpha = 0.0f;
@@ -67,25 +104,31 @@ class M22Engine
 				sprite = NULL;
 			};
 		};
+		/// Structure for backgrounds
 		struct Background
 		{
 			SDL_Texture* sprite;
+				///< The background image
 			float alpha;
+				///< Current alpha amount
 		};
+		/// Possible gamestates
 		enum GAMESTATES
 		{
 			MAIN_MENU,
+				///< Is on the main menu
 			INGAME
+				///< Is in-game
 		};
 		
-		static Vec2 MousePos;
-		static bool LMB_Pressed;
+		static Vec2 MousePos; 		///< Current mouse position
+		static bool LMB_Pressed; 	///< Is LMB currently pressed?
 
-		static bool skipping;
+		static bool skipping;		///< Is player currently skipping dialogue?
 		
-		static bool QUIT;
+		static bool QUIT;			///< Exit the program?
 
-		static int GetCharacterIndexFromName(std::string, bool _dialogue = false);
+		static int GetCharacterIndexFromName(std::string, bool _dialogue = false); 
 		static int GetOutfitIndexFromName(std::string, int);
 		static int GetEmotionIndexFromName(std::string, int _charIndex);
 
@@ -96,66 +139,73 @@ class M22Engine
 		static void LoadOptions(void);
 		static void UpdateOptions(void);
 
-		static Vec2 ScrSize;
+		static Vec2 ScrSize; 		///< Logical screen resolution to render at
 
-		static std::vector<std::string> CHARACTER_NAMES;
-		static unsigned short int ACTIVE_BACKGROUND_INDEX;
-		static std::vector<Background> ACTIVE_BACKGROUNDS;
+		static std::vector<std::string> CHARACTER_NAMES;		///< Array of character names (for file-loading, e.g. "Yuuji" -> "Yuuji/School/Happy_1.png")
+		static unsigned short int ACTIVE_BACKGROUND_INDEX;		///< The index of the current background, relative to \a ACTIVE_BACKGROUNDS;
+		static std::vector<Background> ACTIVE_BACKGROUNDS;		///< Array of backgrounds to be drawn (should be no larger than two)
 
-		static std::vector<Character> CHARACTERS_ARRAY;
-		static std::vector<std::string> CHARACTER_EMOTIONS;
+		static std::vector<Character> CHARACTERS_ARRAY;			///< Array of loaded characters and their sprites
+		static std::vector<std::string> CHARACTER_EMOTIONS;		///< Array of character emotions \a(UNUSED?)
 
-		static Uint32 last, DELTA_TIME; 
-		static Uint32 TIMER_CURR, TIMER_TARGET;
+		static Uint32 last, DELTA_TIME; 						///< Delta time variables
+		static Uint32 TIMER_CURR, TIMER_TARGET;					///< Delta time variables
 
-		static M22Engine::GAMESTATES GAMESTATE;
-		static SDL_Window* SDL_SCREEN;
-		static SDL_Renderer *SDL_RENDERER;
-		static SDL_Event SDL_EVENTS;
-		static const Uint8 *SDL_KEYBOARDSTATE;
+		static M22Engine::GAMESTATES GAMESTATE;					///< Active gamestate from \a M22Engine::
+		static SDL_Window* SDL_SCREEN;							///< Context for the SDL Window
+		static SDL_Renderer *SDL_RENDERER;						///< Context for the SDL Renderer
+		static SDL_Event SDL_EVENTS;							///< Context for the SDL Events
+		static const Uint8 *SDL_KEYBOARDSTATE;					///< Current keyboard button states
 
 		static short int InitializeM22(int ScrW, int ScrH);
 };
 
+/// \class 		M22Graphics M22Engine.h "include/M22Engine.h"
+/// \brief 		Class for graphics drawing
+///
+/// \details 	This class is responsible for drawing backgrounds and characters (graphics-related operations).
+///
 class M22Graphics
 {
 	private:
 	public:
+		/// The type of update the background is doing
 		enum BACKGROUND_UPDATE_TYPES
 		{
 			NONE,
-			BACKGROUND,
-			CHARACTER
+			BACKGROUND,				///< Changing the background
+			CHARACTER				///< Updating the characters
 		};
+		/// Data structure for the animated arrow for text progression
 		struct ArrowObj
 		{
-			SDL_Texture* sprite;
-			float frame;
+			SDL_Texture* sprite;	///< Sprite
+			float frame;			///< The frame that the arrow is on
 			ArrowObj()
 			{
 				sprite = NULL;
 				frame = 0.0f;
 			};
 		};
-		static SDL_Texture* BACKGROUND_RENDER_TARGET;
-		static SDL_Texture* NEXT_BACKGROUND_RENDER_TARGET;
-		static float NEXT_BACKGROUND_ALPHA;
-		static BACKGROUND_UPDATE_TYPES changeQueued;
+		static SDL_Texture* BACKGROUND_RENDER_TARGET;						///< The off-screen render target for the background
+		static SDL_Texture* NEXT_BACKGROUND_RENDER_TARGET;					///< The off-screen render target for the next background
+		static float NEXT_BACKGROUND_ALPHA;									///< The alpha of the next background (for fading in)
+		static BACKGROUND_UPDATE_TYPES changeQueued;						///< The type of the background change scheduled
 
-		static SDL_Texture* textFrame;
-		static ArrowObj arrow;
-		static std::vector<SDL_Texture*> characterFrameHeaders;
-		static std::vector<M22Engine::CharacterReference> activeCharacters;
-		static std::vector<SDL_Texture*> mainMenuBackgrounds;
-		static M22Engine::Background activeMenuBackground;
-		static M22Engine::Background menuLogo;
-		static SDL_Texture* OPTION_BAR;
+		static SDL_Texture* textFrame;										///< Texture for the primary text frame
+		static ArrowObj arrow;												///< The text arrow object
+		static std::vector<SDL_Texture*> characterFrameHeaders;				///< The array of sprites for character names when they talk
+		static std::vector<M22Engine::CharacterReference> activeCharacters;	///< Array of active characters to draw to the screen
+		static std::vector<SDL_Texture*> mainMenuBackgrounds;				///< The possible backgrounds for the main menu to use, loaded into this array
+		static M22Engine::Background activeMenuBackground;					///< The active background for the main menu
+		static M22Engine::Background menuLogo;								///< The game's logo to draw onto the main menu
+		static SDL_Texture* OPTION_BAR;										///< The texture for bars in the options, like volume (UNUSED)
 
-		static SDL_Texture* BLACK_TEXTURE;
+		static SDL_Texture* BLACK_TEXTURE;									///< A simple solid black texture for fading to black (0,0,0,255)
 
-		static std::vector<SDL_Texture*> BACKGROUNDS;
-		static std::vector<std::string> backgroundIndex;
-		static short int LoadBackgroundsFromIndex(const char* _filename);
+		static std::vector<SDL_Texture*> BACKGROUNDS;						///< Loaded background textures
+		static std::vector<std::string> backgroundIndex;					///< Names of the backgrounds to know which one to load for scripts
+		static short int LoadBackgroundsFromIndex(const char* _filename);	
 		static void DrawBackground(SDL_Texture* _target);
 		static void UpdateBackgrounds(void);
 		static void UpdateCharacters(void);
@@ -169,137 +219,229 @@ class M22Graphics
 
 		static float Lerp(float _var1, float _var2, float _t); 
 
-		static TTF_Font *textFont;
+		static TTF_Font *textFont;											///< The TTF font to use for speech/narrative text.
 
-		static SDL_Rect* wipePosition;
-		static SDL_Texture* wipeBlack;
-		static SDL_Rect wipeBlackRect;
-
+		static SDL_Rect* wipePosition;										///< The current position of the active transition wipe
+		static SDL_Texture* wipeBlack;										///< A texture for wiping black; just \a BLACK_TEXTURE reference
+		static SDL_Rect wipeBlackRect;										///< The current position of the black wipe
+		
+		/// Type of transition
 		enum TRANSITIONS
 		{
-			SWIPE_TO_RIGHT,
-			SWIPE_DOWN,
-			SWIPE_TO_LEFT,
-			FADEIN,
+			SWIPE_TO_RIGHT,													///< Swipe from left of the screen to right
+			SWIPE_DOWN,														///< Swipe from top of the screen to bottom
+			SWIPE_TO_LEFT,													///< Swipe from right of the screen to left
+			FADEIN,															///< Lerp/fade between the backgrounds
 			NUMBER_OF_TRANSITIONS
 		};
 
-		static const std::string TRANSITION_NAMES[NUMBER_OF_TRANSITIONS];
+		static const std::string TRANSITION_NAMES[NUMBER_OF_TRANSITIONS];	///< Name of transitions for scripts to use
 
-		static Uint8 activeTransition;
+		static Uint8 activeTransition;										///< Which transition to use, refering to \a TRANSITIONS enum
 };
 
+/// \class 		M22Sound M22Engine.h "include/M22Engine.h"
+/// \brief 		Class for sound handling
+///
+/// \details 	This class is responsible for music/sound playback/loading/managing.
+///
 class M22Sound
 {
 	private:
 	public:
+		/// Enumerator for different mixers/channels for specific types of sound
 		enum MIXERS
 		{
-			BGM,
-			SFX,
-			VOICE,
-			LOOPED_SFX
+			BGM,											///< Background music
+			SFX,											///< Sound FX
+			VOICE,											///< Voice (UNUSED CURRENTLY)
+			LOOPED_SFX										///< SFX that is to loop continuously
 		};
-		static std::vector<Mix_Chunk*> SOUND_FX;
-		static std::vector<Mix_Music*> MUSIC;
-		static std::vector<std::string> MUSIC_NAMES;
-		static std::vector<std::string> SFX_NAMES;
-		static float* MUSIC_VOLUME;
-		static float* SFX_VOLUME;
-		static int currentTrack;
+		static std::vector<Mix_Chunk*> SOUND_FX;			///< Array of loaded SFX files
+		static std::vector<Mix_Music*> MUSIC;				///< Array of loaded music files
+		static std::vector<std::string> MUSIC_NAMES;		///< Array of loaded music file names (for scripts)
+		static std::vector<std::string> SFX_NAMES;			///< Array of loaded SFX file names (for scripts)
+		static float* MUSIC_VOLUME;							///< Current volume for music playback
+		static float* SFX_VOLUME;							///< Current volume for SFX playback
+		static int currentTrack;							///< The active track to play in \a MUSIC array. 0 = silence
 
-		static short int PlaySting(short int);
-		static short int PlaySting(short int, bool);
-		static short int PlaySting(std::string, bool);
-		static short int PlayLoopedSting(std::string);
-		static void StopLoopedStings(void);
+		/// Plays a SFX once, doesn't play if a SFX is already playing
+		///
+		/// \param _position Index of sound file from \a SOUND_FX array.
+		/// \return Error code if problem encountered, 0 if fine
+			static short int PlaySting(short int);
+			
+		/// Plays a SFX once, can be forced to playback if true
+		///
+		/// \param _position Index of sound file from \a SOUND_FX array.
+		/// \param _forceplayback If true, will force the sound effect to play as high priority.
+		/// \return Error code if problem encountered, 0 if fine
+			static short int PlaySting(short int, bool);
+			
+		/// Searches for the SFX from the string, and plays back.
+		///
+		/// \param _name Name of sound file from \a SFX_NAMES array.
+		/// \param _forceplayback If true, will force the sound effect to play as high priority.
+		/// \return Error code if problem encountered, 0 if fine
+			static short int PlaySting(std::string, bool);
+			
+		/// Searches for the SFX from the string, and plays back on a continuous loop.
+		///
+		/// \param _name Name of sound file from \a SFX_NAMES array.
+		/// \return Error code if problem encountered, 0 if fine
+			static short int PlayLoopedSting(std::string);
+			
+		/// Stops anything playing in the \a LOOPED_SFX mixer
+			static void StopLoopedStings(void);
 
-		static short int ChangeMusicTrack(short int _position);
-		static short int ChangeMusicTrack(std::string _name);
-		static void StopMusic();
-		static void PauseMusic();
-		static void ResumeMusic();
-		static short int StartMusic(short int _position);
+		/// Changes the active music track
+		///
+		/// \param _position Index of sound file in \a MUSIC array.
+		/// \return Error code if problem encountered, 0 if fine
+			static short int ChangeMusicTrack(short int _position);
+			
+		/// Searches for track from string, changes the active music track to result
+		///
+		/// \param _name Name of sound file from \a MUSIC_NAMES array.
+		/// \return Error code if problem encountered, 0 if fine
+			static short int ChangeMusicTrack(std::string _name);
+			
+		/// Stops anything playing in the \a BGM mixer
+			static void StopMusic();
+		/// Pauses anything playing in the \a LOOPED_SFX mixer
+			static void PauseMusic();
+		/// Resumes whatever is paused in the \a LOOPED_SFX mixer
+			static void ResumeMusic();
+			
+		/// EMPTY FUNCTION, QUEUED FOR REMOVAL
+			static short int StartMusic(short int _position);
 };
 
+/// \class 		M22Script M22Engine.h "include/M22Engine.h"
+/// \brief 		Class for script handling
+///
+/// \details 	This class is responsible for loading and handling script files for M22.
+///
 class M22Script
 {
 	private:
 	public:
+		/// Enumerator for the type of line the script is on
 		enum LINETYPE
 		{
-			NEW_BACKGROUND,
-			FADE_TO_BLACK,
-			FADE_TO_BLACK_FANCY,
-			NEW_MUSIC,
-			DARK_SCREEN,
-			BRIGHT_SCREEN,
-			STOP_MUSIC,
-			PLAY_STING,
-			PLAY_STING_LOOPED,
-			STOP_STING_LOOPED,
-			GOTO,
-			DRAW_CHARACTER,
-			CLEAR_CHARACTERS,
-			CLEAR_CHARACTERS_BRUTAL,
-			DRAW_CHARACTER_BRUTAL,
-			LOAD_SCRIPT,
-			SPEECH,
-			COMMENT,
-			WAIT,
-			EXITGAME,
-			SET_ACTIVE_TRANSITION,
-			EXITTOMAINMENU,
-			NARRATIVE
+			NEW_BACKGROUND,					///< Changes the background using active transition
+			FADE_TO_BLACK,					///< Fade the background to black
+			FADE_TO_BLACK_FANCY,			///< Fade the background to black; hijacks the thread for a nicer effect.
+			NEW_MUSIC,						///< Changes the current music track
+			DARK_SCREEN,					///< Darkens the screen slightly
+			BRIGHT_SCREEN,					///< Restores the screen brightness from dark screen
+			STOP_MUSIC,						///< Stops music playback
+			PLAY_STING,						///< Plays the specified SFX
+			PLAY_STING_LOOPED,				///< Plays the specified SFX on loop
+			STOP_STING_LOOPED,				///< Stops any looped SFX
+			GOTO,							///< Goes straight to specified line
+			DRAW_CHARACTER,					///< Add new character to active characters
+			CLEAR_CHARACTERS,				///< Remove all characters from active characters
+			CLEAR_CHARACTERS_BRUTAL,		///< Remove all characters from active characters without transition
+			DRAW_CHARACTER_BRUTAL,			///< Add new character to active characters without transition
+			LOAD_SCRIPT,					///< Terminate the current script and load the specified one
+			SPEECH,							///< Speech from a character
+			COMMENT,						///< Code comment
+			WAIT,							///< Waits N milliseconds before loading the next line
+			EXITGAME,						///< Exit game
+			SET_ACTIVE_TRANSITION,			///< Changes the active transition
+			EXITTOMAINMENU,					///< Exit to main menu
+			NARRATIVE						///< Speech without chat box (thoughts of main character; narrative)
 		};
-		static const unsigned short int DARKEN_SCREEN_OPACITY = 100;
+		static const unsigned short int DARKEN_SCREEN_OPACITY = 100;	///< Current opacity of the darken screen effect
 
-		static std::string currentLine;
-		static int currentLineIndex;
-		static std::vector<std::string> currentScript;
-		static int activeSpeakerIndex;
-		static SDL_Surface *currentLineSurface;
-		static SDL_Surface *currentLineSurfaceShadow;
+		static std::string currentLine;									///< Current line from script, loaded into string
+		static int currentLineIndex;									///< Current line index in \a currentScript
+		static std::vector<std::string> currentScript;					///< Active script, loaded each line as an array of strings
+		static int activeSpeakerIndex;									///< The index of the active speaker, for chat box names
+		static SDL_Surface *currentLineSurface;							///< Current line surface, for drawing the text off-screen
+		static SDL_Surface *currentLineSurfaceShadow;					///< Current line surface, for drawing the text shadow off-screen
 
-		static float fontSize;
+		static float fontSize;											///< The size of the text font; not sure if still used?
 
-		static short int LoadScriptToCurrent(const char* _filename);
-		static void DrawCurrentLine(int ScrW, int ScrH);
-		static void ChangeLine(int _newLine);
-		static unsigned int SplitString(const std::string&, std::vector<std::string>&, char);
-		static M22Script::LINETYPE CheckLineType(std::string);
-		static bool isColon(int _char);
-		static void ClearCharacters(void);
-		static void FadeToBlack(void);
+		/// Loads the script file into \a currentScript
+		///
+		/// \param _filename File path/name of script file
+		/// \return Error code if problem encountered, 0 if fine
+			static short int LoadScriptToCurrent(const char* _filename);
+			
+		/// Draws the contents of \a currentLine to screen
+		///
+		/// \param ScrW Screen width resolution
+		/// \param ScrH Screen height resolution
+			static void DrawCurrentLine(int ScrW, int ScrH);
+			
+		/// Changes currentLine to target line index
+		///
+		/// \param _newLine Index of new target line
+			static void ChangeLine(int _newLine);
+			
+		/// Splits string into parts between specified character into an array
+		///
+		/// \param txt Target string to split
+		/// \param strs Address of string array to split into
+		/// \param ch Character to split between
+			static unsigned int SplitString(const std::string&, std::vector<std::string>&, char);
+			
+		/// Checks and returns the type of the string from \a LINETYPE
+		///
+		/// \param _input String to check
+		/// \return Type of line as \a LINETYPE enumerator
+			static M22Script::LINETYPE CheckLineType(std::string);
+			
+		/// Checks and returns if the character is a colon ( : )
+		///
+		/// \param _char Character to check
+			static bool isColon(int _char);
+			
+		/// Clears active characters array
+			static void ClearCharacters(void);
+			
+		/// Fades to screen black
+			static void FadeToBlack(void);
 };
 
+/// \class 		M22Interface M22Engine.h "include/M22Engine.h"
+/// \brief 		Class for interfaces/mouse input
+///
+/// \details 	This class is responsible for loading, running, displaying and updating interfaces.
+///
 class M22Interface
 {
 	private:
 	public:
+		/// Enumerator for the different states of interface button
 		enum BUTTON_STATES
 		{
-			NOMOUSEOVER,
-			RESTING,
-			MOUSEOVER,
-			CLICKED,
+			NOMOUSEOVER,						///< Mouse is over a different button (UNUSED?)
+			RESTING,							///< Normal state
+			MOUSEOVER,							///< Mouse is over this button
+			CLICKED,							///< This button has been clicked
 			NUM_OF_BUTTON_STATES
 		};
+		/// Enumerator for the different interfaces
 		enum INTERFACES
 		{
-			INGAME_INTRFC,
-			MENU_BUTTON_INTRFC,
-			MAIN_MENU_INTRFC,
-			OPTIONS_MENU_INTRFC,
+			INGAME_INTRFC,						///< Interface for ingame (skip, auto, menu)
+			MENU_BUTTON_INTRFC,					///< Interface for ingame menu button (save, load, options)
+			MAIN_MENU_INTRFC,					///< Interface for main menu (start, exit, options)
+			OPTIONS_MENU_INTRFC,				///< Interface for options menu (exit to title, exit game, etc.)
 			NUM_OF_INTERFACES
 		};
+		
+		/// Data structure for a button on an interface
 		struct Button
 		{
-			std::string name;
-			BUTTON_STATES state;
-			SDL_Texture* sheet;
-			SDL_Rect rectSrc[NUM_OF_BUTTON_STATES];
-			SDL_Rect rectDst[NUM_OF_BUTTON_STATES];
+			std::string name;						///< Name of button
+			BUTTON_STATES state;					///< State of button
+			SDL_Texture* sheet;						///< Sprite sheet for button
+			SDL_Rect rectSrc[NUM_OF_BUTTON_STATES];	///< Where the current sprite is on the spritesheet
+			SDL_Rect rectDst[NUM_OF_BUTTON_STATES];	///< Where to draw the sprite
 			Button()
 			{
 				state = RESTING;
@@ -307,16 +449,20 @@ class M22Interface
 			};
 		};
 
+		/// Data structure for an interface
 		struct Interface
 		{
-			std::vector<M22Interface::Button> buttons;
-			SDL_Texture* spriteSheet;
-			float alpha;
-			M22Interface::INTERFACES type;
+			std::vector<M22Interface::Button> buttons;		///< Array of buttons in the interface
+			SDL_Texture* spriteSheet;						///< Background of interface (optional)
+			float alpha;									///< Current alpha
+			M22Interface::INTERFACES type;					///< Type of interface
+			
 			Interface()
 			{
 				alpha = 0.0f;
 			};
+			
+			/// Fades in all buttons using \a Lerp and \a alpha, usually used for main menu
 			void Interface::FadeInAllButtons(void)
 			{
 				this->alpha = M22Graphics::Lerp( this->alpha, 255.0f, DEFAULT_LERP_SPEED/4 );
@@ -325,25 +471,58 @@ class M22Interface
 					SDL_SetTextureAlphaMod( this->buttons[i].sheet, Uint8(this->alpha) );
 				};
 			};
+			
 		};
 		
-		static std::vector<Interface> storedInterfaces;
-		static std::vector<Interface*> activeInterfaces;
-		static M22Interface::BUTTON_STATES* skipButtonState;
-		static M22Interface::BUTTON_STATES* menuButtonState;
-		static SDL_Texture* ChatBoxRenderer;
+		static std::vector<Interface> storedInterfaces;			///< Array of loaded interfaces
+		static std::vector<Interface*> activeInterfaces;		///< Array of pointers to interfaces to draw/update
+		static M22Interface::BUTTON_STATES* skipButtonState;	///< Current state of skip button
+		static M22Interface::BUTTON_STATES* menuButtonState;	///< Current state of menu button
+		static SDL_Texture* ChatBoxRenderer;					///< Render target for drawing speech box off-screen
 
-		static bool menuOpen;
+		static bool menuOpen;									///< Is the menu open?
 
-		static void DrawActiveInterfaces(void);
-		static void DrawActiveInterfacesButtons(void);
-		static bool DRAW_TEXT_AREA;
-		static void DrawTextArea(int, int);
-		static void UpdateActiveInterfaces(int _ScrSizeX, int _ScrSizeY);
-		static bool CheckOverlap(Vec2 _pos1, Vec2 _pos2, Vec2 _size);
-		static void ResetStoredInterfaces(void);
+		/// Draws all interfaces in \a activeInterfaces
+			static void DrawActiveInterfaces(void);
+			
+		/// Draws the buttons of the active interfaces
+			static void DrawActiveInterfacesButtons(void);
+			
+		/// Checks and returns if the character is a colon ( : )
+		///
+		/// \param _char Character to check
+			static bool DRAW_TEXT_AREA;
+			
+		/// Draws the text box, name of person talking, current line; off-screen then into the main renderer
+		/// \param _ScrSizeX Screen width
+		/// \param _ScrSizeY Screen height
+			static void DrawTextArea(int, int);
+			
+		/// Updates active interfaces, checking if they've been clicked, etc.
+		/// \param _ScrSizeX Screen width
+		/// \param _ScrSizeY Screen height
+			static void UpdateActiveInterfaces(int _ScrSizeX, int _ScrSizeY);
+			
+		/// Checks if a single point is within a box
+		/// \param _pos1 Single point
+		/// \param _pos2 Box position
+		/// \param _size Size of box
+		/// \return True if overlap, false if not
+			static bool CheckOverlap(Vec2 _pos1, Vec2 _pos2, Vec2 _size);
+			
+		/// Resets all stored (and by extension, active) interfaces to default settings
+			static void ResetStoredInterfaces(void);
 
-		static short int InitializeInterface(M22Interface::Interface* _interface, int _num_of_buttons, int _startline = 0, const std::string _filename = "graphics/interface/GAME_BUTTONS.txt", bool _opaque = true, M22Interface::INTERFACES _type = M22Interface::INTERFACES::INGAME_INTRFC);
+		/// Initializes an interface from buttons file + constants
+		///
+		/// \param _interface Pointer to interface to initialize
+		/// \param _num_of_buttons Number of buttons in interface
+		/// \param _startline Line to start on in buttons file
+		/// \param _filename File path/name of buttons file
+		/// \param _opaque Is the interface opaque to begin with?
+		/// \param _type Type of interface from \a M22Interface::INTERFACES
+		/// \return Error code if problem encountered, 0 if fine
+			static short int InitializeInterface(M22Interface::Interface* _interface, int _num_of_buttons, int _startline = 0, const std::string _filename = "graphics/interface/GAME_BUTTONS.txt", bool _opaque = true, M22Interface::INTERFACES _type = M22Interface::INTERFACES::INGAME_INTRFC);
 };
 
 #endif
