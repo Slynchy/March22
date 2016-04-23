@@ -7,11 +7,59 @@ int M22Script::activeSpeakerIndex = 1;
 SDL_Surface* M22Script::currentLineSurface = NULL;
 SDL_Surface* M22Script::currentLineSurfaceShadow = NULL;
 float M22Script::fontSize;
+std::vector<M22Script::Decision> M22Script::gameDecisions;
+
+short int M22Script::LoadGameDecisions(const char* _filename)
+{
+	printf("[M22Script] Loading \"%s\" \n", _filename);
+	std::fstream input(_filename);
+	int length;
+	std::string temp;
+	std::vector<std::string> tempArr;
+	if(input)
+	{
+		getline(input,temp);
+		length = atoi(temp.c_str());
+		M22Script::gameDecisions.resize(length);
+
+		for(int i = 0; i < length; i++)
+		{
+			//Get name of decision + number of decisions
+			getline(input,temp);
+
+			//Split string and remove spaces
+			M22Script::SplitString(temp, tempArr, ' ');
+			tempArr[0].erase(std::remove_if(tempArr[0].begin(), tempArr[0].end(), isspace));
+			tempArr[1].erase(std::remove_if(tempArr[1].begin(), tempArr[1].end(), isspace));
+
+			//Push back the name of the decision to array
+			M22Script::gameDecisions.at(i).name = tempArr.at(0);
+
+			//Get number of decisions for upcoming for loop
+			M22Script::gameDecisions.at(i).num_of_choices = atoi(tempArr.at(1).c_str());
+
+			//For number of decisions, push back the decision
+			for(int k = 0; k < M22Script::gameDecisions.at(i).num_of_choices; k++)
+			{
+				getline(input,temp);
+				M22Script::gameDecisions.at(i).choices.push_back(temp);
+			};
+		};
+	}
+	else
+	{
+		printf("Failed to load decisions file: %s \n", _filename);
+		return -1;
+	};
+	input.close();
+	return 0;
+};
 
 short int M22Script::LoadScriptToCurrent(const char* _filename)
 {
 	std::string filename = "scripts/";
 	filename += _filename;
+	printf("[M22Script] Loading \"%s\" \n", filename.c_str());
 	std::fstream input(filename);
 	int length;
 	std::string temp;
@@ -34,7 +82,7 @@ short int M22Script::LoadScriptToCurrent(const char* _filename)
 	}
 	else
 	{
-		std::cout << "Failed to load script file: " << _filename << std::endl;
+		printf("Failed to load script file: %s \n", filename);
 		return -1;
 	};
 	input.close();
@@ -142,9 +190,18 @@ void M22Script::ChangeLine(int _newLine)
 	std::vector<std::string> temp;
 	M22Script::SplitString(M22Script::currentLine, temp, ' ');
 	std::string type = temp[0];
-
 	M22Script::LINETYPE LINETYPE = M22Script::CheckLineType(type);
 
+	//if(M22Script::ExecuteM22ScriptCommand(LINETYPE, temp, _newLine) == 1)
+	//	return;
+	M22Script::ExecuteM22ScriptCommand(LINETYPE, temp, _newLine);
+
+	M22Script::currentLineIndex = _newLine;
+	return;
+};
+
+short int M22Script::ExecuteM22ScriptCommand(M22Script::LINETYPE LINETYPE, std::vector<std::string> temp, int _newLine)
+{
 	if(LINETYPE == M22Script::LINETYPE::NEW_BACKGROUND)
 	{
 		for(size_t i = 0; i < M22Graphics::backgroundIndex.size(); i++)
@@ -163,7 +220,7 @@ void M22Script::ChangeLine(int _newLine)
 				SDL_SetTextureAlphaMod(M22Graphics::BACKGROUND_RENDER_TARGET, 255);
 				SDL_SetTextureAlphaMod(M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, 255);
 				//M22Script::ChangeLine(++_newLine);
-				return;
+				return 0;
 			};
 		};
 	}
@@ -174,19 +231,19 @@ void M22Script::ChangeLine(int _newLine)
 		tempPath += ".OGG";
 		M22Sound::ChangeMusicTrack(tempPath);
 		M22Script::ChangeLine(++_newLine);
-		return;
+		return 0;
 	}
 	else if(LINETYPE == M22Script::LINETYPE::STOP_MUSIC)
 	{
 		M22Sound::ChangeMusicTrack("sfx/music/SILENCE.OGG");
 		M22Script::ChangeLine(++_newLine);
-		return;
+		return 0;
 	}
 	else if(LINETYPE == M22Script::LINETYPE::FADE_TO_BLACK)
 	{
 		M22Script::FadeToBlack();
 		//M22Script::ChangeLine(++_newLine);
-		return;
+		return 0;
 	}
 	else if(LINETYPE == M22Script::LINETYPE::PLAY_STING)
 	{
@@ -195,7 +252,7 @@ void M22Script::ChangeLine(int _newLine)
 		tempPath += ".OGG";
 		M22Sound::PlaySting(tempPath, true);
 		M22Script::ChangeLine(++_newLine);
-		return;
+		return 0;
 	}
 	else if(LINETYPE == M22Script::LINETYPE::DRAW_CHARACTER)
 	{
@@ -203,7 +260,7 @@ void M22Script::ChangeLine(int _newLine)
 		charIndex = M22Engine::GetCharacterIndexFromName(temp[1]);
 		M22Graphics::AddCharacterToBackgroundRenderTarget(charIndex, M22Engine::GetOutfitIndexFromName(temp[2], charIndex), M22Engine::GetEmotionIndexFromName(temp[3], charIndex), atoi(temp[4].c_str()), false);
 		M22Script::ChangeLine(++_newLine);
-		return;
+		return 0;
 	}
 	else if(LINETYPE == M22Script::LINETYPE::DRAW_CHARACTER_BRUTAL)
 	{
@@ -211,20 +268,20 @@ void M22Script::ChangeLine(int _newLine)
 		charIndex = M22Engine::GetCharacterIndexFromName(temp[1]);
 		M22Graphics::AddCharacterToBackgroundRenderTarget(charIndex, M22Engine::GetOutfitIndexFromName(temp[2], charIndex), M22Engine::GetEmotionIndexFromName(temp[3], charIndex), atoi(temp[4].c_str()), true);
 		M22Script::ChangeLine(++_newLine);
-		return;
+		return 0;
 	}
 	else if(LINETYPE == M22Script::LINETYPE::CLEAR_CHARACTERS)
 	{
 		M22Script::ClearCharacters();
 		M22Script::ChangeLine(++_newLine);
-		return;
+		return 0;
 	}
 	else if(LINETYPE == M22Script::LINETYPE::WAIT)
 	{
 		M22Script::currentLine = "";
 		M22Engine::TIMER_CURR = 0;
 		M22Engine::TIMER_TARGET = atoi(temp[1].c_str());
-		return;
+		return 0;
 	}
 	else if(LINETYPE == M22Script::LINETYPE::LOAD_SCRIPT)
 	{
@@ -232,19 +289,19 @@ void M22Script::ChangeLine(int _newLine)
 		M22Script::ClearCharacters();
 		LoadScriptToCurrent(temp[1].c_str());
 		M22Script::ChangeLine(0);
-		return;
+		return 0;
 	}
 	else if(LINETYPE == M22Script::LINETYPE::DARK_SCREEN)
 	{
 		SDL_SetTextureAlphaMod( M22Graphics::BLACK_TEXTURE, M22Script::DARKEN_SCREEN_OPACITY );
 		M22Script::ChangeLine(++_newLine);
-		return;
+		return 0;
 	}
 	else if(LINETYPE == M22Script::LINETYPE::BRIGHT_SCREEN)
 	{
 		SDL_SetTextureAlphaMod( M22Graphics::BLACK_TEXTURE, 0 );
 		M22Script::ChangeLine(++_newLine);
-		return;
+		return 0;
 	}
 	else if(LINETYPE == M22Script::LINETYPE::PLAY_STING_LOOPED)
 	{
@@ -253,34 +310,99 @@ void M22Script::ChangeLine(int _newLine)
 		tempPath += ".OGG";
 		M22Sound::PlayLoopedSting(tempPath);
 		M22Script::ChangeLine(++_newLine);
-		return;
+		return 0;
 	}
 	else if(LINETYPE == M22Script::LINETYPE::STOP_STING_LOOPED)
 	{
 		M22Sound::StopLoopedStings();
 		M22Script::ChangeLine(++_newLine);
-		return;
+		return 0;
 	}
 	else if(LINETYPE == M22Script::LINETYPE::GOTO)
 	{
 		int newLinePosition = atoi(temp[1].c_str());
 		M22Script::ChangeLine(newLinePosition);
-		return;
+		return 0;
 	}
 	else if(LINETYPE == M22Script::LINETYPE::EXITGAME)
 	{
 		M22Engine::QUIT = true;
-		return;
+		return 0;
 	}
 	else if(LINETYPE == M22Script::LINETYPE::EXITTOMAINMENU)
 	{
 		M22Engine::ResetGame();
-		return;
+		return 0;
+	}
+	else if(LINETYPE == M22Script::LINETYPE::IF_STATEMENT)
+	{
+		// m22IF TEST_DECISION YES Goto 500
+		// param 1 = which decision
+		// param 2 = which choice of decision
+		// param 3 = what to do if true
+
+		// temp[0] == m22IF
+		// temp[1] == TEST_DECISION
+		// temp[2] == YES
+
+		short int specifiedDecision = -1;
+		short int specifiedChoice = -1;
+
+		for(size_t i = 0; i < gameDecisions.size(); i++)
+		{
+			if(gameDecisions.at(i).name == temp.at(1))
+			{
+				// found decision
+				specifiedDecision = i;
+				break;
+			};
+		};
+
+		if(specifiedDecision == -1)
+		{
+			// INVALID DECISION
+			M22Script::ChangeLine(++_newLine);
+			return 0;
+		};
+
+		for(size_t i = 0; i < gameDecisions.at(specifiedDecision).choices.size(); i++)
+		{
+			if(gameDecisions.at(specifiedDecision).choices.at(i) == temp.at(2))
+			{
+				specifiedChoice = i;
+			};
+		};
+
+		if(specifiedChoice == -1)
+		{
+			// INVALID CHOICE
+			M22Script::ChangeLine(++_newLine);
+			return 0;
+		};
+
+		if(gameDecisions.at(specifiedDecision).selectedOption == specifiedChoice)
+		{
+			//IF STATEMENT RETURNS TRUE
+			M22Script::LINETYPE tempType = M22Script::CheckLineType(temp.at(3));
+			std::vector<std::string> tempStrVec;
+			for(size_t i = 3; i < temp.size(); i++)
+			{
+				tempStrVec.push_back(temp.at(i));
+			};
+			M22Script::ExecuteM22ScriptCommand(tempType,tempStrVec,_newLine);
+			return 0;
+		}
+		else
+		{
+			// RETURN FALSE
+			M22Script::ChangeLine(++_newLine);
+		};
+		return 0;
 	}
 	else if(LINETYPE == M22Script::LINETYPE::COMMENT)
 	{
 		M22Script::ChangeLine(++_newLine);
-		return;
+		return 0;
 	}
 	else if(LINETYPE == M22Script::LINETYPE::SET_ACTIVE_TRANSITION)
 	{
@@ -293,13 +415,13 @@ void M22Script::ChangeLine(int _newLine)
 			};
 		};
 		M22Script::ChangeLine(++_newLine);
-		return;
+		return 0;
 	}
 	else if(LINETYPE == M22Script::LINETYPE::CLEAR_CHARACTERS_BRUTAL)
 	{
 		ClearCharacters();
 		M22Script::ChangeLine(++_newLine);
-		return;
+		return 0;
 	}
 	else if(LINETYPE == M22Script::LINETYPE::FADE_TO_BLACK_FANCY)
 	{
@@ -312,21 +434,18 @@ void M22Script::ChangeLine(int _newLine)
 		//	M22Script::FadeToBlack();
 		//};
 		M22Script::ChangeLine(++_newLine);
-		return;
+		return 0;
 	}
 	else
 	{
-		M22Script::activeSpeakerIndex = M22Engine::GetCharacterIndexFromName(type, true);
+		M22Script::activeSpeakerIndex = M22Engine::GetCharacterIndexFromName(temp[0], true);
+		if(M22Script::activeSpeakerIndex > 0)
+		{
+			std::string tempName = temp.at(0);
+			M22Script::currentLine.erase(0, tempName.length());
+		};
 	};
-
-	if(M22Script::activeSpeakerIndex > 0)
-	{
-		std::string tempName = type;
-		M22Script::currentLine.erase(0, tempName.length());
-	};
-
-	M22Script::currentLineIndex = _newLine;
-	return;
+	return 1;
 };
 
 bool M22Script::isColon(int _char)
@@ -453,6 +572,10 @@ M22Script::LINETYPE M22Script::CheckLineType(std::string _input)
 	else if(_input == std::string("Wait"))
 	{
 		return M22Script::LINETYPE::WAIT;
+	}
+	else if(_input == std::string("m22IF"))
+	{
+		return M22Script::LINETYPE::IF_STATEMENT;
 	};
 	return M22Script::LINETYPE::SPEECH;
 };

@@ -1,6 +1,6 @@
 #include "M22Engine.h"
 
-M22Engine::GAMESTATES M22Engine::GAMESTATE = M22Engine::GAMESTATES::MAIN_MENU;
+M22Engine::GAMESTATES M22Engine::GAMESTATE = M22Engine::GAMESTATES::INGAME;
 M22Engine::OPTIONS_STRUCTURE  M22Engine::OPTIONS;
 SDL_Window* M22Engine::SDL_SCREEN = NULL;
 SDL_Renderer *M22Engine::SDL_RENDERER = NULL;
@@ -91,13 +91,13 @@ void M22Engine::OptionsFileInitializer(void)
 	std::fstream input("OPTIONS.SAV");
 	if(!input)
 	{
-		printf("OPTIONS.SAV doesn't exist; creating...\n");
+		printf("[M22Engine] OPTIONS.SAV doesn't exist; creating...\n");
 		M22Engine::SaveOptions();
 	}
 	else
 	{
 		input.close();
-		printf("Loading OPTIONS.SAV\n");
+		printf("[M22Engine] Loading OPTIONS.SAV\n");
 		M22Engine::LoadOptions();
 		M22Engine::UpdateOptions();
 	};
@@ -234,9 +234,9 @@ void M22Engine::UpdateDeltaTime(void)
 
 short int M22Engine::InitializeM22(int ScrW, int ScrH)
 {
-	printf("Initializing M22...\n");
+	printf("[M22Engine] Initializing M22...\n");
 
-	printf("Loading CHARACTER_NAMES...\n");
+	printf("[M22Engine] Loading \"scripts/CHARACTER_NAMES.txt\"...\n");
 	std::fstream input("scripts/CHARACTER_NAMES.txt");
 	int length;
 	std::string temp;
@@ -253,12 +253,12 @@ short int M22Engine::InitializeM22(int ScrW, int ScrH)
 	}
 	else
 	{
-		std::cout << "Failed to load script file: " << "scripts/CHARACTER_NAMES.txt" << std::endl;
+		printf("[M22Engine] Failed to load: \"scripts/CHARACTER_NAMES.txt\" \n ");
 		return -1;
 	};
 	input.close();
 	
-	printf("Loading CHARACTERS.txt...\n");
+	printf("[M22Engine] Loading \"graphics/characters/CHARACTERS.txt\"...\n");
 	input.open("graphics/characters/CHARACTERS.txt");
 	if(input)
 	{
@@ -276,12 +276,12 @@ short int M22Engine::InitializeM22(int ScrW, int ScrH)
 	}
 	else
 	{
-		std::cout << "Failed to load script file: " << "graphics/characters/CHARACTERS.txt" << std::endl;
+		printf("[M22Engine] Failed to load: \"graphics/characters/CHARACTERS.txt\" \n ");
 		return -1;
 	};
 	input.close();
 	
-	printf("Loading character text frames...\n");
+	printf("[M22Engine] Loading character text frames...\n");
 	for(int i = 0; i < length; i++)
 	{
 		temp.clear();
@@ -292,7 +292,7 @@ short int M22Engine::InitializeM22(int ScrW, int ScrH)
 		temp.clear();
 	};
 	
-	printf("Loading EMOTIONS.txt...\n");
+	printf("[M22Engine] Loading EMOTIONS.txt...\n");
 	for(size_t i = 0; i < CHARACTERS_ARRAY.size(); i++)
 	{
 		std::string filename = "graphics/characters/";
@@ -318,7 +318,7 @@ short int M22Engine::InitializeM22(int ScrW, int ScrH)
 		input.close();
 	};
 	
-	printf("Loading OUTFITS.txt...\n");
+	printf("[M22Engine] Loading OUTFITS.txt...\n");
 	for(size_t i = 0; i < CHARACTERS_ARRAY.size(); i++)
 	{
 		std::string filename = "graphics/characters/";
@@ -344,7 +344,7 @@ short int M22Engine::InitializeM22(int ScrW, int ScrH)
 		input.close();
 	};
 	
-	printf("Loading character sprites...\n");
+	printf("[M22Engine] Loading character sprites...\n");
 	for(size_t i = 0; i < CHARACTERS_ARRAY.size(); i++)
 	{
 		CHARACTERS_ARRAY[i].sprites.resize(CHARACTERS_ARRAY[i].outfits.size());
@@ -367,7 +367,7 @@ short int M22Engine::InitializeM22(int ScrW, int ScrH)
 		};
 	};
 	
-	printf("Loading main menu backgrounds...\n");
+	printf("[M22Engine] Loading main menu backgrounds...\n");
 	input.open("graphics/mainmenu/BACKGROUNDS.txt");
 	if(input)
 	{

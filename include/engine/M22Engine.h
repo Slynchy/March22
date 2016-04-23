@@ -1,7 +1,7 @@
 /// \file 		M22Engine.h
 /// \author 	Sam Lynch
 /// \brief 		Header file for entire M22 engine
-/// \version 	0.4.4
+/// \version 	0.4.9
 /// \date 		April 2016
 /// \details	The header file for declaring the engine and its functions/variables.
 
@@ -260,18 +260,62 @@ class M22Graphics
 
 		static std::vector<SDL_Texture*> BACKGROUNDS;						///< Loaded background textures
 		static std::vector<std::string> backgroundIndex;					///< Names of the backgrounds to know which one to load for scripts
-		static short int LoadBackgroundsFromIndex(const char* _filename);	
+		
+		/// Loads backgrounds into loaded backgrounds array from a filepath
+		///
+		/// \param _filename File path
+		/// \return Error code, if 0 then init'd fine
+		static short int LoadBackgroundsFromIndex(const char* _filename);
+		
+		/// Draws the active background to a render target
+		/// \param _target Render target
 		static void DrawBackground(SDL_Texture* _target);
+
+		/// Updates background states/alpha
 		static void UpdateBackgrounds(void);
+
+		/// Update character states/alpha
 		static void UpdateCharacters(void);
+		
+		/// Draw the ingame screen (background, text box, interfaces, etc.)
 		static void DrawInGame(bool _draw_black = true);
+
+		/// Hijack the renderer and fade to black slowly
 		static void FadeToBlackFancy(void);
+		
+		/// Adds the specified character to the active characters to draw
+		///
+		/// \param _charindex Index of character to add to active
+		/// \param _outfitindex Index of character's outfit
+		/// \param _emotionindex Index of character's emotion
+		/// \param _xPosition Position on the X-axis
+		/// \param _brutal Fade-in or just insert?
 		static void AddActiveCharacter(int _charindex, int _outfitindex, int _emotionindex, int _xPosition, bool _brutal = false);
+		
+		/// Updates/resets the render target
 		static void UpdateBackgroundRenderTarget(void);
+		
+		/// Adds the specified character to the background render target (hard-drawn to the background)
+		///
+		/// \param _charindex Index of character to add to active
+		/// \param _outfitindex Index of character's outfit
+		/// \param _emotionindex Index of character's emotion
+		/// \param _xPosition Position on the X-axis
+		/// \param _brutal Fade-in or just insert?
 		static void AddCharacterToBackgroundRenderTarget(int _charindex, int _outfitindex, int _emotionindex, int _xPosition, bool _brutal = false);
-
+		
+		/// Draws the animated arrow at correct location, taking into account width/height of target
+		///
+		/// \param ScrW Screen width
+		/// \param ScrH Screen height
 		static void DrawArrow(int ScrW, int ScrH);
-
+		
+		/// Basic lerp function
+		///
+		/// \param _var1 Original value
+		/// \param _var2 Target value
+		/// \param _t Delta time
+		/// \return Lerp'd value
 		static float Lerp(float _var1, float _var2, float _t); 
 
 		static TTF_Font *textFont;											///< The TTF font to use for speech/narrative text.
@@ -421,8 +465,33 @@ class M22Script
 			EXITGAME,						///< Exit game
 			SET_ACTIVE_TRANSITION,			///< Changes the active transition
 			EXITTOMAINMENU,					///< Exit to main menu
+			IF_STATEMENT,					///< Basic if statement
 			NARRATIVE						///< Speech without chat box (thoughts of main character; narrative)
 		};
+
+		/// Data structure for decisions
+		struct Decision
+		{
+			std::string name;							///< Name of decision (for scripts)
+			short unsigned int num_of_choices;			///< Number of possible choices
+			std::vector<std::string> choices;			///< Array of choice names (for scripts)
+			short int selectedOption;					///< The index from \a choices of the choice that the player selected
+			Decision()
+			{
+				name = "";
+				num_of_choices = 0;
+				selectedOption = -1;
+			};
+		};
+		
+		/// Executes specified scripting function
+		///
+		/// \param LINETYPE Function to execute
+		/// \param temp Complete line
+		/// \param _newLine Target line (not always required)
+		/// \return Error code if problem encountered, 0 if fine
+		static short int ExecuteM22ScriptCommand(M22Script::LINETYPE LINETYPE, std::vector<std::string> temp, int _newLine);
+
 		static const unsigned short int DARKEN_SCREEN_OPACITY = 100;	///< Current opacity of the darken screen effect
 
 		static std::string currentLine;									///< Current line from script, loaded into string
@@ -434,46 +503,54 @@ class M22Script
 
 		static float fontSize;											///< The size of the text font; not sure if still used?
 
+		static std::vector<Decision> gameDecisions;						///< Array of game decisions
+		
+		/// Loads the decisions file into \a gameDecisions array
+		///
+		/// \param _filename File path/name of decisions file
+		/// \return Error code if problem encountered, 0 if fine
+		static short int LoadGameDecisions(const char* _filename);
+
 		/// Loads the script file into \a currentScript
 		///
 		/// \param _filename File path/name of script file
 		/// \return Error code if problem encountered, 0 if fine
-			static short int LoadScriptToCurrent(const char* _filename);
+		static short int LoadScriptToCurrent(const char* _filename);
 			
 		/// Draws the contents of \a currentLine to screen
 		///
 		/// \param ScrW Screen width resolution
 		/// \param ScrH Screen height resolution
-			static void DrawCurrentLine(int ScrW, int ScrH);
+		static void DrawCurrentLine(int ScrW, int ScrH);
 			
 		/// Changes currentLine to target line index
 		///
 		/// \param _newLine Index of new target line
-			static void ChangeLine(int _newLine);
+		static void ChangeLine(int _newLine);
 			
 		/// Splits string into parts between specified character into an array
 		///
 		/// \param txt Target string to split
 		/// \param strs Address of string array to split into
 		/// \param ch Character to split between
-			static unsigned int SplitString(const std::string&, std::vector<std::string>&, char);
+		static unsigned int SplitString(const std::string&, std::vector<std::string>&, char);
 			
 		/// Checks and returns the type of the string from \a LINETYPE
 		///
 		/// \param _input String to check
 		/// \return Type of line as \a LINETYPE enumerator
-			static M22Script::LINETYPE CheckLineType(std::string);
+		static M22Script::LINETYPE CheckLineType(std::string);
 			
 		/// Checks and returns if the character is a colon ( : )
 		///
 		/// \param _char Character to check
-			static bool isColon(int _char);
+		static bool isColon(int _char);
 			
 		/// Clears active characters array
-			static void ClearCharacters(void);
+		static void ClearCharacters(void);
 			
 		/// Fades to screen black
-			static void FadeToBlack(void);
+		static void FadeToBlack(void);
 };
 
 /// \class 		M22Interface M22Engine.h "include/M22Engine.h"
@@ -563,25 +640,25 @@ class M22Interface
 		/// Draws the text box, name of person talking, current line; off-screen then into the main renderer
 		/// \param _ScrSizeX Screen width
 		/// \param _ScrSizeY Screen height
-			static void DrawTextArea(int, int);
+		static void DrawTextArea(int, int);
 			
 		/// Updates active interfaces, checking if they've been clicked, etc.
 		/// \param _ScrSizeX Screen width
 		/// \param _ScrSizeY Screen height
-			static void UpdateActiveInterfaces(int _ScrSizeX, int _ScrSizeY);
+		static void UpdateActiveInterfaces(int _ScrSizeX, int _ScrSizeY);
 			
 		/// Checks if a single point is within a box
 		/// \param _pos1 Single point
 		/// \param _pos2 Box position
 		/// \param _size Size of box
 		/// \return True if overlap, false if not
-			static bool CheckOverlap(Vec2 _pos1, Vec2 _pos2, Vec2 _size);
+		static bool CheckOverlap(Vec2 _pos1, Vec2 _pos2, Vec2 _size);
 			
 		/// Resets all stored (and by extension, active) interfaces to default settings
-			static void ResetStoredInterfaces(void);
+		static void ResetStoredInterfaces(void);
 
 		/// Initializes the text box and sprites
-			static void InitTextBox(void);
+		static void InitTextBox(void);
 
 		/// Initializes an interface from buttons file + constants
 		///
@@ -592,7 +669,7 @@ class M22Interface
 		/// \param _opaque Is the interface opaque to begin with?
 		/// \param _type Type of interface from \a M22Interface::INTERFACES
 		/// \return Error code if problem encountered, 0 if fine
-			static short int InitializeInterface(M22Interface::Interface* _interface, int _num_of_buttons, int _startline = 0, const std::string _filename = "graphics/interface/GAME_BUTTONS.txt", bool _opaque = true, M22Interface::INTERFACES _type = M22Interface::INTERFACES::INGAME_INTRFC);
+		static short int InitializeInterface(M22Interface::Interface* _interface, int _num_of_buttons, int _startline = 0, const std::string _filename = "graphics/interface/GAME_BUTTONS.txt", bool _opaque = true, M22Interface::INTERFACES _type = M22Interface::INTERFACES::INGAME_INTRFC);
 };
 
 #endif

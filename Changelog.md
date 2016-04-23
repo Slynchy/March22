@@ -1,6 +1,16 @@
 #M22/Snow Sakura++ Changelog
 ###NOTE: Please don't take this changelog as gospel; I hardly ever remember what I add per version.
 
+#### v0.4.9
+
+- Started implementing decisions
+	* Loads decisions from text file
+		+ Number of decisions (ex. "1")
+		+ Name of decision + number of choices (ex. "TEST_DECISION 2")
+		+ Choices seperated by newlines (ex. "YES \n NO")
+- Added new functions to m22 script language:
+	* m22IF ( _decision, _choice, _function_if_true ) - Basic if logic; runs the function if the specified choice is made in the specified decision.
+
 #### v0.4.7
 
 - Behind-the-scenes improvements to the engine
