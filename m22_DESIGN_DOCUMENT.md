@@ -26,3 +26,4 @@ The engine parses the next line of the script and does the action based on the f
 | MainMenu                                             | Goes to main menu                                                               |
 | SetActiveTransition ( _name )                        | Sets active transition; "SwipeToRight", "SwipeDown", "SwipeToLeft", "Fade"      |
 | Wait ( _milliseconds )                               | Waits the specified milliseconds before moving on                               |
+| m22IF ( _decision, _choice, _function_if_true )      | Basic if logic; runs the function if the specified choice is made in the specified decision. |
