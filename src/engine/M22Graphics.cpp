@@ -227,6 +227,7 @@ void M22Graphics::AddCharacterToBackgroundRenderTarget(int _charindex, int _outf
 
 	SDL_SetRenderTarget(M22Engine::SDL_RENDERER, NULL);
 	M22Graphics::changeQueued = CHARACTER;
+	delete tempRect;
 
 	return;
 };

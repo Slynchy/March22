@@ -245,7 +245,9 @@ void M22Interface::UpdateActiveInterfaces(int _ScrSizeX, int _ScrSizeY)
 											*tempButtonPos, 
 											*tempButtonSize
 										 ) == true)
-			{
+			{	
+				delete tempButtonPos;
+				delete tempButtonSize;
 				// mouseover
 				if(M22Engine::LMB_Pressed)
 				{
@@ -342,9 +344,9 @@ void M22Interface::UpdateActiveInterfaces(int _ScrSizeX, int _ScrSizeY)
 			else
 			{
 				M22Interface::activeInterfaces[i]->buttons[k].state = M22Interface::BUTTON_STATES::RESTING;
+				delete tempButtonPos;
+				delete tempButtonSize;
 			};
-			delete tempButtonPos;
-			delete tempButtonSize;
 		};
 	};
 	
