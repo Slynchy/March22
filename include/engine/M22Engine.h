@@ -1,7 +1,7 @@
 /// \file 		M22Engine.h
 /// \author 	Sam Lynch
 /// \brief 		Header file for entire M22 engine
-/// \version 	0.4.9
+/// \version 	0.5.0
 /// \date 		April 2016
 /// \details	The header file for declaring the engine and its functions/variables.
 
@@ -19,6 +19,9 @@
 	/*!< Defines which rendering API to use; generally \a direct3d or \a opengl. */
 #define BILINEAR_FILTERING	"1"
 	/*!< Set to 1 for bilinear filtering, 0 for not. Must be a string. */
+
+#define DECISION_CHOICE_TEXT_SPACING 20
+	/*!< Defines how far apart the decision texts are in pixels */
 
 #include "SDL.h"
 #include <SDL_image.h>
@@ -129,6 +132,18 @@ class M22Engine
 		
 		static bool QUIT;			///< Exit the program?
 		
+		template <typename T>
+
+		/// Places the specified vector item to the back
+		/// \author http://stackoverflow.com/questions/23789498/moving-a-vector-element-to-the-back-of-the-vector
+		/// \param v Vector.
+		/// \param itemIndex Position of item to place to back
+		static void moveVectorItemToBack(std::vector<T>& v, size_t itemIndex)
+		{
+			auto it = v.begin() + itemIndex;
+			std::rotate(it, it + 1, v.end());
+		};
+
 		/// Finds the index of the character from the string
 		///
 		/// \param _name Character's name.
@@ -466,6 +481,7 @@ class M22Script
 			SET_ACTIVE_TRANSITION,			///< Changes the active transition
 			EXITTOMAINMENU,					///< Exit to main menu
 			IF_STATEMENT,					///< Basic if statement
+			MAKE_DECISION,					///< Triggers decision-making interface
 			NARRATIVE						///< Speech without chat box (thoughts of main character; narrative)
 		};
 
@@ -482,6 +498,13 @@ class M22Script
 				num_of_choices = 0;
 				selectedOption = -1;
 			};
+			~Decision()
+			{
+				name = "";
+				num_of_choices = 0;
+				selectedOption = -1;
+				choices.clear();
+			};
 		};
 		
 		/// Executes specified scripting function
@@ -496,6 +519,7 @@ class M22Script
 
 		static std::string currentLine;									///< Current line from script, loaded into string
 		static int currentLineIndex;									///< Current line index in \a currentScript
+		static LINETYPE currentLineType;
 		static std::vector<std::string> currentScript;					///< Active script, loaded each line as an array of strings
 		static int activeSpeakerIndex;									///< The index of the active speaker, for chat box names
 		static SDL_Surface *currentLineSurface;							///< Current line surface, for drawing the text off-screen
@@ -506,7 +530,7 @@ class M22Script
 		static std::vector<Decision> gameDecisions;						///< Array of game decisions
 		
 		/// Loads the decisions file into \a gameDecisions array
-		///
+		/// \deprecated This is unnecessary since decisions are loaded from script into memory, then stored in savegame for later use.
 		/// \param _filename File path/name of decisions file
 		/// \return Error code if problem encountered, 0 if fine
 		static short int LoadGameDecisions(const char* _filename);
@@ -522,6 +546,13 @@ class M22Script
 		/// \param ScrW Screen width resolution
 		/// \param ScrH Screen height resolution
 		static void DrawCurrentLine(int ScrW, int ScrH);
+			
+		/// Draws the specified decision options to screen
+		///
+		/// \param _decision Specified decision
+		/// \param ScrW Screen width resolution
+		/// \param ScrH Screen height resolution
+		static void DrawDecisions(M22Script::Decision* _decision,int ScrW, int ScrH);
 			
 		/// Changes currentLine to target line index
 		///

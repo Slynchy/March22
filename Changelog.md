@@ -1,6 +1,30 @@
 #M22/Snow Sakura++ Changelog
 ###NOTE: Please don't take this changelog as gospel; I hardly ever remember what I add per version.
 
+#### v0.5.0
+- Implemented branching decisions and IF logic
+	* Call "MakeDecision" with the following params:
+		+ "MakeDecision" keyword
+		+ Name of decision
+		+ Choice 1 [optional]
+		+ Choice 2 [optional]
+		+ Choice 3 [optional]
+		+ Example: MakeDecision TEST OPT1 OPT2 OPT3
+		+ Alternatively: MakeDecision TEST
+	* Then call m22IF like so:
+		+ "m22IF" keyword
+		+ Decision name
+		+ Option to check if chosen
+		+ Function to run if true
+		+ Function parameters [optional]
+		+ Example: m22IF TEST OPT3 Goto 50
+- Added new functions to m22 script language:
+	* MakeDecision ( _decision, _choice1, _choice2, [_choice3] ) - Creates a new decision and makes the player make a choice
+	* MakeDecision ( _decision ) - Finds the decision from the decisions array and makes the player make a decision
+
+#### v0.4.9a
+- Memory leak hotfixes
+
 #### v0.4.9
 
 - Started implementing decisions

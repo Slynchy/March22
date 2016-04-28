@@ -1,6 +1,6 @@
 #include "M22Engine.h"
 
-M22Engine::GAMESTATES M22Engine::GAMESTATE = M22Engine::GAMESTATES::MAIN_MENU;
+M22Engine::GAMESTATES M22Engine::GAMESTATE = M22Engine::GAMESTATES::INGAME;
 M22Engine::OPTIONS_STRUCTURE  M22Engine::OPTIONS;
 SDL_Window* M22Engine::SDL_SCREEN = NULL;
 SDL_Renderer *M22Engine::SDL_RENDERER = NULL;
@@ -106,6 +106,7 @@ void M22Engine::OptionsFileInitializer(void)
 
 short int M22Engine::InitializeSDL(const std::string _windowTitle, const std::string _version, Vec2 ScrPos)
 {
+	printf("[M22Engine] Initializing SDL2...\n");
 	srand((unsigned int)time(NULL));
 	SDL_Init( SDL_INIT_EVERYTHING );
 	SDL_SetHint (SDL_HINT_RENDER_DRIVER, RENDERING_API);
@@ -183,7 +184,7 @@ void M22Engine::UpdateEvents(void)
 				};
 				break;
 			case SDL_KEYDOWN:
-				if(M22Engine::SDL_EVENTS.key.keysym.scancode == SDL_SCANCODE_RSHIFT && M22Engine::GAMESTATE == M22Engine::GAMESTATES::INGAME && M22Graphics::changeQueued == M22Graphics::BACKGROUND_UPDATE_TYPES::NONE)
+				if(M22Engine::SDL_EVENTS.key.keysym.scancode == SDL_SCANCODE_RSHIFT && M22Engine::GAMESTATE == M22Engine::GAMESTATES::INGAME && M22Graphics::changeQueued == M22Graphics::BACKGROUND_UPDATE_TYPES::NONE && M22Script::currentLineType != M22Script::LINETYPE::MAKE_DECISION)
 				{
 					M22Engine::skipping = true;
 				}
@@ -217,10 +218,46 @@ void M22Engine::UpdateKeyboard()
 		M22Interface::DRAW_TEXT_AREA = !M22Interface::DRAW_TEXT_AREA;
 	};
 	if(M22Engine::TIMER_TARGET != 0) return;
-	if(M22Engine::SDL_KEYBOARDSTATE[SDL_SCANCODE_RETURN] && M22Interface::DRAW_TEXT_AREA == true && M22Engine::GAMESTATE == M22Engine::GAMESTATES::INGAME)
+	if(M22Engine::SDL_KEYBOARDSTATE[SDL_SCANCODE_RETURN] && M22Engine::GAMESTATE == M22Engine::GAMESTATES::INGAME && M22Script::currentLineType != M22Script::LINETYPE::MAKE_DECISION)
 	{
+		M22Interface::DRAW_TEXT_AREA = true;
 		M22Script::ChangeLine(++M22Script::currentLineIndex);
 	};
+
+	if(M22Script::currentLineType == M22Script::LINETYPE::MAKE_DECISION)
+	{
+		bool inputmade = false;
+
+		if(M22Engine::SDL_KEYBOARDSTATE[SDL_SCANCODE_1])
+		{
+			M22Script::gameDecisions.back().selectedOption = 0;
+			inputmade = true;
+		}
+		else if(M22Engine::SDL_KEYBOARDSTATE[SDL_SCANCODE_2])
+		{
+			M22Script::gameDecisions.back().selectedOption = 1;
+			inputmade = true;
+		}
+		else if(M22Engine::SDL_KEYBOARDSTATE[SDL_SCANCODE_3])
+		{
+			if(M22Script::gameDecisions.back().num_of_choices < 3)
+			{
+				printf("[M22Script] Option 3 selected but less than two available!\n");
+				return;
+			}
+			else
+			{
+				M22Script::gameDecisions.back().selectedOption = 2;
+				inputmade = true;
+			};
+		};
+		
+		if(inputmade == true)
+		{
+			M22Script::ChangeLine(++M22Script::currentLineIndex);
+		};
+	};
+
 	return;
 };
 

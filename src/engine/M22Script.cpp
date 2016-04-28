@@ -8,6 +8,7 @@ SDL_Surface* M22Script::currentLineSurface = NULL;
 SDL_Surface* M22Script::currentLineSurfaceShadow = NULL;
 float M22Script::fontSize;
 std::vector<M22Script::Decision> M22Script::gameDecisions;
+M22Script::LINETYPE M22Script::currentLineType;
 
 short int M22Script::LoadGameDecisions(const char* _filename)
 {
@@ -87,6 +88,56 @@ short int M22Script::LoadScriptToCurrent(const char* _filename)
 	};
 	input.close();
 	return 0;
+};
+
+void M22Script::DrawDecisions(M22Script::Decision* _decision,int ScrW, int ScrH)
+{
+	SDL_Color tempCol = {255,255,255,255};
+	SDL_Color tempCol2 = {0,0,0,255};
+	std::string choiceTextTemp;
+	for(int i = 0; i < _decision->num_of_choices; i++)
+	{
+		choiceTextTemp += (_decision->choices.at(i) + '\n');
+	};
+	std::replace( choiceTextTemp.begin(), choiceTextTemp.end(), '_', ' ');
+
+	SDL_Surface* tempSurfShadow;
+	SDL_Surface* tempSurf;
+
+	tempSurfShadow =	TTF_RenderText_Blended_Wrapped( M22Graphics::textFont, choiceTextTemp.c_str(), tempCol2,	ScrW-12 );
+	tempSurf =			TTF_RenderText_Blended_Wrapped( M22Graphics::textFont, choiceTextTemp.c_str(), tempCol,		ScrW-12 );
+
+	if(tempSurfShadow == NULL)
+	{
+		printf("Failed to draw message shadow!\n");
+		return;
+	};
+	if(tempSurf == NULL)
+	{
+		printf("Failed to draw message!\n");
+		return;
+	};
+
+	SDL_Texture* temp2 =	SDL_CreateTextureFromSurface(M22Engine::SDL_RENDERER, tempSurfShadow);
+	SDL_Texture* temp =		SDL_CreateTextureFromSurface(M22Engine::SDL_RENDERER, tempSurf);
+	
+	SDL_Rect tempDst2 = {8+1,404+1,0,0};
+	SDL_Rect tempDst = {8,404,0,0};
+		
+	SDL_QueryTexture(temp2, NULL, NULL, &tempDst2.w, &tempDst2.h);
+	SDL_QueryTexture(temp, NULL, NULL, &tempDst.w, &tempDst.h);
+		
+	SDL_RenderCopy(M22Engine::SDL_RENDERER, temp2, NULL, &tempDst2);
+	SDL_RenderCopy(M22Engine::SDL_RENDERER, temp, NULL, &tempDst);
+	
+
+	SDL_DestroyTexture(temp2);
+	SDL_DestroyTexture(temp);
+	SDL_FreeSurface(tempSurfShadow);
+	SDL_FreeSurface(tempSurf);
+	//delete tempSurf;
+
+	return;
 };
 
 /*
@@ -191,12 +242,13 @@ void M22Script::ChangeLine(int _newLine)
 	M22Script::SplitString(M22Script::currentLine, temp, ' ');
 	std::string type = temp[0];
 	M22Script::LINETYPE LINETYPE = M22Script::CheckLineType(type);
+	M22Script::currentLineType = LINETYPE;
 
 	//if(M22Script::ExecuteM22ScriptCommand(LINETYPE, temp, _newLine) == 1)
 	//	return;
-	M22Script::ExecuteM22ScriptCommand(LINETYPE, temp, _newLine);
 
 	M22Script::currentLineIndex = _newLine;
+	M22Script::ExecuteM22ScriptCommand(LINETYPE, temp, _newLine);
 	return;
 };
 
@@ -345,6 +397,17 @@ short int M22Script::ExecuteM22ScriptCommand(M22Script::LINETYPE LINETYPE, std::
 		// temp[1] == TEST_DECISION
 		// temp[2] == YES
 
+		for(size_t i = 0; i < temp.size(); i++)
+		{
+			temp[i].erase(
+				std::remove_if(
+					temp[i].begin(), 
+					temp[i].end(), 
+					isspace
+				)
+			);
+		};
+
 		short int specifiedDecision = -1;
 		short int specifiedChoice = -1;
 
@@ -397,6 +460,43 @@ short int M22Script::ExecuteM22ScriptCommand(M22Script::LINETYPE LINETYPE, std::
 			// RETURN FALSE
 			M22Script::ChangeLine(++_newLine);
 		};
+		return 0;
+	}
+	else if(LINETYPE == M22Script::LINETYPE::MAKE_DECISION)
+	{
+		M22Script::activeSpeakerIndex = 0;
+		M22Engine::skipping = false;
+		for(size_t i = 0; i < temp.size(); i++)
+		{
+			temp[i].erase(
+				std::remove_if(
+					temp[i].begin(), 
+					temp[i].end(), 
+					isspace
+				)
+			);
+		};
+
+		//Check decision doesn't already exist.
+		for(size_t i = 0; i < M22Script::gameDecisions.size(); i++)
+		{
+			if(M22Script::gameDecisions.at(i).name == temp.at(1))
+			{
+				M22Engine::moveVectorItemToBack(M22Script::gameDecisions, i);
+				return 0;
+			};
+		};
+
+		M22Script::Decision tempDecision;
+		tempDecision.name = temp[1];
+		for(size_t i = 2; i < temp.size(); i++)
+		{
+			tempDecision.choices.push_back(temp.at(i));
+			tempDecision.num_of_choices++;
+		};
+
+		M22Script::gameDecisions.push_back(tempDecision);
+
 		return 0;
 	}
 	else if(LINETYPE == M22Script::LINETYPE::COMMENT)
@@ -576,6 +676,10 @@ M22Script::LINETYPE M22Script::CheckLineType(std::string _input)
 	else if(_input == std::string("m22IF"))
 	{
 		return M22Script::LINETYPE::IF_STATEMENT;
+	}
+	else if(_input == std::string("MakeDecision"))
+	{
+		return M22Script::LINETYPE::MAKE_DECISION;
 	};
 	return M22Script::LINETYPE::SPEECH;
 };

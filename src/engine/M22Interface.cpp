@@ -203,7 +203,16 @@ void M22Interface::DrawTextArea(int _ScrSizeX, int _ScrSizeY)
 		SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::characterFrameHeaders[M22Script::activeSpeakerIndex], NULL, &characterName);
 
 		M22Graphics::DrawArrow(width, height);
-		M22Script::DrawCurrentLine(width, height);
+		
+		if(M22Script::currentLineType == M22Script::LINETYPE::MAKE_DECISION)
+		{
+			M22Script::DrawDecisions(&M22Script::gameDecisions.back(), _ScrSizeX, _ScrSizeY);
+		}
+		else
+		{
+			M22Script::DrawCurrentLine(width, height);
+		};
+
 		for(size_t i = 0; i < M22Interface::activeInterfaces.size(); i++)
 		{
 			if(M22Interface::activeInterfaces[i]->spriteSheet != NULL)

@@ -2,7 +2,10 @@ DrawBackground BLACK
 DrawBackground mystery_girl_s
 PlayMusic MP03
 Girl: "Do you know about the Snow Sakura?"
-Snow Sakura?
+//Snow Sakura?
+MakeDecision TEST
+m22IF TEST (1)_Snow_Sakura? Goto 50
+//MakeDecision TESTICLES (1)_Anus (2)_anusAusnusn
 Girl: "Once a year, its flowers bloom in the chill of winter."
 Even though it's a cherry tree?
 Girl: "Yes, even though it's a cherry tree."
