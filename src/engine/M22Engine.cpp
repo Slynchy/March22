@@ -2,8 +2,6 @@
 
 M22Engine::GAMESTATES M22Engine::GAMESTATE = M22Engine::GAMESTATES::INGAME;
 M22Engine::OPTIONS_STRUCTURE  M22Engine::OPTIONS;
-SDL_Window* M22Engine::SDL_SCREEN = NULL;
-SDL_Renderer *M22Engine::SDL_RENDERER = NULL;
 SDL_Event M22Engine::SDL_EVENTS;
 const Uint8 *M22Engine::SDL_KEYBOARDSTATE = NULL;
 std::vector<std::string> M22Engine::CHARACTER_NAMES;
@@ -30,8 +28,8 @@ void M22Engine::StartGame(void)
 	{
 		fade_to_black_alpha = M22Graphics::Lerp( fade_to_black_alpha, 255.0f, DEFAULT_LERP_SPEED / 128);
 		SDL_SetTextureAlphaMod( M22Graphics::BLACK_TEXTURE, Uint8(fade_to_black_alpha) );
-		SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::BLACK_TEXTURE, NULL, NULL);
-		SDL_RenderPresent(M22Engine::SDL_RENDERER);
+		SDL_RenderCopy(M22Renderer::SDL_RENDERER, M22Graphics::BLACK_TEXTURE, NULL, NULL);
+		SDL_RenderPresent(M22Renderer::SDL_RENDERER);
 		if(fadeout == false)
 		{
 			Mix_FadeOutMusic(2000);	
@@ -50,16 +48,18 @@ void M22Engine::StartGame(void)
 		{
 			M22Engine::ACTIVE_BACKGROUNDS[0].sprite = M22Graphics::BACKGROUNDS[i];
 			M22Engine::ACTIVE_BACKGROUNDS[1].sprite = M22Graphics::BACKGROUNDS[i];
+			M22Engine::ACTIVE_BACKGROUNDS[0].name = "graphics/backgrounds/BLACK.webp";
+			M22Engine::ACTIVE_BACKGROUNDS[1].name = "graphics/backgrounds/BLACK.webp";
 
-			SDL_SetRenderTarget(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET);
-			SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUNDS[i], NULL, NULL);
-			SDL_SetRenderTarget(M22Engine::SDL_RENDERER, NULL);
+			SDL_SetRenderTarget(M22Renderer::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET);
+			SDL_RenderCopy(M22Renderer::SDL_RENDERER, M22Graphics::BACKGROUNDS[i], NULL, NULL);
+			SDL_SetRenderTarget(M22Renderer::SDL_RENDERER, NULL);
 
-			SDL_SetRenderTarget(M22Engine::SDL_RENDERER, M22Graphics::NEXT_BACKGROUND_RENDER_TARGET);
-			SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUNDS[i], NULL, NULL);
-			SDL_SetRenderTarget(M22Engine::SDL_RENDERER, NULL);
+			SDL_SetRenderTarget(M22Renderer::SDL_RENDERER, M22Graphics::NEXT_BACKGROUND_RENDER_TARGET);
+			SDL_RenderCopy(M22Renderer::SDL_RENDERER, M22Graphics::BACKGROUNDS[i], NULL, NULL);
+			SDL_SetRenderTarget(M22Renderer::SDL_RENDERER, NULL);
 
-			SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET, NULL, NULL);
+			SDL_RenderCopy(M22Renderer::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET, NULL, NULL);
 			break;
 		};
 	};
@@ -72,8 +72,8 @@ void M22Engine::StartGame(void)
 void M22Engine::Shutdown()
 {
 	SDL_Quit();
-	M22Engine::SDL_RENDERER = NULL;
-	M22Engine::SDL_SCREEN = NULL;
+	M22Renderer::SDL_RENDERER = NULL;
+	M22Renderer::SDL_SCREEN = NULL;
 	M22Engine::SDL_KEYBOARDSTATE = NULL;
 	M22Sound::SOUND_FX.clear();
 	M22Sound::MUSIC.clear();
@@ -115,19 +115,19 @@ short int M22Engine::InitializeSDL(const std::string _windowTitle, const std::st
 
 	if(M22Engine::OPTIONS.WINDOWED == M22Engine::WINDOW_STATES::FULLSCREEN)
 	{
-		M22Engine::SDL_SCREEN = SDL_CreateWindow(tempTitle.c_str(), (int)ScrPos.x(), (int)ScrPos.y(), (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y(), SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
+		M22Renderer::SDL_SCREEN = SDL_CreateWindow(tempTitle.c_str(), (int)ScrPos.x(), (int)ScrPos.y(), (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y(), SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
 	}
 	else if(M22Engine::OPTIONS.WINDOWED == M22Engine::WINDOW_STATES::FULLSCREEN_BORDERLESS)
 	{
-		M22Engine::SDL_SCREEN = SDL_CreateWindow(tempTitle.c_str(), (int)ScrPos.x(), (int)ScrPos.y(), (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y(), SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
+		M22Renderer::SDL_SCREEN = SDL_CreateWindow(tempTitle.c_str(), (int)ScrPos.x(), (int)ScrPos.y(), (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y(), SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
 	}
 	else
 	{
-		M22Engine::SDL_SCREEN = SDL_CreateWindow(tempTitle.c_str(), (int)ScrPos.x(), (int)ScrPos.y(), (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y(), SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
+		M22Renderer::SDL_SCREEN = SDL_CreateWindow(tempTitle.c_str(), (int)ScrPos.x(), (int)ScrPos.y(), (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y(), SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
 	};
 
-    M22Engine::SDL_RENDERER = SDL_CreateRenderer(M22Engine::SDL_SCREEN, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
-	SDL_RenderSetLogicalSize(M22Engine::SDL_RENDERER, (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y());
+    M22Renderer::SDL_RENDERER = SDL_CreateRenderer(M22Renderer::SDL_SCREEN, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
+	SDL_RenderSetLogicalSize(M22Renderer::SDL_RENDERER, (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y());
 	if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 4096 ) < 0 )
 	{
 		printf( "SDL_mixer failed to init! Error: %s\n", Mix_GetError() );
@@ -232,11 +232,13 @@ void M22Engine::UpdateKeyboard()
 		{
 			M22Script::gameDecisions.back().selectedOption = 0;
 			inputmade = true;
+			M22Sound::PlaySting("sfx/stings/SE001.OGG", true);
 		}
 		else if(M22Engine::SDL_KEYBOARDSTATE[SDL_SCANCODE_2])
 		{
 			M22Script::gameDecisions.back().selectedOption = 1;
 			inputmade = true;
+			M22Sound::PlaySting("sfx/stings/SE001.OGG", true);
 		}
 		else if(M22Engine::SDL_KEYBOARDSTATE[SDL_SCANCODE_3])
 		{
@@ -250,6 +252,7 @@ void M22Engine::UpdateKeyboard()
 				M22Script::gameDecisions.back().selectedOption = 2;
 				inputmade = true;
 			};
+			M22Sound::PlaySting("sfx/stings/SE001.OGG", true);
 		};
 		
 		if(inputmade == true)
@@ -325,7 +328,7 @@ short int M22Engine::InitializeM22(int ScrW, int ScrH)
 		temp = "graphics/text_frames/";
 		temp += M22Engine::CHARACTERS_ARRAY[i].name;
 		temp += ".png";
-		M22Graphics::characterFrameHeaders.push_back(IMG_LoadTexture(M22Engine::SDL_RENDERER, temp.c_str()));
+		M22Graphics::characterFrameHeaders.push_back(IMG_LoadTexture(M22Renderer::SDL_RENDERER, temp.c_str()));
 		temp.clear();
 	};
 	
@@ -396,7 +399,7 @@ short int M22Engine::InitializeM22(int ScrW, int ScrH)
 				tempPath += "/";
 				tempPath += CHARACTERS_ARRAY[i].emotions[k];
 				tempPath += ".png";
-				SDL_Texture* tempTex = IMG_LoadTexture(M22Engine::SDL_RENDERER, tempPath.c_str());
+				SDL_Texture* tempTex = IMG_LoadTexture(M22Renderer::SDL_RENDERER, tempPath.c_str());
 				SDL_SetTextureAlphaMod( tempTex, 0 );
 				SDL_SetTextureBlendMode(tempTex, SDL_BLENDMODE_BLEND);
 				M22Engine::CHARACTERS_ARRAY[i].sprites[p].push_back(tempTex);
@@ -416,7 +419,7 @@ short int M22Engine::InitializeM22(int ScrW, int ScrH)
 			std::string tempStr = "graphics/mainmenu/";
 			tempStr += std::to_string(i);
 			tempStr += ".webp";
-			SDL_Texture* tempBackground = IMG_LoadTexture(M22Engine::SDL_RENDERER, tempStr.c_str());
+			SDL_Texture* tempBackground = IMG_LoadTexture(M22Renderer::SDL_RENDERER, tempStr.c_str());
 			SDL_SetTextureAlphaMod( tempBackground, 0 );
 			SDL_SetTextureBlendMode(tempBackground, SDL_BLENDMODE_BLEND);
 			M22Graphics::mainMenuBackgrounds.push_back(tempBackground);
@@ -430,7 +433,7 @@ short int M22Engine::InitializeM22(int ScrW, int ScrH)
 	input.close();
 	
 	M22Graphics::activeMenuBackground.sprite = M22Graphics::mainMenuBackgrounds[rand()%M22Graphics::mainMenuBackgrounds.size()];
-	M22Graphics::menuLogo.sprite = IMG_LoadTexture(M22Engine::SDL_RENDERER, "graphics/mainmenu/LOGO.webp");
+	M22Graphics::menuLogo.sprite = IMG_LoadTexture(M22Renderer::SDL_RENDERER, "graphics/mainmenu/LOGO.webp");
 	SDL_SetTextureAlphaMod( M22Graphics::menuLogo.sprite, 0 );
 	SDL_SetTextureBlendMode(M22Graphics::menuLogo.sprite, SDL_BLENDMODE_BLEND);
 	if(!M22Graphics::menuLogo.sprite) printf("Failed to load LOGO.png\n");
@@ -438,8 +441,30 @@ short int M22Engine::InitializeM22(int ScrW, int ScrH)
 	M22Script::fontSize = (((float(ScrW) / 640.0f) + (float(ScrH) / 480.0f)) / 2.0f);
 
 	M22Engine::ACTIVE_BACKGROUNDS.resize(2);
-	M22Graphics::arrow.sprite = IMG_LoadTexture(M22Engine::SDL_RENDERER, "graphics/arrow.png");
-	M22Graphics::OPTION_BAR = IMG_LoadTexture(M22Engine::SDL_RENDERER, "graphics/optionsmenu/bar.png");
+	M22Graphics::arrow.sprite = IMG_LoadTexture(M22Renderer::SDL_RENDERER, "graphics/arrow.png");
+	M22Graphics::OPTION_BAR = IMG_LoadTexture(M22Renderer::SDL_RENDERER, "graphics/optionsmenu/bar.png");
+	return 0;
+};
+
+int M22Engine::GetCharacterIndexFromName(std::wstring _input, bool _dialogue)
+{
+	std::string temp = M22Script::to_string(_input);
+	temp.erase(std::remove_if(temp.begin(), temp.end(), isspace));
+	_input = M22Script::to_wstring(temp.c_str());
+	int size = _input.size();
+	_input.erase(std::remove_if(_input.begin(), _input.end(), M22Script::isColon));
+	if(size == _input.size() && _dialogue == true)
+	{
+		// colon was not found, so must be narrative, not dialogue
+		return 0;
+	};
+	for(size_t i = 0; i < M22Engine::CHARACTERS_ARRAY.size(); i++)
+	{
+		if(M22Script::to_wstring(M22Engine::CHARACTERS_ARRAY[i].name.c_str()) == _input)
+		{
+			return i;
+		};
+	};
 	return 0;
 };
 
@@ -526,13 +551,13 @@ void M22Engine::UpdateOptions(void)
 	switch(M22Engine::OPTIONS.WINDOWED)
 	{
 		case M22Engine::WINDOW_STATES::WINDOWED:
-			SDL_SetWindowFullscreen(M22Engine::SDL_SCREEN, 0);
+			SDL_SetWindowFullscreen(M22Renderer::SDL_SCREEN, 0);
 			break;
 		case M22Engine::WINDOW_STATES::FULLSCREEN:
-			SDL_SetWindowFullscreen(M22Engine::SDL_SCREEN, SDL_WINDOW_FULLSCREEN);
+			SDL_SetWindowFullscreen(M22Renderer::SDL_SCREEN, SDL_WINDOW_FULLSCREEN);
 			break;
 		case M22Engine::WINDOW_STATES::FULLSCREEN_BORDERLESS:
-			SDL_SetWindowFullscreen(M22Engine::SDL_SCREEN, SDL_WINDOW_FULLSCREEN_DESKTOP );
+			SDL_SetWindowFullscreen(M22Renderer::SDL_SCREEN, SDL_WINDOW_FULLSCREEN_DESKTOP );
 			break;
 		default:
 			break;
@@ -550,6 +575,92 @@ void M22Engine::SaveOptions(void)
 	{
 		output.write( reinterpret_cast <const char*> (&M22Engine::OPTIONS), sizeof(M22Engine::OPTIONS_STRUCTURE) );
 		output.close();
+	};
+	return;
+};
+
+void M22Engine::SaveGame(const char* _filename)
+{
+	printf("[M22Engine] Saving game to %s...\n", _filename);
+	std::ofstream savegame(_filename, std::ios::binary | std::ios::out);
+	if(savegame)
+	{
+		//savegame.write( reinterpret_cast <const char*> (&M22Engine::OPTIONS), sizeof(M22Engine::OPTIONS_STRUCTURE) );
+		struct SAVEGAME_STRUCTURE savegameObject;
+		savegameObject.GAMESTATE = M22Engine::GAMESTATE;
+		savegameObject.CURRENTBACKGROUND = M22Engine::ACTIVE_BACKGROUNDS[0].name;
+		savegameObject.CURRENTMUSIC = M22Sound::MUSIC_NAMES.at(M22Sound::currentTrack);
+		savegameObject.CURRENTLOOPINGSFX = "sfx/music/SILENCE.OGG";
+		savegameObject.CURRENTSCRIPTFILE = M22Script::currentScriptFileName;
+		savegameObject.CURRENTLINEPOSITION = M22Script::currentLineIndex;
+
+		/*int backgroundStrSize = sizeof(char)*savegameObject.CURRENTBACKGROUND.size();
+		int musicStrSize = sizeof(char)*savegameObject.CURRENTMUSIC.size();
+		int sfxStrSize = sizeof(char)*savegameObject.CURRENTLOOPINGSFX.size();
+		
+		savegame.write( reinterpret_cast <const char*> (&savegameObject.GAMESTATE), sizeof(savegameObject.GAMESTATE));
+
+		savegame.write( reinterpret_cast <const char*> (&backgroundStrSize), sizeof(int));
+		savegame.write( savegameObject.CURRENTBACKGROUND.c_str(), sizeof(char)*savegameObject.CURRENTBACKGROUND.size() );
+		
+		savegame.write( reinterpret_cast <const char*> (&musicStrSize), sizeof(int));
+		savegame.write( savegameObject.CURRENTMUSIC.c_str(), sizeof(char)*savegameObject.CURRENTMUSIC.size() );
+		
+		savegame.write( reinterpret_cast <const char*> (&sfxStrSize), sizeof(int));
+		savegame.write( savegameObject.CURRENTLOOPINGSFX.c_str(), sizeof(char)*savegameObject.CURRENTLOOPINGSFX.size() );
+
+		savegame.write( reinterpret_cast <const char*> (&savegameObject.CURRENTLINEPOSITION), sizeof(savegameObject.CURRENTLINEPOSITION));*/
+
+		savegame << savegameObject.GAMESTATE << '\n' << savegameObject.CURRENTBACKGROUND << '\n' << savegameObject.CURRENTMUSIC << '\n' << savegameObject.CURRENTLOOPINGSFX << '\n' << savegameObject.CURRENTSCRIPTFILE << '\n' << savegameObject.CURRENTLINEPOSITION << '\n';
+
+		savegame.close();
+	};
+	return;
+};
+
+void M22Engine::LoadGame(const char* _filename)
+{
+	printf("[M22Engine] Loading game from %s...\n", _filename);
+	std::ifstream savegame(_filename, std::ios::binary | std::ios::in);
+	if(savegame)
+	{
+		//savegame.write( reinterpret_cast <const char*> (&M22Engine::OPTIONS), sizeof(M22Engine::OPTIONS_STRUCTURE) );
+		struct SAVEGAME_STRUCTURE savegameObject;
+		
+		int tempint = 0;
+
+		savegame >> tempint;
+		savegameObject.GAMESTATE = M22Engine::GAMESTATES(tempint);
+		savegame >> savegameObject.CURRENTBACKGROUND;
+		savegame >> savegameObject.CURRENTMUSIC;
+		savegame >> savegameObject.CURRENTLOOPINGSFX;
+		savegame >> savegameObject.CURRENTSCRIPTFILE;
+		savegame >> savegameObject.CURRENTLINEPOSITION;
+
+		savegame.close();
+
+		M22Engine::GAMESTATE = savegameObject.GAMESTATE;
+		M22Script::currentLineIndex = savegameObject.CURRENTLINEPOSITION;
+		M22Sound::ChangeMusicTrack(savegameObject.CURRENTMUSIC);
+		M22Sound::StopLoopedStings();
+		M22Sound::PlayLoopedSting(savegameObject.CURRENTLOOPINGSFX);
+		M22Script::LoadScriptToCurrent(savegameObject.CURRENTSCRIPTFILE.c_str());
+
+		std::vector<std::wstring> temp;
+		std::wstring backgroundname;
+		M22Script::SplitString(M22Script::to_wstring(savegameObject.CURRENTBACKGROUND.c_str()), temp, '/');
+		backgroundname = temp.back();
+		backgroundname.erase(backgroundname.end()-5,backgroundname.end());
+
+		temp.clear();
+		temp.shrink_to_fit();
+		temp.push_back(M22Script::to_wstring("DrawBackground"));
+		temp.push_back(backgroundname);
+
+		//temp.push_back(temp.back());
+		M22Script::ExecuteM22ScriptCommand(M22Script::LINETYPE::NEW_BACKGROUND, temp, savegameObject.CURRENTLINEPOSITION);
+
+
 	};
 	return;
 };

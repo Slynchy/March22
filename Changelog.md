@@ -1,7 +1,25 @@
 #M22/Snow Sakura++ Changelog
 ###NOTE: Please don't take this changelog as gospel; I hardly ever remember what I add per version.
 
+#### v0.6.0
+
+- Started adding M22Renderer
+	* Vague attempt to alleviate dependency on SDL so that switching to another renderer only requires modifying one class.
+- Added template Main.cpp file
+- Updated text renderer
+	* Supports Unicode/wide characters
+		+ The old, regular string functions are still there, and still used; these will need to be removed
+		+ Still not fully tested, may crash if reading decisions with unicode characters.
+	* State-driven; only has to draw text when it changes for much less CPU/GPU usage.
+	* Added TEXT_BOX_POSITION.txt
+		+ Allows customizing the position of the text box
+
+#### v0.5.1
+
+- Added audio feedback when selecting an option/decision
+
 #### v0.5.0
+
 - Implemented branching decisions and IF logic
 	* Call "MakeDecision" with the following params:
 		+ "MakeDecision" keyword
@@ -23,6 +41,7 @@
 	* MakeDecision ( _decision ) - Finds the decision from the decisions array and makes the player make a decision
 
 #### v0.4.9a
+
 - Memory leak hotfixes
 
 #### v0.4.9

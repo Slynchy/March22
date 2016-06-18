@@ -28,7 +28,7 @@ short int M22Interface::InitializeInterface(M22Interface::Interface* _interface,
 	M22Script::SplitString(temp, tempStr, ' ');
 	if(tempStr[1] == "BLANK")
 	{
-		_interface->spriteSheet = IMG_LoadTexture(M22Engine::SDL_RENDERER, "graphics/BLANK.png");
+		_interface->spriteSheet = IMG_LoadTexture(M22Renderer::SDL_RENDERER, "graphics/BLANK.png");
 	}
 	else
 	{
@@ -38,7 +38,7 @@ short int M22Interface::InitializeInterface(M22Interface::Interface* _interface,
 			temp += directory[i];
 		};
 		temp += tempStr[1];
-		_interface->spriteSheet = IMG_LoadTexture(M22Engine::SDL_RENDERER, temp.c_str());
+		_interface->spriteSheet = IMG_LoadTexture(M22Renderer::SDL_RENDERER, temp.c_str());
 	};
 
 	if(input)
@@ -67,7 +67,7 @@ short int M22Interface::InitializeInterface(M22Interface::Interface* _interface,
 			tempStr[1].erase(std::remove_if(tempStr[1].begin(), tempStr[1].end(), isspace));
 
 			_interface->buttons.resize(_num_of_buttons);
-			_interface->buttons[k-_startline].sheet = IMG_LoadTexture(M22Engine::SDL_RENDERER, fileName.c_str());
+			_interface->buttons[k-_startline].sheet = IMG_LoadTexture(M22Renderer::SDL_RENDERER, fileName.c_str());
 			SDL_SetTextureBlendMode(_interface->buttons[k-_startline].sheet, SDL_BLENDMODE_BLEND);
 			SDL_SetTextureAlphaMod( _interface->buttons[k-_startline].sheet, Uint8(_interface->alpha) );
 			_interface->buttons[k-_startline].name = tempStr[0];
@@ -134,7 +134,7 @@ void M22Interface::DrawActiveInterfacesButtons(void)
 		for(size_t k = 0; k < M22Interface::activeInterfaces[i]->buttons.size(); k++)
 		{
 			SDL_RenderCopyEx(
-				M22Engine::SDL_RENDERER, M22Interface::activeInterfaces[i]->buttons[k].sheet, 
+				M22Renderer::SDL_RENDERER, M22Interface::activeInterfaces[i]->buttons[k].sheet, 
 				&M22Interface::activeInterfaces[i]->buttons[k].rectSrc[M22Interface::activeInterfaces[i]->buttons[k].state], 
 				&M22Interface::activeInterfaces[i]->buttons[k].rectDst[M22Interface::activeInterfaces[i]->buttons[k].state], 
 				NULL,
@@ -151,12 +151,12 @@ void M22Interface::DrawActiveInterfaces(void)
 	{
 		if(M22Interface::activeInterfaces[i]->spriteSheet != NULL)
 		{
-			SDL_RenderCopy( M22Engine::SDL_RENDERER, M22Interface::activeInterfaces[i]->spriteSheet, NULL, NULL);
+			SDL_RenderCopy( M22Renderer::SDL_RENDERER, M22Interface::activeInterfaces[i]->spriteSheet, NULL, NULL);
 		};
 		for(size_t k = 0; k < M22Interface::activeInterfaces[i]->buttons.size(); k++)
 		{
 			SDL_RenderCopyEx(
-				M22Engine::SDL_RENDERER, M22Interface::activeInterfaces[i]->buttons[k].sheet, 
+				M22Renderer::SDL_RENDERER, M22Interface::activeInterfaces[i]->buttons[k].sheet, 
 				&M22Interface::activeInterfaces[i]->buttons[k].rectSrc[M22Interface::activeInterfaces[i]->buttons[k].state], 
 				&M22Interface::activeInterfaces[i]->buttons[k].rectDst[M22Interface::activeInterfaces[i]->buttons[k].state], 
 				NULL,
@@ -170,10 +170,10 @@ void M22Interface::DrawActiveInterfaces(void)
 void M22Interface::InitTextBox(void)
 {
 	// load texture
-	M22Graphics::textFrame = IMG_LoadTexture(M22Engine::SDL_RENDERER, "graphics/frame.png");
+	M22Graphics::textFrame = IMG_LoadTexture(M22Renderer::SDL_RENDERER, "graphics/frame.png");
 
 	// init the render target texture
-	M22Interface::ChatBoxRenderer = SDL_CreateTexture( M22Engine::SDL_RENDERER, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET , 640, 480 );
+	M22Interface::ChatBoxRenderer = SDL_CreateTexture( M22Renderer::SDL_RENDERER, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET , 640, 480 );
 
 	// allow alpha channels
 	SDL_SetTextureBlendMode(M22Graphics::textFrame, SDL_BLENDMODE_BLEND);
@@ -188,19 +188,19 @@ void M22Interface::DrawTextArea(int _ScrSizeX, int _ScrSizeY)
 	{
 		int width = 640, height = 480;
 
-		SDL_SetRenderTarget(M22Engine::SDL_RENDERER, M22Interface::ChatBoxRenderer);
+		SDL_SetRenderTarget(M22Renderer::SDL_RENDERER, M22Interface::ChatBoxRenderer);
 
-		SDL_SetRenderDrawColor(M22Engine::SDL_RENDERER, 0,0,0,0);
-		SDL_RenderClear(M22Engine::SDL_RENDERER);
+		SDL_SetRenderDrawColor(M22Renderer::SDL_RENDERER, 0,0,0,0);
+		SDL_RenderClear(M22Renderer::SDL_RENDERER);
 		
 		SDL_Rect textbox = {0, 480, 0, 0};
 		SDL_QueryTexture(M22Graphics::textFrame, NULL, NULL, &textbox.w, &textbox.h);
 		textbox.y = 480 - textbox.h;
-		SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::textFrame, NULL, &textbox);
+		SDL_RenderCopy(M22Renderer::SDL_RENDERER, M22Graphics::textFrame, NULL, &textbox);
 
 		SDL_Rect characterName = {0,368,0,0};
 		SDL_QueryTexture(M22Graphics::characterFrameHeaders[M22Script::activeSpeakerIndex], NULL, NULL, &characterName.w, &characterName.h);
-		SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Graphics::characterFrameHeaders[M22Script::activeSpeakerIndex], NULL, &characterName);
+		SDL_RenderCopy(M22Renderer::SDL_RENDERER, M22Graphics::characterFrameHeaders[M22Script::activeSpeakerIndex], NULL, &characterName);
 
 		M22Graphics::DrawArrow(width, height);
 		
@@ -217,15 +217,15 @@ void M22Interface::DrawTextArea(int _ScrSizeX, int _ScrSizeY)
 		{
 			if(M22Interface::activeInterfaces[i]->spriteSheet != NULL)
 			{
-				SDL_RenderCopy( M22Engine::SDL_RENDERER, M22Interface::activeInterfaces[i]->spriteSheet, NULL, NULL);
+				SDL_RenderCopy( M22Renderer::SDL_RENDERER, M22Interface::activeInterfaces[i]->spriteSheet, NULL, NULL);
 			};
 		};
 		M22Interface::DrawActiveInterfacesButtons();
 
-		SDL_SetRenderTarget(M22Engine::SDL_RENDERER, NULL);
+		SDL_SetRenderTarget(M22Renderer::SDL_RENDERER, NULL);
 
-		SDL_RenderCopy(M22Engine::SDL_RENDERER, M22Interface::ChatBoxRenderer, NULL, NULL);
-		SDL_SetRenderDrawColor(M22Engine::SDL_RENDERER, 255,255,255,255);
+		SDL_RenderCopy(M22Renderer::SDL_RENDERER, M22Interface::ChatBoxRenderer, NULL, NULL);
+		SDL_SetRenderDrawColor(M22Renderer::SDL_RENDERER, 255,255,255,255);
 	};
 	return;
 };
@@ -273,6 +273,14 @@ void M22Interface::UpdateActiveInterfaces(int _ScrSizeX, int _ScrSizeY)
 					{
 						M22Sound::PlaySting("sfx/stings/buttonclick.OGG", true);
 						M22Engine::StartGame();
+					}
+					else if(M22Interface::activeInterfaces[i]->buttons[k].name == "SAVE")
+					{
+						M22Engine::SaveGame("CURRENT.SAV");
+					}
+					else if(M22Interface::activeInterfaces[i]->buttons[k].name == "LOAD")
+					{
+						M22Engine::LoadGame("CURRENT.SAV");
 					}
 					else if(M22Interface::activeInterfaces[i]->buttons[k].name == "QUIT" || M22Interface::activeInterfaces[i]->buttons[k].name == "QUIT_GAME")
 					{

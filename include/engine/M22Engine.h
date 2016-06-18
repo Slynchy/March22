@@ -1,8 +1,8 @@
 /// \file 		M22Engine.h
 /// \author 	Sam Lynch
 /// \brief 		Header file for entire M22 engine
-/// \version 	0.5.0
-/// \date 		April 2016
+/// \version 	0.6.0
+/// \date 		June 2016
 /// \details	The header file for declaring the engine and its functions/variables.
 
 #ifndef M22ENGINE_H
@@ -34,6 +34,7 @@
 #include <iostream>
 #include <string>
 #include <chrono>
+#include <codecvt>
 
 /// \class 		M22Engine M22Engine.h "include/M22Engine.h"
 /// \brief 		The main class of M22.
@@ -115,6 +116,8 @@ class M22Engine
 				///< The background image
 			float alpha;
 				///< Current alpha amount
+			std::string name;
+				///< Name of background
 		};
 		/// Possible gamestates
 		enum GAMESTATES
@@ -123,6 +126,16 @@ class M22Engine
 				///< Is on the main menu
 			INGAME
 				///< Is in-game
+		};
+
+		struct SAVEGAME_STRUCTURE
+		{
+			GAMESTATES		GAMESTATE;
+			std::string		CURRENTBACKGROUND;
+			std::string		CURRENTMUSIC;
+			std::string		CURRENTLOOPINGSFX;
+			std::string		CURRENTSCRIPTFILE;
+			Uint32			CURRENTLINEPOSITION;
 		};
 		
 		static Vec2 MousePos; 		///< Current mouse position
@@ -151,6 +164,13 @@ class M22Engine
 		/// \return Index of character, 0 if narrative
 		static int GetCharacterIndexFromName(std::string, bool _dialogue = false); 
 
+		/// Finds the index of the character from the string
+		///
+		/// \param _name Character's name.
+		/// \param _dialogue Don't know; just leave it blank!
+		/// \return Index of character, 0 if narrative
+		static int GetCharacterIndexFromName(std::wstring, bool _dialogue = false); 
+
 		/// Finds the outfit index for the specified character
 		///
 		/// \param _input Outfit's name.
@@ -170,6 +190,12 @@ class M22Engine
 
 		/// Starts the game
 		static void StartGame(void);
+
+		/// Saves the game state
+		static void SaveGame(const char* _filename);
+
+		/// Loads the game state
+		static void LoadGame(const char* _filename);
 
 		/// Saves the current configuration of options to OPTIONS.SAV
 		static void SaveOptions(void);
@@ -208,8 +234,6 @@ class M22Engine
 		static Uint32 TIMER_CURR, TIMER_TARGET;					///< Delta time variables
 
 		static M22Engine::GAMESTATES GAMESTATE;					///< Active gamestate from \a M22Engine::
-		static SDL_Window* SDL_SCREEN;							///< Context for the SDL Window
-		static SDL_Renderer *SDL_RENDERER;						///< Context for the SDL Renderer
 		static SDL_Event SDL_EVENTS;							///< Context for the SDL Events
 		static const Uint8 *SDL_KEYBOARDSTATE;					///< Current keyboard button states
 		static SDL_DisplayMode SDL_DISPLAYMODE;
@@ -349,7 +373,7 @@ class M22Graphics
 			NUMBER_OF_TRANSITIONS
 		};
 
-		static const std::string TRANSITION_NAMES[NUMBER_OF_TRANSITIONS];	///< Name of transitions for scripts to use
+		static const std::wstring TRANSITION_NAMES[NUMBER_OF_TRANSITIONS];	///< Name of transitions for scripts to use
 
 		static Uint8 activeTransition;										///< Which transition to use, refering to \a TRANSITIONS enum
 };
@@ -482,25 +506,26 @@ class M22Script
 			EXITTOMAINMENU,					///< Exit to main menu
 			IF_STATEMENT,					///< Basic if statement
 			MAKE_DECISION,					///< Triggers decision-making interface
+			SET_DECISION,					///< Sets a decision into the array
 			NARRATIVE						///< Speech without chat box (thoughts of main character; narrative)
 		};
 
 		/// Data structure for decisions
 		struct Decision
 		{
-			std::string name;							///< Name of decision (for scripts)
+			std::wstring name;							///< Name of decision (for scripts)
 			short unsigned int num_of_choices;			///< Number of possible choices
-			std::vector<std::string> choices;			///< Array of choice names (for scripts)
+			std::vector<std::wstring> choices;			///< Array of choice names (for scripts)
 			short int selectedOption;					///< The index from \a choices of the choice that the player selected
 			Decision()
 			{
-				name = "";
+				name.clear();
 				num_of_choices = 0;
 				selectedOption = -1;
 			};
 			~Decision()
 			{
-				name = "";
+				name.clear();
 				num_of_choices = 0;
 				selectedOption = -1;
 				choices.clear();
@@ -513,17 +538,24 @@ class M22Script
 		/// \param temp Complete line
 		/// \param _newLine Target line (not always required)
 		/// \return Error code if problem encountered, 0 if fine
-		static short int ExecuteM22ScriptCommand(M22Script::LINETYPE LINETYPE, std::vector<std::string> temp, int _newLine);
+		static short int ExecuteM22ScriptCommand(M22Script::LINETYPE LINETYPE, std::vector<std::wstring> temp, int _newLine);
 
 		static const unsigned short int DARKEN_SCREEN_OPACITY = 100;	///< Current opacity of the darken screen effect
 
 		static std::string currentLine;									///< Current line from script, loaded into string
+		static std::wstring currentLine_w;								///< Current line from script, loaded into wide string
 		static int currentLineIndex;									///< Current line index in \a currentScript
 		static LINETYPE currentLineType;
 		static std::vector<std::string> currentScript;					///< Active script, loaded each line as an array of strings
+		static std::vector<std::wstring> currentScript_w;				///< Active script, loaded each line as an array of wide strings
+		static std::string currentScriptFileName;						///< Active script's filename
 		static int activeSpeakerIndex;									///< The index of the active speaker, for chat box names
 		static SDL_Surface *currentLineSurface;							///< Current line surface, for drawing the text off-screen
 		static SDL_Surface *currentLineSurfaceShadow;					///< Current line surface, for drawing the text shadow off-screen
+		static SDL_Texture *currentLineTexture;							///< Current line texture, for drawing the text off-screen
+		static SDL_Texture *currentLineTextureShadow;					///< Current line texture, for drawing the text shadow off-screen
+		static SDL_Rect currentLineTextureShadowRect;
+		static SDL_Rect currentLineTextureRect;
 
 		static float fontSize;											///< The size of the text font; not sure if still used?
 
@@ -534,18 +566,32 @@ class M22Script
 		/// \param _filename File path/name of decisions file
 		/// \return Error code if problem encountered, 0 if fine
 		static short int LoadGameDecisions(const char* _filename);
+		
+		/// Loads the X and Y position for game text into \a currentLineTextureRect
+		/// 
+		/// \param _filename File path/name of text box position file
+		/// \return Error code if problem encountered, 0 if fine
+		static short int LoadTextBoxPosition(const char* _filename);
 
 		/// Loads the script file into \a currentScript
-		///
+		/// \deprecated This loads into a regular string, not wstring. Still used but queued for removal.
 		/// \param _filename File path/name of script file
 		/// \return Error code if problem encountered, 0 if fine
 		static short int LoadScriptToCurrent(const char* _filename);
+
+		/// Loads the script file into \a currentScript_w (with wstrings)
+		///
+		/// \param _filename File path/name of script file
+		/// \return Error code if problem encountered, 0 if fine
+		static short int LoadScriptToCurrent_w(const char* _filename);
 			
 		/// Draws the contents of \a currentLine to screen
 		///
 		/// \param ScrW Screen width resolution
 		/// \param ScrH Screen height resolution
 		static void DrawCurrentLine(int ScrW, int ScrH);
+
+		static bool updateCurrentLine;
 			
 		/// Draws the specified decision options to screen
 		///
@@ -565,12 +611,19 @@ class M22Script
 		/// \param strs Address of string array to split into
 		/// \param ch Character to split between
 		static unsigned int SplitString(const std::string&, std::vector<std::string>&, char);
+		
+		/// Splits string into parts between specified character into an array
+		///
+		/// \param txt Target string to split
+		/// \param strs Address of string array to split into
+		/// \param ch Character to split between
+		static unsigned int SplitString(const std::wstring&, std::vector<std::wstring>&, char);
 			
 		/// Checks and returns the type of the string from \a LINETYPE
 		///
 		/// \param _input String to check
 		/// \return Type of line as \a LINETYPE enumerator
-		static M22Script::LINETYPE CheckLineType(std::string);
+		static M22Script::LINETYPE CheckLineType(std::wstring);
 			
 		/// Checks and returns if the character is a colon ( : )
 		///
@@ -582,6 +635,38 @@ class M22Script
 			
 		/// Fades to screen black
 		static void FadeToBlack(void);
+		
+		/// Converts a wstring to a normal string.
+		///
+		/// \param _input wstring to convert
+		inline static std::string to_string(std::wstring _input)
+		{
+			std::string output;
+			std::wstring input = _input;
+			output.assign(input.begin(), input.end());
+			return output;
+		};
+		
+		/// Converts a c-string to a wstring.
+		///
+		/// \param _input c-string to convert
+		inline static std::wstring to_wstring(const char* _input)
+		{
+			std::wstring output;
+			std::string input = _input;
+			output.assign(input.begin(), input.end());
+			return output;
+		};
+		
+		/// Converts a string to a wstring.
+		///
+		/// \param _input string to convert
+		inline static std::wstring to_wstring(std::string _input)
+		{
+			std::wstring output;
+			output.assign(_input.begin(), _input.end());
+			return output;
+		};
 };
 
 /// \class 		M22Interface M22Engine.h "include/M22Engine.h"
@@ -661,10 +746,10 @@ class M22Interface
 		static bool menuOpen;									///< Is the menu open?
 
 		/// Draws all interfaces in \a activeInterfaces
-			static void DrawActiveInterfaces(void);
+		static void DrawActiveInterfaces(void);
 			
 		/// Draws the buttons of the active interfaces
-			static void DrawActiveInterfacesButtons(void);
+		static void DrawActiveInterfacesButtons(void);
 			
 		static bool DRAW_TEXT_AREA;								///< Draw the text area?
 			
@@ -701,6 +786,55 @@ class M22Interface
 		/// \param _type Type of interface from \a M22Interface::INTERFACES
 		/// \return Error code if problem encountered, 0 if fine
 		static short int InitializeInterface(M22Interface::Interface* _interface, int _num_of_buttons, int _startline = 0, const std::string _filename = "graphics/interface/GAME_BUTTONS.txt", bool _opaque = true, M22Interface::INTERFACES _type = M22Interface::INTERFACES::INGAME_INTRFC);
+};
+
+/// \class 		M22Renderer M22Engine.h "include/M22Engine.h"
+/// \brief 		Class for SDL wrapper
+///
+/// \details 	This class is responsible for wrapping SDL functions, so that we can change to another renderer easier
+///
+class M22Renderer
+{
+	private:
+	public:
+		/// Renders current buffer
+		static void RenderPresent(void);
+		
+		/// Clears the current buffer
+		static void RenderClear(void);
+
+		static SDL_Window* SDL_SCREEN;							///< Context for the SDL Window
+		static SDL_Renderer *SDL_RENDERER;						///< Context for the SDL Renderer
+		
+		/// Copys the entire background texture to the current frame
+		///
+		/// \param _bg The M22Engine::Background object to render
+		static void RenderCopy(M22Engine::Background _bg);
+		
+		/// Gets texture width/height
+		///
+		/// \param _txtr The SDL_Texture to check
+		/// \param _w Reference to variable to store width in
+		/// \param _h Reference to variable to store height in
+		static void GetTextureInfo(SDL_Texture* _txtr, int& _w, int& _h);
+		
+		/// Loads the texture from the file and returns the loaded texture
+		///
+		/// \param _txtr The SDL_Texture to check
+		static SDL_Texture* LoadTexture(std::string _filepath);
+		
+		/// Sets the active draw color (values between 0 and 255)
+		///
+		/// \param _r Red
+		/// \param _g Green
+		/// \param _b Blue
+		/// \param _a Alpha
+		static void M22Renderer::SetDrawColor(unsigned char _r, unsigned char _g, unsigned char _b, unsigned char _a);
+
+		/// Delays the thread for the specified time
+		///
+		/// \param _delay Time in milliseconds to delay by
+		static void M22Renderer::Delay(unsigned int _delay);
 };
 
 #endif
