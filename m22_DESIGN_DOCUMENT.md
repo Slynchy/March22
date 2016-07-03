@@ -29,3 +29,4 @@ The engine parses the next line of the script and does the action based on the f
 | m22IF ( _decision, _choice, _function_if_true )      | Basic if logic; runs the function if the specified choice is made in the specified decision. |
 | MakeDecision ( _decision, _choice1, _choice2, [_choice3] ) | Creates a new decision and makes the player make a choice                 |
 | MakeDecision ( _decision )                           | Finds the decision from the decisions array gives player the decision           |
+| RunLuaScript ( _filename )                           | Runs specified Lua script from "./scripts/lua"                                  |
