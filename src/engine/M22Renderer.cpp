@@ -47,5 +47,6 @@ void M22Renderer::SetDrawColor(unsigned char _r, unsigned char _g, unsigned char
 
 void M22Renderer::Delay(unsigned int _delay)
 {
-
+	SDL_Delay(_delay);
+	return;
 };

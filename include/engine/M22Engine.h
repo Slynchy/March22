@@ -1,8 +1,8 @@
 /// \file 		M22Engine.h
 /// \author 	Sam Lynch
 /// \brief 		Header file for entire M22 engine
-/// \version 	0.6.0
-/// \date 		June 2016
+/// \version 	0.6.5
+/// \date 		July 2016
 /// \details	The header file for declaring the engine and its functions/variables.
 
 #ifndef M22ENGINE_H
@@ -24,6 +24,9 @@
 	/*!< Defines how far apart the decision texts are in pixels */
 
 #include "SDL.h"
+#include "lua/lua.hpp"
+#include "lua/lauxlib.h"
+#include "lua/lualib.h"
 #include <SDL_image.h>
 #include <SDL_mixer.h>
 #include <SDL_ttf.h>
@@ -507,6 +510,7 @@ class M22Script
 			IF_STATEMENT,					///< Basic if statement
 			MAKE_DECISION,					///< Triggers decision-making interface
 			SET_DECISION,					///< Sets a decision into the array
+			RUN_LUA_SCRIPT,					///< Runs a lua script
 			NARRATIVE						///< Speech without chat box (thoughts of main character; narrative)
 		};
 
@@ -645,6 +649,27 @@ class M22Script
 			std::wstring input = _input;
 			output.assign(input.begin(), input.end());
 			return output;
+		};
+		
+		
+		/// Converts a wstring to a Uint16 array (for SDL_TTF)
+		///
+		/// \param _wstr wstring to convert
+		inline static Uint16* to_Uint16(std::wstring _wstr)
+		{
+			if(_wstr.length() != 0)
+			{
+				Uint16* stext = new Uint16[_wstr.length()+1];
+				for (size_t i = 0; i < _wstr.length(); ++i) {
+					stext[i] = _wstr.at(i); 
+				}
+				stext[_wstr.length()] = '\0';
+				return stext;
+			} 
+			else 
+			{
+				return NULL;
+			};
 		};
 		
 		/// Converts a c-string to a wstring.
@@ -835,6 +860,20 @@ class M22Renderer
 		///
 		/// \param _delay Time in milliseconds to delay by
 		static void M22Renderer::Delay(unsigned int _delay);
+};
+
+/// \class 		M22Lua M22Engine.h "include/M22Engine.h"
+/// \brief 		Class for Lua engine
+///
+/// \details 	This class is responsible for wrapping Lua around the engine
+///
+class M22Lua
+{
+	private:
+	public:
+		static lua_State *STATE;
+		static int M22Lua::Initialize();
+		static void M22Lua::Shutdown();
 };
 
 #endif

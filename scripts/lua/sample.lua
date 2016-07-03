@@ -1,0 +1,1 @@
+print("[M22Lua*] This is a Lua print, as indicated by the asterisk!");

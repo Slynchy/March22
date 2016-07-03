@@ -165,17 +165,11 @@ void M22Script::DrawDecisions(M22Script::Decision* _decision,int ScrW, int ScrH)
 
 	SDL_Surface* tempSurfShadow;
 	SDL_Surface* tempSurf;
-
-	Uint16* stext = new Uint16[choiceTextTemp.length()+1];
-	for (size_t i = 0; i < choiceTextTemp.length(); ++i) {
-		stext[i] = choiceTextTemp.at(i); 
-	}
-	stext[choiceTextTemp.length()] = '\0';
-
-	//tempSurfShadow =	TTF_RenderText_Blended_Wrapped( M22Graphics::textFont, choiceTextTemp.c_str(), tempCol2,	ScrW-12 );
-	//tempSurf =			TTF_RenderText_Blended_Wrapped( M22Graphics::textFont, choiceTextTemp.c_str(), tempCol,		ScrW-12 );
-	tempSurfShadow =	TTF_RenderUNICODE_Blended_Wrapped( M22Graphics::textFont, stext, tempCol2,	ScrW-12 );
-	tempSurf =			TTF_RenderUNICODE_Blended_Wrapped( M22Graphics::textFont, stext, tempCol,	ScrW-12 );
+	
+	Uint16* UNICODETEXT = M22Script::to_Uint16(choiceTextTemp);
+	tempSurfShadow =	TTF_RenderUNICODE_Blended_Wrapped( M22Graphics::textFont, UNICODETEXT, tempCol2,	ScrW-12 );
+	tempSurf =			TTF_RenderUNICODE_Blended_Wrapped( M22Graphics::textFont, UNICODETEXT, tempCol,	ScrW-12 );
+	delete [] UNICODETEXT;
 
 	if(tempSurfShadow == NULL)
 	{
@@ -194,11 +188,14 @@ void M22Script::DrawDecisions(M22Script::Decision* _decision,int ScrW, int ScrH)
 	SDL_Rect tempDst2 = {8+1,404+1,0,0};
 	SDL_Rect tempDst = {8,404,0,0};
 		
-	SDL_QueryTexture(temp2, NULL, NULL, &tempDst2.w, &tempDst2.h);
-	SDL_QueryTexture(temp, NULL, NULL, &tempDst.w, &tempDst.h);
+	//SDL_QueryTexture(temp2, NULL, NULL, &tempDst2.w, &tempDst2.h);
+	//SDL_QueryTexture(temp, NULL, NULL, &tempDst.w, &tempDst.h);
 		
-	SDL_RenderCopy(M22Renderer::SDL_RENDERER, temp2, NULL, &tempDst2);
-	SDL_RenderCopy(M22Renderer::SDL_RENDERER, temp, NULL, &tempDst);
+	SDL_QueryTexture(temp2, NULL, NULL, &M22Script::currentLineTextureShadowRect.w, &M22Script::currentLineTextureShadowRect.h);
+	SDL_QueryTexture(temp, NULL, NULL, &M22Script::currentLineTextureRect.w, &M22Script::currentLineTextureRect.h);
+		
+	SDL_RenderCopy(M22Renderer::SDL_RENDERER, temp2, NULL, &currentLineTextureShadowRect);
+	SDL_RenderCopy(M22Renderer::SDL_RENDERER, temp, NULL, &currentLineTextureRect);
 	
 
 	SDL_DestroyTexture(temp2);
@@ -218,22 +215,13 @@ void M22Script::DrawCurrentLine(int ScrW, int ScrH)
 {
 	if(M22Script::updateCurrentLine == true)
 	{
-		SDL_Color tempCol = {255,255,255,255};
-		SDL_Color tempCol2 = {0,0,0,255};
+		SDL_Color tempCol2 = {0,0,0,255};       // Black
+		SDL_Color tempCol = {255,255,255,255};  // White
 
-		Uint16* stext = new Uint16[M22Script::currentLine_w.length()+1];
-		for (size_t i = 0; i < M22Script::currentLine_w.length(); ++i) {
-			stext[i] = M22Script::currentLine_w[i]; 
-		}
-		stext[M22Script::currentLine_w.length()] = '\0';
-
-		//M22Script::currentLineSurfaceShadow =	TTF_RenderText_Blended_Wrapped( M22Graphics::textFont, M22Script::currentLine.c_str(), tempCol2,	ScrW-12 );
-		//M22Script::currentLineSurface =			TTF_RenderText_Blended_Wrapped( M22Graphics::textFont, M22Script::currentLine.c_str(), tempCol,		ScrW-12 );
-		M22Script::currentLineSurfaceShadow =	TTF_RenderUNICODE_Blended_Wrapped( M22Graphics::textFont, stext, tempCol2,	ScrW-12 );
-		M22Script::currentLineSurface =			TTF_RenderUNICODE_Blended_Wrapped( M22Graphics::textFont, stext, tempCol,	ScrW-12 );
-
-		delete stext;
-	
+		Uint16* UNICODETEXT = to_Uint16(M22Script::currentLine_w);
+		M22Script::currentLineSurfaceShadow = TTF_RenderUNICODE_Blended_Wrapped( M22Graphics::textFont, UNICODETEXT, tempCol2,	ScrW-12 );
+		M22Script::currentLineSurface =	      TTF_RenderUNICODE_Blended_Wrapped( M22Graphics::textFont, UNICODETEXT, tempCol,	ScrW-12 );
+		delete [] UNICODETEXT;
 	
 		if(M22Script::currentLineSurfaceShadow == NULL && M22Script::currentLine != "")
 		{
@@ -253,11 +241,12 @@ void M22Script::DrawCurrentLine(int ScrW, int ScrH)
 		
 		SDL_QueryTexture(currentLineTextureShadow, NULL, NULL, &M22Script::currentLineTextureShadowRect.w, &M22Script::currentLineTextureShadowRect.h);
 		SDL_QueryTexture(currentLineTexture, NULL, NULL, &M22Script::currentLineTextureRect.w, &M22Script::currentLineTextureRect.h);
+
+		SDL_FreeSurface(currentLineSurfaceShadow);
+		SDL_FreeSurface(currentLineSurface);
+
 		M22Script::updateCurrentLine = false;
 	};
-	
-//	SDL_Rect tempDst2= {(int)(ScrW*0.01875)+int(1.0f*M22Script::fontSize),(int)(ScrH*0.8416666666666667f)+int(1.0f*M22Script::fontSize),0,0};
-//	SDL_Rect tempDst = {(int)(ScrW*0.01875),(int)(ScrH*0.8416666666666667f),0,0};
 	
 	SDL_RenderCopy(M22Renderer::SDL_RENDERER, M22Script::currentLineTextureShadow, NULL, &M22Script::currentLineTextureShadowRect);
 	SDL_RenderCopy(M22Renderer::SDL_RENDERER, M22Script::currentLineTexture, NULL, &M22Script::currentLineTextureRect);
@@ -649,6 +638,14 @@ short int M22Script::ExecuteM22ScriptCommand(M22Script::LINETYPE LINETYPE, std::
 
 		return 0;
 	}
+	else if(LINETYPE == M22Script::LINETYPE::RUN_LUA_SCRIPT)
+	{
+		std::string tempStr = "./scripts/lua/";
+		tempStr += M22Script::to_string(temp.at(1));
+		luaL_dofile(M22Lua::STATE, tempStr.c_str());
+		M22Script::ChangeLine(++_newLine);
+		return 0;
+	}
 	else if(LINETYPE == M22Script::LINETYPE::COMMENT)
 	{
 		M22Script::ChangeLine(++_newLine);
@@ -835,6 +832,10 @@ M22Script::LINETYPE M22Script::CheckLineType(std::wstring _input)
 	else if(_input == M22Script::to_wstring("SetDecision"))
 	{
 		return M22Script::LINETYPE::SET_DECISION;
+	}
+	else if(_input == M22Script::to_wstring("RunLuaScript"))
+	{
+		return M22Script::LINETYPE::RUN_LUA_SCRIPT;
 	}
 	else if(_input == M22Script::to_wstring("MakeDecision"))
 	{

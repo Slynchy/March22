@@ -1,11 +1,21 @@
-#M22/Snow Sakura++ Changelog
+#March22 Changelog
 ###NOTE: Please don't take this changelog as gospel; I hardly ever remember what I add per version.
+
+#### v0.6.5
+
+- Started adding M22Lua
+- Added new functions to m22 script language:
+	* RunLuaScript [filename] - Runs specified lua script from "./scripts/lua"
+- Fixed game loading/saving improperly.
+- Some other stuff I've probably forgotten.
+- Todo list:
+	* Possibly optimize March22 script? Instead of reading each line as they come, maybe load each one into a struct and check the linetype at that point, instead of when the line changes.
+	* Need to add bindings for C++/M22 functions to Lua
 
 #### v0.6.0
 
 - Started adding M22Renderer
 	* Vague attempt to alleviate dependency on SDL so that switching to another renderer only requires modifying one class.
-- Added template Main.cpp file
 - Updated text renderer
 	* Supports Unicode/wide characters
 		+ The old, regular string functions are still there, and still used; these will need to be removed

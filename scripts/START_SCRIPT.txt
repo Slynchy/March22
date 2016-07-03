@@ -18,6 +18,8 @@ DrawBackground school_courtyard
 
 It's a lot more refreshing out here than it would be in the classroom. Not to mention with how quiet it is, I'm starting to think that everyone else will be sleeping in pretty late today.
 
+RunLuaScript sample.lua
+
 I put down the notes I'm reviewing for a second and stare out at the school grounds, still littered with festival stalls.
 
 Looking at them now in the daytime, without paper lanterns or crowds of people to draw my attention away from them, I notice something peculiar.
@@ -40,3 +42,6 @@ DrawCharacter Shizune School ADJUST_HAPPY 0
 Shizune: "…"
 
 Hisao: "Good morning."
+
+MakeDecision TEST
+m22IF TEST (1)_Snow_Sakura? Goto 17

@@ -1,20 +1,13 @@
 /*
-	March22 Engine Template
-
-	By Sam Lynch, Amduat Games
+	March22 Engine template
 */
 
-#include "SDL.h" // Main SDL library
-#include <SDL_image.h> // SDL Image library
-#include <SDL_mixer.h> // SDL Sound library
-#include <SDL_ttf.h> // SDL TTF library
 #include "M22Engine.h"
-#include <iostream>
 
 #define DEBUG_ENABLED false
 
-#define WINDOW_TITLE		"ApplicationName - March22 "
-#define VERSION				"v0.6.0"
+#define WINDOW_TITLE		"Sample Main.cpp - M22Engine "
+#define VERSION				"v0.6.5"
 
 #define FPS 60
 
@@ -82,7 +75,7 @@ int main(int argc, char* argv[])
 
 		M22Engine::LMB_Pressed = false;
 		if(!M22Engine::QUIT) M22Renderer::RenderPresent();
-		SDL_Delay(1000/FPS);
+		M22Renderer::Delay(1000/FPS); 
 	};
 
 	M22Engine::Shutdown();
@@ -91,33 +84,37 @@ int main(int argc, char* argv[])
 
 void InitializeEverything(Vec2 _ScrPos)
 {
+	int ERROR_CODE = 0;
+	// Initialize Lua
+	ERROR_CODE = M22Lua::Initialize();
+
 	// Initialize the options file
 	M22Engine::OptionsFileInitializer();
 
 	// Initialize SDL with specified title, version and at the specified position of the screen (if windowed)
-	M22Engine::InitializeSDL(WINDOW_TITLE, VERSION, _ScrPos);
+	ERROR_CODE = M22Engine::InitializeSDL(WINDOW_TITLE, VERSION, _ScrPos);
 
 	// Initialize sound engine (setup mixers, etc.)
-	M22Sound::InitializeSound();
+	ERROR_CODE = M22Sound::InitializeSound();
 
 	// Initialize the M22 engine (loads all required files, returns -1 if error encountered)
-	M22Engine::InitializeM22(int(M22Engine::ScrSize.x()),int(M22Engine::ScrSize.y()));
+	ERROR_CODE = M22Engine::InitializeM22(int(M22Engine::ScrSize.x()),int(M22Engine::ScrSize.y()));
 	
 	// Loads all the background files from the specified index file
-	M22Graphics::LoadBackgroundsFromIndex("graphics/backgrounds/index.txt");
+	ERROR_CODE = M22Graphics::LoadBackgroundsFromIndex("graphics/backgrounds/index.txt");
 	
 	// Initializes the text box (loads appropriate files)
 	M22Interface::InitTextBox();
 	
 	// Loads list of game decisions from the decisions file
-	M22Script::LoadGameDecisions("scripts/DECISIONS.txt");
+	ERROR_CODE = M22Script::LoadGameDecisions("scripts/DECISIONS.txt");
 
 	// Load the text box position
-	M22Script::LoadTextBoxPosition("graphics/TEXT_BOX_POSITION.txt");
+	ERROR_CODE = M22Script::LoadTextBoxPosition("graphics/TEXT_BOX_POSITION.txt");
 	
 	// Loads the script file into the current file
-	M22Script::LoadScriptToCurrent("START_SCRIPT.txt");
-	M22Script::LoadScriptToCurrent_w("START_SCRIPT.txt");
+	ERROR_CODE = M22Script::LoadScriptToCurrent("START_SCRIPT.txt");
+	ERROR_CODE = M22Script::LoadScriptToCurrent_w("START_SCRIPT.txt");
 	
 	// Load the desired font
 	M22Graphics::textFont = TTF_OpenFont( "graphics/FONT.ttf", 19);
@@ -136,6 +133,8 @@ void InitializeEverything(Vec2 _ScrPos)
 	M22Graphics::wipePosition->y = 0;
 	M22Graphics::wipePosition->w = 640;
 	M22Graphics::wipePosition->h = 480;
+
+	if(ERROR_CODE != 0) printf("Error detected! Expect problems!\n");
 	return;
 };
 

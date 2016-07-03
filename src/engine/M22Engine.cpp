@@ -82,6 +82,7 @@ void M22Engine::Shutdown()
 	M22Graphics::textFrame = NULL;
 	M22Graphics::textFont = NULL;
 	M22Engine::CHARACTERS_ARRAY.clear();
+	M22Lua::Shutdown();
 	TTF_Quit();
 	return;
 };
@@ -328,7 +329,8 @@ short int M22Engine::InitializeM22(int ScrW, int ScrH)
 		temp = "graphics/text_frames/";
 		temp += M22Engine::CHARACTERS_ARRAY[i].name;
 		temp += ".png";
-		M22Graphics::characterFrameHeaders.push_back(IMG_LoadTexture(M22Renderer::SDL_RENDERER, temp.c_str()));
+		SDL_Texture* tempTexture = IMG_LoadTexture(M22Renderer::SDL_RENDERER, temp.c_str());
+		M22Graphics::characterFrameHeaders.push_back(tempTexture);
 		temp.clear();
 	};
 	
@@ -585,7 +587,7 @@ void M22Engine::SaveGame(const char* _filename)
 	std::ofstream savegame(_filename, std::ios::binary | std::ios::out);
 	if(savegame)
 	{
-		//savegame.write( reinterpret_cast <const char*> (&M22Engine::OPTIONS), sizeof(M22Engine::OPTIONS_STRUCTURE) );
+
 		struct SAVEGAME_STRUCTURE savegameObject;
 		savegameObject.GAMESTATE = M22Engine::GAMESTATE;
 		savegameObject.CURRENTBACKGROUND = M22Engine::ACTIVE_BACKGROUNDS[0].name;
@@ -594,22 +596,7 @@ void M22Engine::SaveGame(const char* _filename)
 		savegameObject.CURRENTSCRIPTFILE = M22Script::currentScriptFileName;
 		savegameObject.CURRENTLINEPOSITION = M22Script::currentLineIndex;
 
-		/*int backgroundStrSize = sizeof(char)*savegameObject.CURRENTBACKGROUND.size();
-		int musicStrSize = sizeof(char)*savegameObject.CURRENTMUSIC.size();
-		int sfxStrSize = sizeof(char)*savegameObject.CURRENTLOOPINGSFX.size();
-		
-		savegame.write( reinterpret_cast <const char*> (&savegameObject.GAMESTATE), sizeof(savegameObject.GAMESTATE));
-
-		savegame.write( reinterpret_cast <const char*> (&backgroundStrSize), sizeof(int));
-		savegame.write( savegameObject.CURRENTBACKGROUND.c_str(), sizeof(char)*savegameObject.CURRENTBACKGROUND.size() );
-		
-		savegame.write( reinterpret_cast <const char*> (&musicStrSize), sizeof(int));
-		savegame.write( savegameObject.CURRENTMUSIC.c_str(), sizeof(char)*savegameObject.CURRENTMUSIC.size() );
-		
-		savegame.write( reinterpret_cast <const char*> (&sfxStrSize), sizeof(int));
-		savegame.write( savegameObject.CURRENTLOOPINGSFX.c_str(), sizeof(char)*savegameObject.CURRENTLOOPINGSFX.size() );
-
-		savegame.write( reinterpret_cast <const char*> (&savegameObject.CURRENTLINEPOSITION), sizeof(savegameObject.CURRENTLINEPOSITION));*/
+		// save characters on screen?
 
 		savegame << savegameObject.GAMESTATE << '\n' << savegameObject.CURRENTBACKGROUND << '\n' << savegameObject.CURRENTMUSIC << '\n' << savegameObject.CURRENTLOOPINGSFX << '\n' << savegameObject.CURRENTSCRIPTFILE << '\n' << savegameObject.CURRENTLINEPOSITION << '\n';
 
@@ -644,7 +631,11 @@ void M22Engine::LoadGame(const char* _filename)
 		M22Sound::ChangeMusicTrack(savegameObject.CURRENTMUSIC);
 		M22Sound::StopLoopedStings();
 		M22Sound::PlayLoopedSting(savegameObject.CURRENTLOOPINGSFX);
-		M22Script::LoadScriptToCurrent(savegameObject.CURRENTSCRIPTFILE.c_str());
+
+		std::wstring tempStr = M22Script::to_wstring(savegameObject.CURRENTSCRIPTFILE);
+		std::vector<std::wstring> tempVec;
+		M22Script::SplitString(tempStr, tempVec, '/');
+		M22Script::LoadScriptToCurrent(M22Script::to_string(tempVec.back()).c_str());
 
 		std::vector<std::wstring> temp;
 		std::wstring backgroundname;

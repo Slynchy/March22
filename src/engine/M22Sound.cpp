@@ -187,9 +187,10 @@ short int M22Sound::ChangeMusicTrack(std::string _name)
 {
 	for(size_t i = 0; i < M22Sound::MUSIC.size(); i++)
 	{
-		if(_name == M22Sound::MUSIC_NAMES[i])
+		if(_name == M22Sound::MUSIC_NAMES.at(i))
 		{
-			Mix_PlayMusic( M22Sound::MUSIC[i], -1 );
+			Mix_PlayMusic( M22Sound::MUSIC.at(i), -1 );
+			M22Sound::currentTrack = i;
 			return 0;
 		};
 	};
@@ -202,6 +203,7 @@ short int M22Sound::ChangeMusicTrack(short int _position)
 	if(M22Sound::MUSIC[_position])
 	{
 		Mix_PlayMusic( M22Sound::MUSIC[_position], -1 );
+		M22Sound::currentTrack = _position;
 		return 0;
 	}
 	else
@@ -213,6 +215,7 @@ short int M22Sound::ChangeMusicTrack(short int _position)
 void M22Sound::StopMusic()
 {
 	Mix_HaltMusic();
+	M22Sound::currentTrack = 0;
 	return;
 };
 
