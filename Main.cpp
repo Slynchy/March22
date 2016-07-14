@@ -1,13 +1,16 @@
 /*
-	March22 Engine template
+	March22 Engine Blank Project
+
+	Code by Sam Lynch, 
+		Amduat Games
 */
 
-#include "M22Engine.h"
+#include <engine/M22Engine.h>
 
 #define DEBUG_ENABLED false
 
-#define WINDOW_TITLE		"Sample Main.cpp - M22Engine "
-#define VERSION				"v0.6.5"
+#define WINDOW_TITLE		"M22Engine "
+#define VERSION				"v0.6.7"
 
 #define FPS 60
 
@@ -16,6 +19,7 @@ Vec2 ScrPos(600,200);
 void InitializeEverything(Vec2 _ScrPos);
 void InitializeInterfaces(void);
 
+#undef main
 int main(int argc, char* argv[]) 
 {
 	InitializeEverything(ScrPos);
@@ -75,7 +79,7 @@ int main(int argc, char* argv[])
 
 		M22Engine::LMB_Pressed = false;
 		if(!M22Engine::QUIT) M22Renderer::RenderPresent();
-		M22Renderer::Delay(1000/FPS); 
+		M22Renderer::Delay(1000/FPS); // 1000ms / 60 = 16.66ms delay (60FPS)
 	};
 
 	M22Engine::Shutdown();
@@ -141,7 +145,7 @@ void InitializeEverything(Vec2 _ScrPos)
 void InitializeInterfaces(void)
 {
 	M22Interface::storedInterfaces.resize(M22Interface::INTERFACES::NUM_OF_INTERFACES);
-	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[M22Interface::INTERFACES::INGAME_INTRFC], 3, 0, "graphics/interface/GAME_BUTTONS.txt", true, M22Interface::INTERFACES::INGAME_INTRFC);
+	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[M22Interface::INTERFACES::INGAME_INTRFC], 2, 0, "graphics/interface/GAME_BUTTONS.txt", true, M22Interface::INTERFACES::INGAME_INTRFC);
 	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[M22Interface::INTERFACES::MENU_BUTTON_INTRFC], 4, 0, "graphics/interface/MENU_BUTTONS.txt", true, M22Interface::INTERFACES::MENU_BUTTON_INTRFC);
 	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[M22Interface::INTERFACES::MAIN_MENU_INTRFC], 3, 0, "graphics/mainmenu/BUTTONS.txt", false, M22Interface::INTERFACES::MAIN_MENU_INTRFC);
 	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[M22Interface::INTERFACES::OPTIONS_MENU_INTRFC], 7, 0, "graphics/optionsmenu/BUTTONS.txt", true, M22Interface::INTERFACES::OPTIONS_MENU_INTRFC);

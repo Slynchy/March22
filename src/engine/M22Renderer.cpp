@@ -4,7 +4,7 @@
 /// \version 	0.6.0
 /// \date 		June 2016
 
-#include "../M22Engine.h"
+#include <engine/M22Engine.h>
 
 
 SDL_Window* M22Renderer::SDL_SCREEN = NULL;

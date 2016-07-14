@@ -1,0 +1,484 @@
+DrawBackground BLACK
+PlayMusic MP02
+
+???: "Yuuji! It's morning!"
+Mom?
+???: "If you don't wake up soon, you won't have time for breakfast!"
+Breakfast?
+I'll pass on that today.
+???: "Come on, wake up!"
+Leave me alone!
+It's freezing in here!
+I'm staying home from school today.
+I've made up my mind!
+
+StopMusic
+
+???: "If you don't get your act together and wake up..."
+What a pest...
+Saki: "This is what you get!!"
+
+DrawBackground saki_elbow_drop
+PlayMusic MP06
+PlaySting whack
+
+THUD!!
+Yuuji: "Oof!!"
+Pain unlike anything I'd ever felt before raced through my abdomen.
+
+DrawBackground bedroom_day
+DrawCharacter Saki School NORMAL 0
+
+Saki: "Are you awake?"
+
+Yuuji: "What do you mean, 'are you awake!?'"
+
+ClearCharacters
+DrawBackground dining_room_day
+
+I put on my uniform and went to the living room.
+Yuuji: "That really hurt, you know! Are you trying to kill me?"
+
+DrawCharacter Saki School HAPPY 0
+
+Saki: "Oh, that's your new uniform!"
+Yuuji: "Listen to what I'm saying!"
+
+ClearCharacters
+DrawCharacter Saki School NORMAL 0
+
+Saki: "It's your own fault for not waking up!"
+Yuuji: "Don't you think you overdid it a little for me not waking up?"
+Yuuji: "You know, what you did to me there is called an 'elbow drop.' It really hurts!!"
+
+ClearCharacters
+DrawCharacter Saki School HAPPY 0
+
+Saki: "I know that. It's one of my special attacks."
+Special attacks?
+Yuuji: "So you're going to use a different attack to wake me up every morning?"
+Saki: "That's all up to you, Yuuji."
+There's something seriously wrong with this picture...
+Yuuji: "Huh? Hey, where's Uncle?"
+
+ClearCharacters
+DrawCharacter Saki School NORMAL 0
+
+Saki: "Oh, he went to work."
+Went to work? Oh, that's right. He cuts the fish at the town supermarket.
+Yuuji: "I see. He sure goes to work early."
+Saki: "That's right."
+Even though she's my cousin, she's a girl my own age.
+She's also pretty cute, as long as she keeps her mouth shut.
+It makes me feel kind of nervous having breakfast with her.
+Saki: "What are you looking at?"
+Yuuji: "I'm not looking at anything!"
+
+ClearCharacters
+DrawCharacter Saki School SNEAKY 0
+
+Saki: "Ah ha!"
+Yuuji: "W-what?"
+Saki: "You're thinking dirty thoughts about your adorable cousin Saki, aren't you?"
+Yuuji: "No way!"
+
+ClearCharacters
+DrawCharacter Saki School HAPPY 0
+
+Saki: "You don't need to be shy about it!"
+Saki: "It's perfectly normal for you to go head over heels when you see me in my uniform, Yuuji."
+Yuuji: "Shut up, titless."
+
+ClearCharacters
+DrawCharacter Saki School ANGRY_B 0
+
+Saki: "WHAT DID YOU SAY!?"
+It's very easy to make Saki angry.
+
+ClearCharacters
+DrawCharacter Saki School SHOCK 0
+
+Saki: "Uh oh! If we don't get going, we'll miss the train!"
+Yuuji: "Why don't you notice these things sooner!?"
+I quickly stuffed my breakfast into my mouth.
+
+ClearCharacters
+DrawCharacter Saki School NORMAL 0
+
+Saki: "Yuuji..."
+Yuuji: "Mmmph?"
+
+ClearCharacters
+DrawCharacter Saki School HAPPY 0
+
+Saki: "That uniform looks good on you!"
+I blushed a little.
+
+DrawBackground BLACK
+ClearCharacters
+StopMusic
+DrawBackground train_day
+PlayLoopedSting train_ambience
+PlayMusic MP14
+
+ClearCharacters
+//DrawCharacter Sumiyoshi School NORMAL 0
+
+???: "Oh! Your uniform came, huh?"
+Yuuji: "Sumiyoshi?"
+A really shallow-looking guy suddenly appeared.
+
+ClearCharacters
+//DrawCharacter Sumiyoshi School HAPPY 0
+
+Sumiyoshi: "So, I guess you're now officially a member of the Sakuragaoka Mates, Yuuji!"
+I'm not in any mood for his crap today.
+
+DarkenScreen
+
+This guy's name is Sumiyoshi Itou.
+He's a moron.
+That is all.
+Oh wait, I just thought of something else.
+He's also a pervert.
+That's just about all there is to know about him.
+He's Saki's classmate, and he's been a clingy bastard since the day I transfered here.
+
+BrightenScreen
+ClearCharacters
+//DrawCharacter Misaki School HAPPY -150
+DrawCharacter Saki School HAPPY 150
+
+Misaki: "Good morning, Saki!"
+Saki: "Morning, Misaki!"
+
+DarkenScreen
+
+This cheerful girl is Misaki Souya.
+She's cheeful and honest.
+She's the total opposite of Saki, but for some reason they get along well.
+She's also our teacher Miss Misato's younger sister.
+Her puzzle is missing a few pieces as well.
+
+BrightenScreen
+ClearCharacters
+//DrawCharacter Misaki School SHY 0
+
+Misaki: "G... good morning, Yuuji."
+Whenever our eyes meet, she always turns red.
+Just recently she's finally become able to speak normally with me.
+Yuuji: "Good morning."
+
+ClearCharacters
+//DrawCharacter Misaki School HAPPY 0
+
+Misaki: "I see your uniform came."
+Yuuji: "Yeah, what do you think? Does it suit me?"
+
+ClearCharacters
+//DrawCharacter Misaki School SHY 0
+
+Misaki: "........." (Blush)
+Why are you blushing?
+Saki: "I see Yuuji is looking at Misaki with lusty eyes again."
+
+ClearCharacters
+DrawCharacter Saki School SNEAKY 0
+
+Yuuji: "Don't say stuff like that! You'll make me look bad!"
+
+ClearCharacters
+//DrawCharacter Sumiyoshi School NORMAL 0
+
+Sumiyoshi: "Yuuji, sensors indicate great potential perversion inside your body."
+Yuuji: "No way."
+Sumiyoshi: "Come on, man! You're my bestest buddy! My closest companion! We're a perfect match!"
+I don't want to match you in any way.
+
+DrawBackground BLACK
+ClearCharacters
+StopLoopedStings
+DrawBackground school_exterior_day
+
+//DrawCharacter Misaki School HAPPY 150
+//DrawCharacter Kozue School HAPPY -150
+
+Kozue: "Good morning, Misaki!"
+Misaki: "Good morning, Kozue!"
+
+DarkenScreen
+
+The girl who suddenly ran up beside Misaki was...
+Kozue Hiyama.
+She has long black hair and deep, dark eyes.
+
+BrightenScreen
+
+Kozue: "Oh, Misaki! I was in hell for several hours while we were separated during the night!"
+
+DarkenScreen
+
+She seems to have some lesbian tendencies.
+She's also the type of girl who's cute as long as her mouth is shut.
+I wonder why all of Saki's friends are so weird, anyway...
+
+BrightenScreen
+ClearCharacters
+//DrawCharacter Kozue School NORMAL 0
+
+Kozue: "Oh, Tachibana. Good morning."
+She just noticed me standing here now.
+Yuuji: "Morning."
+
+ClearCharacters
+//DrawCharacter Kozue School HAPPY 0
+
+Kozue: "Your uniform looks good on you!"
+Yuuji: "Thanks."
+
+ClearCharacters
+//DrawCharacter Kozue School NORMAL 0
+
+Kozue: "By the way..."
+Kozue: "What do you think of Misaki?"
+She began questioning me.
+Yuuji: "What are you talking about all of a sudden?"
+
+ClearCharacters
+//DrawCharacter Kozue School DETERMINED 0
+
+Kozue: "Never mind that, just answer me!"
+Yuuji: "Hmm, let's see..."
+Yuuji: "She's a good girl."
+Kozue: "Anything else?"
+Yuuji: "Well, hmm... She's cute."
+
+ClearCharacters
+//DrawCharacter Kozue School NORMAL 0
+
+Kozue: "Oh, you think so too?"
+Yuuji: "What's your problem?"
+
+ClearCharacters
+//DrawCharacter Kozue School HAPPY 0
+
+Kozue: "Tachibana, Misaki comes with my highest recommendations."
+
+ClearCharacters
+
+Saying that, she quickly turned and sped off towards Misaki.
+What was that all about, anyway?
+
+DrawBackground BLACK
+//DrawBackground school classrom daytime
+
+Sumiyoshi: "It's been a week since you transfered here, Yuuji."
+Sumiyoshi: "I think you've really started to fit in well in our little group."
+Yuuji: "Why are you acting so formal?"
+Sumiyoshi: "I think the time has come."
+Yuuji: "The time?"
+Saki: "I agree. Shall we do it?"
+Even Saki began talking a bunch of nonsense.
+Misaki: "Yes, let's do it!"
+Kozue: "If Misaki says so, then I agree as well."
+Yuuji: "Just what are you all talking about?"
+Saki: "Of course, we're talking about..."
+Sumiyoshi: "Your welcoming party, Yuuji!"
+My... welcoming party?
+Sumiyoshi: "We'll have it at the usual place."
+Misaki: "Got it. We'll meet at Itou's Place."
+Yuuji: "Itou's Place? What's that?"
+Sumiyoshi: "Yuuji, just say my full name."
+Full name?
+Yuuji: "Sumiyoshi Itou... Oh!"
+Sumiyoshi: "That's right. My house."
+Saki: "Sumi's house is an okonomiyaki shop."
+Wow, I didn't know that.
+An okonomiyaki shop...
+Sumiyoshi: "Well, it's settled. Today after class, we'll have Yuuji Tachibana's welcoming party at Itou's Place."
+Sumiyoshi: "We welcome your participation!"
+Sounds like a television announcement.
+Misato: "Oh, yes! I'll come too!"
+She suddenly appeared from beneath my desk.
+Yuuji: "Miss Misato! When did you...!?"
+Misato: "That's a secret!"
+Sumiyoshi: "All right! Since Miss Misato is coming, everything's on me!"
+Saki: "Oh! Sumi, you're so manly!
+Misato: "Let's all make Tachibana feel really special!"
+Everyone: "Yeah!!"
+Everyone is working together to throw a welcoming party just for me.
+I'm touched...
+Saki: "Oh? Yuuji, is that a tear I see in your eye?"
+Yuuji: "No way!"
+Saki: "Look, you're getting bashful again! You're so cute."
+Saki could see right through me.
+After class, Saki and I stood in front of the seniors' classroom.
+Yuuji: "Hey, what are we doing here?"
+Saki: "Never you mind about that!"
+Saki seemed to be searching for someone...
+Saki: "Oh! There she is! Rei!"
+She called out with a loud voice.
+A tall girl turned to face her.
+Saki: "Hey, Rei! Over here! Over here!"
+Is that girl a senior?
+Saki, you should be more respectful!
+Rei: "You called, Saki?"
+This girl's name is Rei.
+She's tall and slender.
+She's got curves in all of the right places.
+You could almost mistake her for a fashion model.
+Her appearance is very neat and orderly.
+Her hair is cut short, and she wears serious-looking glasses.
+Saki: "Remember what I was telling you about before? This is my cousin Yuuji."
+Rei: "Oh."
+Rei: "Wait, are you Keijirou's son?"
+Yuuji: "You know my father?"
+Rei: "Yeah. My father's been friends with yours for a long time now."
+Saki: "Rei is the daughter of the high priest at Yukito shrine!"
+Yuuji: "Shrine?"
+Saki: "Yukito shrine. Remember, where Auntie got married?"
+Oh...
+The shrine on top of the hill...
+Saki: "You forgetful airhead."
+Yuuji: "Shut up!"
+It just slipped my mind for a moment.
+Saki: "Anyway, we're having a welcoming party for Yuuji. Will you come?"
+Rei: "Yeah, I'll come!"
+Yuuji: "Well then, I'm very much looking forward to meeting you, er, uh..."
+Rei: "Call me Rei. Also, you don't need to be so formal. It'll make your shoulders stiff."
+Yuuji: "Okay. Rei it is, then."
+Rei: "That's fine."
+She smirked and walked away.
+Saki: "What do you think? She's really beautiful, isn't she?"
+Saki: "Rei also has the highest grades in her class."
+Yuuji: "Whoa. Is she an honor student?"
+Saki: "Well, maybe not quite. You'll understand when you get to know her."
+What's that supposed to mean?
+Sumiyoshi: "All right! Everyone eat up!"
+Saki: "You don't need to tell me twice!"
+Misaki: "This looks really good!"
+Misato: "It's delicious!"
+Kozue: "Ahh, the two of you are making such lovely faces."
+Hiyama started taking lots of photos.
+I guess she does that wherever she goes.
+Sumiyoshi: "Come on, Rei! Try some of this!"
+Rei: "How kind of you!"
+He filled Rei's glass with a transparent liquid from a bottle.
+Yuuji: "Hey, is that...?"
+Rei: "What's wrong? You can't handle liquor?"
+Yuuji: "No, that's not it..."
+Sumiyoshi: "Hey, everyone else drink up too!"
+He filled up our glasses, one after another.
+Sumiyoshi's Mother: "So, this boy is Keijirou's son?"
+Sumiyoshi: "Mom! Don't jump out so suddenly like that!"
+Apparently that was Sumiyoshi's mother.
+I see. There's a great family resemblance.
+Sumiyoshi's Mother: "I heard he was Keijirou's son, so I came to see him for myself."
+Sumiyoshi's Mother: "Oh, he looks and sounds just like his father!"
+Just like my father... That is NOT something I wanted to hear.
+Misaki: "Do you know him?"
+Sumiyoshi's Mother: "Know him? There isn't anyone in these parts who hasn't heard of the infamous Tachibana Brothers."
+Are our fathers really that infamous?
+Sumiyoshi's Mother: "He was a no-good spoiled brat who kept flipping up my skirt..."
+Sumiyoshi: "Ugh!! Mom, he flipped up your skirt!? Gross!!"
+Sumiyoshi's Mother: "What's your problem? I was beautiful and famous in those days!"
+Sumiyoshi: "No way! Get out of here, Mom!"
+Sumiyoshi's Mother: "All right, all right. Everyone, eat as much as you like."
+She retreated back to the kitchen.
+She seemed to be a very nice, kind woman.
+However, I'm not happy to find out how much of an impact Dad had around this area.
+The day continued.
+I felt myself becomimg very fond of this town.
+Rei: "By the way, Tachibana."
+Yuuji: "Yes?"
+Rei: "Have you joined any clubs yet?"
+Yuuji: "No, not yet."
+Rei: "Well, do you have any plans?"
+Yuuji: "I haven't given it much thought."
+Rei: "I see."
+Rei: "Then why don't you join the Environmental Protection Committee?"
+Yuuji: "Environmental Protection Committee?"
+Rei: "We clean and maintain the natural environment and facilities inside and outside of the school."
+Rei: "It's especially important because we've got the Snow Sakura in this town."
+Yuuji: "Huh?"
+Snow Sakura?
+I've heard that name somewhere before.
+Snow Sakura... Snow Sakura...
+I can't remember...
+Rei: "What's wrong?"
+Yuuji: "Nothing, I was just thinking..."
+Rei: "Oh."
+Rei: "The Snow Sakura is the symbol of this town."
+Rei: "It's a cherry tree that blooms in the winter. That's why it's called the Snow Sakura.
+Rei: "The Yukito shrine believes that it's a sacred tree."
+Yuuji: "Oh..."
+It seems to be pretty important.
+Misato: "Come on, Tachibana! Join the Environmental Protection Committee!"
+Yuuji: "Whoa!"
+Miss Misato suddenly appeared between us.
+Misato: "Join it!"
+Is that an order!?
+Rei: "Oh yeah, Miss Misato is our advisor."
+Misato: "You're not used to this school yet, Tachibana, so you need the support of someone like Kisaragi!"
+Misato: "So, with that, it's been decided that you'll join!"
+That was quick!
+What about my opinion!?
+Misaki: "Oh, big sister, you've had too much to drink!"
+Rei: "Misaki and Hiyama are members of the committee as well."
+Rei: "You're lucky to be surrounded by such cute girls."
+Rei: "You're lucky to be surrounded by such cute girls."
+Hmm... Well, the three girls in the committee are cute, and Miss Misato is beautiful as well.
+As I thought silently to myself...
+Kozue: "........."
+I made eye contact with Hiyama.
+Hmm... So I'm a member of the committee now?
+I don't think I like the way this is going...
+.........
+But it might be kind of fun.
+They're a little crazy, but they seem to be decent people.
+It should be fun being around them every day.
+Sumiyoshi: "Number one, Sumiyoshi Itou reporting! I shall now lift this bottle with one of my nipple hairs!"
+Saki: "Don't be gross!"
+WHACK!
+Sumiyoshi: "Urgh!"
+Saki's mighty forearm smash sent Sumiyoshi tumbling to the ground.
+I was on my way back from Itou's Place.
+Saki, Rei and I walked side by side down the snowy road.
+Saki: "That was fun, wasn't it?"
+Yuuji: "Yeah."
+Rei: "I'm sure things will become even more fun."
+Yuuji: "Why do you say that?"
+Rei: "Just a hunch."
+Rei: "But my hunches are almost always right."
+Yuuji: I began to feel the same way.
+The chilly air felt good.
+Rei: "Well, here's my stop."
+Yuuji: "Good night, Rei."
+Saki: "Good night. See you tomorrow!"
+Rei: "Yep, tomorrow!"
+We watched Rei walk away.
+Saki: "Today was a busy day. It's been a long time since we partied like that."
+Yuuji: "Yeah."
+Saki: "Everything seems to be a lot busier since you came here, Yuuji."
+Yuuji: "That's just your imagination."
+Yuuji: "It just seems that way because there's more people around now."
+I started to blush a bit.
+Saki: "Yeah, maybe."
+Saki grinned.
+Takeaki: "Yuuji, how was school today?"
+Uncle emerged from the bath.
+Yuuji: "It was a lot of fun."
+Takeaki: "That's good."
+Yuuji: "I heard a lot about you and Dad, too."
+Takeaki: "Oh? From who?"
+Yuuji: "From Sumiyoshi's mom."
+Takeaki: "Ah yes, that would be Chikako."
+Takeaki: "What did she say?"
+Yuuji: "She said you were nothing but a bunch of good-for-nothing brats."
+Takeaki: "Hahaha! She's right, you know!"
+He seemed to be proud of the fact.
+Takeaki: "So, what do you think? This is an interesting town, isn't it?"
+Yuuji: "Hmm... I guess it's all right."
+Takeaki: "It's all right?"
+Yuuji: "Yeah, it's all right!"
+Uncle and I looked at each other and laughed.

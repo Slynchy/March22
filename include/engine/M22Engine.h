@@ -1,7 +1,7 @@
 /// \file 		M22Engine.h
 /// \author 	Sam Lynch
 /// \brief 		Header file for entire M22 engine
-/// \version 	0.6.5
+/// \version 	0.6.7
 /// \date 		July 2016
 /// \details	The header file for declaring the engine and its functions/variables.
 
@@ -23,14 +23,14 @@
 #define DECISION_CHOICE_TEXT_SPACING 20
 	/*!< Defines how far apart the decision texts are in pixels */
 
-#include "SDL.h"
-#include "lua/lua.hpp"
-#include "lua/lauxlib.h"
-#include "lua/lualib.h"
+#include <SDL.h>
+#include <lua/lua.hpp>
+#include <lua/lauxlib.h>
+#include <lua/lualib.h>
 #include <SDL_image.h>
 #include <SDL_mixer.h>
 #include <SDL_ttf.h>
-#include "engine/Vectors.h"
+#include <engine/Vectors.h>
 #include <vector>
 #include <fstream>
 #include <algorithm>
@@ -874,6 +874,8 @@ class M22Lua
 		static lua_State *STATE;
 		static int M22Lua::Initialize();
 		static void M22Lua::Shutdown();
+		static int M22Lua::ChangeBackground(lua_State*);
+		static int M22Lua::ExecuteM22ScriptCommand(lua_State*);
 };
 
 #endif

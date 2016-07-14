@@ -1,6 +1,16 @@
 #March22 Changelog
 ###NOTE: Please don't take this changelog as gospel; I hardly ever remember what I add per version.
 
+#### v0.6.7
+- Added two new functions to M22Lua:
+	* M22_ChangeBackground(_bg_name) - Changes the current background
+	* M22_ExecuteCommand(_param1, _param2, etc.) - Executes/evaluates M22Script code, where _param1 is the function name, and following parameters are (string) parameters of that function
+- Added a fade-in to the options menu
+- Removed the SKIP button (can still skip via holding SHIFT, but the button was broken)
+- Fixed loading a savegame not reloading script with wstrings
+- Fixed loading a savegame not stopping music
+- Fixed fading to black visual bugs when exiting the game
+
 #### v0.6.5
 
 - Started adding M22Lua

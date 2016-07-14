@@ -1,4 +1,4 @@
-#include "../M22Engine.h"
+#include <engine/M22Engine.h>
 
 std::vector<SDL_Texture*> M22Graphics::BACKGROUNDS;
 SDL_Texture* M22Graphics::textFrame;
@@ -27,12 +27,23 @@ void M22Graphics::FadeToBlackFancy(void)
 	M22Interface::DRAW_TEXT_AREA = false;
 	float fade_to_black_alpha = 0;
 	bool fadeout = false;
-	while(fade_to_black_alpha < 250.0f || Mix_PlayingMusic())
+	while(fade_to_black_alpha < 255.0f || Mix_PlayingMusic())
 	{
 		//fade_to_black_alpha = M22Graphics::Lerp( fade_to_black_alpha, 255.0f, DEFAULT_LERP_SPEED / 8);
 		fade_to_black_alpha += 2.0f;
+		if(fade_to_black_alpha > 255.0f) fade_to_black_alpha =  255.0f;
 		SDL_SetTextureAlphaMod( M22Graphics::BLACK_TEXTURE, Uint8(fade_to_black_alpha) );
-		M22Graphics::DrawInGame();
+		if(M22Engine::GAMESTATE == M22Engine::MAIN_MENU) 
+		{
+			M22Renderer::RenderCopy(M22Graphics::activeMenuBackground);
+			M22Renderer::RenderCopy(M22Graphics::menuLogo);
+			M22Interface::DrawActiveInterfaces();
+			SDL_RenderCopy(M22Renderer::SDL_RENDERER, M22Graphics::BLACK_TEXTURE, NULL, NULL);
+		}
+		else if(M22Engine::GAMESTATE == M22Engine::INGAME)
+		{
+			M22Graphics::DrawInGame();
+		};
 		SDL_RenderPresent(M22Renderer::SDL_RENDERER);
 		if(fadeout == false)
 		{

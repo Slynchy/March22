@@ -1,4 +1,4 @@
-#include "../M22Engine.h"
+#include <engine/M22Engine.h>
 
 std::vector<M22Interface::Interface> M22Interface::storedInterfaces;
 std::vector<M22Interface::Interface*> M22Interface::activeInterfaces;
@@ -7,6 +7,8 @@ M22Interface::BUTTON_STATES* M22Interface::skipButtonState;
 M22Interface::BUTTON_STATES* M22Interface::menuButtonState;
 bool M22Interface::menuOpen = false;
 SDL_Texture* M22Interface::ChatBoxRenderer = NULL;
+
+#define INTERFACE_FADEIN_SPEED 5.0f
 
 short int M22Interface::InitializeInterface(M22Interface::Interface* _interface, int _num_of_buttons, int _startline, const std::string _filename, bool _opaque, M22Interface::INTERFACES _type)
 {
@@ -133,6 +135,16 @@ void M22Interface::DrawActiveInterfacesButtons(void)
 	{
 		for(size_t k = 0; k < M22Interface::activeInterfaces[i]->buttons.size(); k++)
 		{
+			if(M22Interface::activeInterfaces.at(i)->alpha < 255.0f) 
+			{
+				M22Interface::activeInterfaces.at(i)->alpha += INTERFACE_FADEIN_SPEED;
+				SDL_SetTextureAlphaMod(M22Interface::activeInterfaces.at(i)->buttons.at(k).sheet, (Uint8)M22Interface::activeInterfaces.at(i)->alpha);
+			};
+			if(M22Interface::activeInterfaces.at(i)->alpha >= 255.0f)
+			{
+				M22Interface::activeInterfaces.at(i)->alpha = 255.0f;
+				SDL_SetTextureAlphaMod(M22Interface::activeInterfaces.at(i)->buttons.at(k).sheet, 255);
+			};
 			SDL_RenderCopyEx(
 				M22Renderer::SDL_RENDERER, M22Interface::activeInterfaces[i]->buttons[k].sheet, 
 				&M22Interface::activeInterfaces[i]->buttons[k].rectSrc[M22Interface::activeInterfaces[i]->buttons[k].state], 
@@ -217,6 +229,16 @@ void M22Interface::DrawTextArea(int _ScrSizeX, int _ScrSizeY)
 		{
 			if(M22Interface::activeInterfaces[i]->spriteSheet != NULL)
 			{
+				if(M22Interface::activeInterfaces.at(i)->alpha < 255.0f) 
+				{
+					M22Interface::activeInterfaces.at(i)->alpha += INTERFACE_FADEIN_SPEED;
+					SDL_SetTextureAlphaMod(M22Interface::activeInterfaces.at(i)->spriteSheet, (Uint8)M22Interface::activeInterfaces.at(i)->alpha);
+				};
+				if(M22Interface::activeInterfaces.at(i)->alpha >= 255.0f)
+				{
+					M22Interface::activeInterfaces.at(i)->alpha = 255.0f;
+					SDL_SetTextureAlphaMod(M22Interface::activeInterfaces.at(i)->spriteSheet, 255);
+				};
 				SDL_RenderCopy( M22Renderer::SDL_RENDERER, M22Interface::activeInterfaces[i]->spriteSheet, NULL, NULL);
 			};
 		};
@@ -236,7 +258,7 @@ void M22Interface::UpdateActiveInterfaces(int _ScrSizeX, int _ScrSizeY)
 	{
 		if(M22Engine::GAMESTATE == M22Engine::GAMESTATES::MAIN_MENU)
 		{
-			if(M22Interface::activeInterfaces[i]->alpha < (255*0.6))
+			if(M22Interface::activeInterfaces[i]->alpha < (155))
 			{
 				return;
 			};
@@ -260,7 +282,7 @@ void M22Interface::UpdateActiveInterfaces(int _ScrSizeX, int _ScrSizeY)
 				// mouseover
 				if(M22Engine::LMB_Pressed)
 				{
-					if(M22Interface::activeInterfaces[i]->buttons[k].name == "SKIP")
+					if(M22Interface::activeInterfaces.at(i)->buttons.at(k).name == "SKIP")
 					{
 						M22Engine::skipping = !M22Engine::skipping;
 					}
@@ -299,7 +321,8 @@ void M22Interface::UpdateActiveInterfaces(int _ScrSizeX, int _ScrSizeY)
 						M22Sound::PlaySting("sfx/stings/buttonclick.OGG", true);
 						M22Interface::activeInterfaces.clear();
 						M22Interface::menuOpen = false;
-						M22Interface::activeInterfaces.push_back(&M22Interface::storedInterfaces[M22Interface::INTERFACES::OPTIONS_MENU_INTRFC]);
+						M22Interface::storedInterfaces.at(M22Interface::OPTIONS_MENU_INTRFC).alpha = 0.0f;
+						M22Interface::activeInterfaces.push_back(&M22Interface::storedInterfaces.at(M22Interface::OPTIONS_MENU_INTRFC));
 						return;
 					}
 					else if(M22Interface::activeInterfaces[i]->buttons[k].name == "RETURN_TO_TITLE")
@@ -369,7 +392,10 @@ void M22Interface::UpdateActiveInterfaces(int _ScrSizeX, int _ScrSizeY)
 	
 	if(M22Engine::skipping == true)
 	{
-		*M22Interface::skipButtonState = M22Interface::BUTTON_STATES::CLICKED;
+		if(M22Interface::skipButtonState != NULL)
+		{
+			*M22Interface::skipButtonState = M22Interface::BUTTON_STATES::CLICKED;
+		};
 	};
 	if(M22Interface::menuOpen == true)
 	{

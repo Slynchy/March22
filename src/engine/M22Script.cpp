@@ -1,4 +1,4 @@
-#include "../M22Engine.h"
+#include <engine/M22Engine.h>
 
 std::string M22Script::currentLine;
 std::wstring M22Script::currentLine_w;
@@ -88,7 +88,7 @@ short int M22Script::LoadScriptToCurrent(const char* _filename)
 {
 	std::string filename = "scripts/";
 	filename += _filename;
-	printf("[M22Script] Loading \"%s\" \n", filename.c_str());
+	printf("[M22Script] (char) Loading \"%s\" \n", filename.c_str());
 	std::fstream input(filename);
 	std::string temp;
 	if(input)
@@ -110,7 +110,7 @@ short int M22Script::LoadScriptToCurrent(const char* _filename)
 	}
 	else
 	{
-		printf("Failed to load script file: %s \n", filename);
+		printf("Failed to load script file: %s \n", filename.c_str());
 		return -1;
 	};
 	input.close();
@@ -122,7 +122,7 @@ short int M22Script::LoadScriptToCurrent_w(const char* _filename)
 	std::locale ulocale(std::locale(), new std::codecvt_utf8<wchar_t>) ;
 	std::string filename = "scripts/";
 	filename += _filename;
-	printf("[M22Script] Loading \"%s\" \n", filename.c_str());
+	printf("[M22Script] (unicode) Loading \"%s\" \n", filename.c_str());
 	std::wifstream input(filename);
 	input.imbue(ulocale);
 	std::wstring temp;
@@ -145,7 +145,7 @@ short int M22Script::LoadScriptToCurrent_w(const char* _filename)
 	}
 	else
 	{
-		printf("Failed to load script file: %s \n", filename);
+		printf("Failed to load script file: %s \n", filename.c_str());
 		return -1;
 	};
 	input.close();
@@ -324,8 +324,8 @@ void M22Script::ChangeLine(int _newLine)
 	};
 
 	// Update currentLine variable
-	M22Script::currentLine = M22Script::currentScript[_newLine];
-	M22Script::currentLine_w = M22Script::currentScript_w[_newLine];
+	M22Script::currentLine = M22Script::currentScript.at(_newLine);
+	M22Script::currentLine_w = M22Script::currentScript_w.at(_newLine);
 
 	// Check if blank
 	if(M22Script::currentLine == "")
@@ -439,6 +439,7 @@ short int M22Script::ExecuteM22ScriptCommand(M22Script::LINETYPE LINETYPE, std::
 		M22Script::currentScript.clear();
 		M22Script::ClearCharacters();
 		LoadScriptToCurrent(M22Script::to_string(temp.at(1)).c_str());
+		LoadScriptToCurrent_w(M22Script::to_string(temp.at(1)).c_str());
 		M22Script::ChangeLine(0);
 		return 0;
 	}

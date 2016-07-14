@@ -1,4 +1,4 @@
-#include "M22Engine.h"
+#include <engine/M22Engine.h>
 
 M22Engine::GAMESTATES M22Engine::GAMESTATE = M22Engine::GAMESTATES::INGAME;
 M22Engine::OPTIONS_STRUCTURE  M22Engine::OPTIONS;
@@ -107,7 +107,9 @@ void M22Engine::OptionsFileInitializer(void)
 
 short int M22Engine::InitializeSDL(const std::string _windowTitle, const std::string _version, Vec2 ScrPos)
 {
-	printf("[M22Engine] Initializing SDL2...\n");
+	SDL_version compiled;
+	SDL_VERSION(&compiled);
+	printf("[M22Engine] Initializing SDL2 v%d.%d.%d...\n", compiled.major, compiled.minor, compiled.patch);
 	srand((unsigned int)time(NULL));
 	SDL_Init( SDL_INIT_EVERYTHING );
 	SDL_SetHint (SDL_HINT_RENDER_DRIVER, RENDERING_API);
@@ -636,6 +638,7 @@ void M22Engine::LoadGame(const char* _filename)
 		std::vector<std::wstring> tempVec;
 		M22Script::SplitString(tempStr, tempVec, '/');
 		M22Script::LoadScriptToCurrent(M22Script::to_string(tempVec.back()).c_str());
+		M22Script::LoadScriptToCurrent_w(M22Script::to_string(tempVec.back()).c_str());
 
 		std::vector<std::wstring> temp;
 		std::wstring backgroundname;

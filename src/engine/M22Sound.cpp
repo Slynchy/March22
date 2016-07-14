@@ -1,4 +1,4 @@
-#include "../M22Engine.h"
+#include <engine/M22Engine.h>
 
 std::vector<Mix_Chunk*> M22Sound::SOUND_FX;
 std::vector<Mix_Music*> M22Sound::MUSIC;
@@ -195,6 +195,7 @@ short int M22Sound::ChangeMusicTrack(std::string _name)
 		};
 	};
 	printf("Failed to find music file: %s", _name.c_str());
+	M22Sound::StopMusic();
 	return -1;
 };
 
