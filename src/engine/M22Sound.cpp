@@ -143,6 +143,19 @@ void M22Sound::StopLoopedStings(void)
 	return;
 };
 
+short int M22Sound::PlayLoopedSting(short int _position)
+{
+	if(M22Sound::SOUND_FX[_position])
+	{
+		Mix_PlayChannel( M22Sound::MIXERS::LOOPED_SFX, M22Sound::SOUND_FX.at(_position), -1);
+		return 0;
+	}
+	else
+	{
+		return -1;
+	};
+};
+
 short int M22Sound::PlayLoopedSting(std::string _name)
 {
 	for(size_t i = 0; i < M22Sound::SOUND_FX.size(); i++)
@@ -201,9 +214,9 @@ short int M22Sound::ChangeMusicTrack(std::string _name)
 
 short int M22Sound::ChangeMusicTrack(short int _position)
 {
-	if(M22Sound::MUSIC[_position])
+	if(M22Sound::MUSIC.at(_position))
 	{
-		Mix_PlayMusic( M22Sound::MUSIC[_position], -1 );
+		Mix_PlayMusic( M22Sound::MUSIC.at(_position), -1 );
 		M22Sound::currentTrack = _position;
 		return 0;
 	}

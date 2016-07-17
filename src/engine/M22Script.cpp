@@ -316,42 +316,24 @@ void M22Script::ClearCharacters(void)
 
 void M22Script::ChangeLine(int _newLine)
 {
-	// Check the line even exists
-	if(size_t(_newLine) >= M22Script::currentScript.size())
-	{
-		printf("Cannot change line! Out of bounds!\n");
-		return;
-	};
-
 	// Update currentLine variable
-	M22Script::currentLine = M22Script::currentScript.at(_newLine);
-	M22Script::currentLine_w = M22Script::currentScript_w.at(_newLine);
-
-	// Check if blank
-	if(M22Script::currentLine == "")
-	{
-		M22Script::ChangeLine(++_newLine);
-		return;
-	};
+	M22Script::currentLine = M22Script::to_string(M22ScriptCompiler::currentScript_c.at(_newLine).m_lineContents);
+	M22Script::currentLine_w = M22ScriptCompiler::currentScript_c.at(_newLine).m_lineContents;
 	M22Script::updateCurrentLine = true;
 
-	// Get type of line
-	std::vector<std::wstring> temp;
-	M22Script::SplitString(M22Script::currentLine_w, temp, ' ');
-	std::wstring type = temp.at(0);
-	M22Script::LINETYPE LINETYPE = M22Script::CheckLineType(type);
-	M22Script::currentLineType = LINETYPE;
-
-	//if(M22Script::ExecuteM22ScriptCommand(LINETYPE, temp, _newLine) == 1)
-	//	return;
+	M22ScriptCompiler::CURRENT_LINE = &M22ScriptCompiler::currentScript_c.at(_newLine);
+	M22Script::currentLineType = M22ScriptCompiler::CURRENT_LINE->m_lineType;
 
 	M22Script::currentLineIndex = _newLine;
-	M22Script::ExecuteM22ScriptCommand(LINETYPE, temp, _newLine);
+	M22ScriptCompiler::RunLine(M22Script::currentLineIndex);
 	return;
 };
 
 short int M22Script::ExecuteM22ScriptCommand(M22Script::LINETYPE LINETYPE, std::vector<std::wstring> temp, int _newLine)
 {
+	// This is to fix the M22ScriptCompiler getting rid of the first value (which isn't used here anyway)
+		temp.insert(temp.begin(), M22Script::to_wstring(""));
+
 	if(LINETYPE == M22Script::LINETYPE::NEW_BACKGROUND)
 	{
 		for(size_t i = 0; i < M22Graphics::backgroundIndex.size(); i++)

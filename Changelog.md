@@ -1,6 +1,16 @@
 #March22 Changelog
 ###NOTE: Please don't take this changelog as gospel; I hardly ever remember what I add per version.
 
+#### v0.7.0
+- Added "M22ScriptCompiler"
+	* Compiles scripts prior to execution
+	* Faster, and allows for stuff like accurate gotos and loading only required resources (as opposed to all of them)
+- Updated M22Sound
+	* Added finder functions for finding the ID of loaded sounds from filename
+- A bit of M22Script is now deprecated due to the M22ScriptCompiler class; will need to go through them and remove/mark as deprecated as necessary.
+- Fixed using [] instead of .at() for more accurate exception tracing
+- Updated documentation for v0.7.0
+
 #### v0.6.7
 - Added two new functions to M22Lua:
 	* M22_ChangeBackground(_bg_name) - Changes the current background

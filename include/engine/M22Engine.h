@@ -1,7 +1,7 @@
 /// \file 		M22Engine.h
 /// \author 	Sam Lynch
 /// \brief 		Header file for entire M22 engine
-/// \version 	0.6.7
+/// \version 	0.7.0
 /// \date 		July 2016
 /// \details	The header file for declaring the engine and its functions/variables.
 
@@ -159,6 +159,13 @@ class M22Engine
 			auto it = v.begin() + itemIndex;
 			std::rotate(it, it + 1, v.end());
 		};
+		
+
+		/// Finds the index of the background from the string
+		///
+		/// \param _name Filename
+		/// \return Index of background, -1 if not found
+		static int GetBackgroundIDFromName(std::string _name);
 
 		/// Finds the index of the character from the string
 		///
@@ -406,6 +413,44 @@ class M22Sound
 		static float* SFX_VOLUME;							///< Current volume for SFX playback
 		static int currentTrack;							///< The active track to play in \a MUSIC array. 0 = silence
 
+		/// Finds and returns the ID of the specified track
+		///
+		/// \param _name Name of sound file to find
+		/// \return -1 if error encountered, ID of sound file if found
+			inline static int FindMusicFromName(std::string _name)
+			{
+				std::string tempPath = "sfx/music/";
+				tempPath += _name;
+				tempPath += ".OGG";
+				for(size_t i = 0; i < M22Sound::MUSIC.size(); i++)
+				{
+					if(tempPath == M22Sound::MUSIC_NAMES.at(i))
+					{
+						return i;
+					};
+				};
+				return -1;
+			};
+
+		/// Finds and returns the ID of the specified sting
+		///
+		/// \param _name Name of sound file to find
+		/// \return -1 if error encountered, ID of sound file if found
+			inline static int FindStingFromName(std::string _name)
+			{
+				std::string tempPath = "sfx/stings/";
+				tempPath += _name;
+				tempPath += ".OGG";
+				for(size_t i = 0; i < M22Sound::SOUND_FX.size(); i++)
+				{
+					if(tempPath == M22Sound::SFX_NAMES.at(i))
+					{
+						return i;
+					};
+				};
+				return -1;
+			};
+
 		/// Plays a SFX once, doesn't play if a SFX is already playing
 		///
 		/// \param _position Index of sound file from \a SOUND_FX array.
@@ -425,6 +470,12 @@ class M22Sound
 		/// \param _forceplayback If true, will force the sound effect to play as high priority.
 		/// \return Error code if problem encountered, 0 if fine
 			static short int PlaySting(std::string, bool);
+			
+		/// Plays back the specified sting on a continuous loop.
+		///
+		/// \param _position Position of sound file from \a SFX_NAMES array.
+		/// \return Error code if problem encountered, 0 if fine
+			static short int PlayLoopedSting(short int);
 			
 		/// Searches for the SFX from the string, and plays back on a continuous loop.
 		///
@@ -578,7 +629,7 @@ class M22Script
 		static short int LoadTextBoxPosition(const char* _filename);
 
 		/// Loads the script file into \a currentScript
-		/// \deprecated This loads into a regular string, not wstring. Still used but queued for removal.
+		/// \deprecated Replaced with M22ScriptCompiler::CompileLoadScriptFile as of v0.7.0
 		/// \param _filename File path/name of script file
 		/// \return Error code if problem encountered, 0 if fine
 		static short int LoadScriptToCurrent(const char* _filename);
@@ -586,6 +637,7 @@ class M22Script
 		/// Loads the script file into \a currentScript_w (with wstrings)
 		///
 		/// \param _filename File path/name of script file
+		/// \deprecated Replaced with M22ScriptCompiler::CompileLoadScriptFile as of v0.7.0
 		/// \return Error code if problem encountered, 0 if fine
 		static short int LoadScriptToCurrent_w(const char* _filename);
 			
@@ -692,6 +744,43 @@ class M22Script
 			output.assign(_input.begin(), _input.end());
 			return output;
 		};
+};
+
+/// \class 		M22ScriptCompiler M22Engine.h "include/M22Engine.h"
+/// \brief 		Class for loading then compiling script files
+///
+class M22ScriptCompiler
+{
+private:
+
+public:
+	
+	/// Structure for compiled lines of M22Script
+	struct line_c
+	{
+		M22Script::LINETYPE m_lineType;					///< The type of line
+		std::vector<int> m_parameters;					///< The parameters, if the linetype is not speech or narrative
+		std::vector<std::string> m_parameters_txt;		///< The parameters in string format, for loading Lua or M22Scripts
+		std::wstring m_lineContents;					///< The speech, if the linetype is speech or narrative
+		int m_speaker;									///< Who's speaking, if the linetype is speech
+		int m_ID;										///< ID of whatever the linetype is (e.g. if LINETYPE is DrawBackground, then it's the ID of the background)
+		line_c()
+		{
+			m_speaker,m_ID = 0;
+			m_lineType = M22Script::SPEECH;
+		};
+		~line_c()
+		{
+			m_parameters.clear();
+			m_lineContents.clear();
+		};
+	};
+
+	static std::vector<line_c> currentScript_c;						///< The current script, compiled
+	static line_c* CURRENT_LINE;									///< A pointer to the current line, for shorthand
+
+	static int CompileLoadScriptFile(std::string _filename);		///< Compiles the specified script file and loads it into currentScript_c
+	static int RunLine(int _line);									///< Runs the specified line of compiled M22 code from currentScript_c
 };
 
 /// \class 		M22Interface M22Engine.h "include/M22Engine.h"

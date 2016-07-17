@@ -10,4 +10,6 @@ Compile the code with whatever compiler you like, linked with SDL2 (with Mixer, 
 # Documentation
 See documentation here: http://slynch.ovh/Public/M22
 
+Documentation is updated with every major revision.
+
 Be sure to look at [m22_DESIGN_DOCUMENT.md](https://github.com/Slynchy/March22/blob/master/m22_DESIGN_DOCUMENT.md "m22_DESIGN_DOCUMENT.md") to know how M22 script works.

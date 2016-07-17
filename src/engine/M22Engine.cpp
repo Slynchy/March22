@@ -69,6 +69,21 @@ void M22Engine::StartGame(void)
 	return;
 };
 
+int M22Engine::GetBackgroundIDFromName(std::string _name)
+{
+	for(size_t i = 0; i < M22Graphics::backgroundIndex.size(); i++)
+	{
+		std::string tempPath = "graphics/backgrounds/";
+		tempPath += _name;
+		tempPath += ".webp";
+		if(tempPath == M22Graphics::backgroundIndex.at(i))
+		{
+			return i;
+		};
+	};
+	return -1;
+};
+
 void M22Engine::Shutdown()
 {
 	SDL_Quit();
