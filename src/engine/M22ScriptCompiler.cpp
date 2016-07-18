@@ -2,6 +2,7 @@
 
 std::vector<M22ScriptCompiler::line_c> M22ScriptCompiler::currentScript_c;
 M22ScriptCompiler::line_c* M22ScriptCompiler::CURRENT_LINE;
+std::vector<M22ScriptCompiler::script_checkpoint> M22ScriptCompiler::currentScript_checkpoints;
 
 int M22ScriptCompiler::CompileLoadScriptFile(std::string _filename)
 {
@@ -19,7 +20,7 @@ int M22ScriptCompiler::CompileLoadScriptFile(std::string _filename)
 	{
 		printf("[M22ScriptCompiler] Compiling \"%s\" \n", filename.c_str());
 		M22Script::currentScriptFileName = filename;
-
+		unsigned int linenumber = 0;
 		while (std::getline(input , temp)) 
 		{
 			if(temp.length() >= 2)
@@ -28,9 +29,23 @@ int M22ScriptCompiler::CompileLoadScriptFile(std::string _filename)
 				{
 					// it's a comment! Deleeeete!
 					temp = M22Script::to_wstring("");
+				}
+				else if(temp.at(0) == '-' && temp.at(1) == '-')
+				{
+					// it's a checkpoint!
+					temp.erase(0, 2);
+					M22ScriptCompiler::script_checkpoint tempCheckpoint;
+					tempCheckpoint.m_name = M22Script::to_string(temp);
+					tempCheckpoint.m_position = linenumber;
+					M22ScriptCompiler::currentScript_checkpoints.push_back(tempCheckpoint);
+					temp = M22Script::to_wstring("");
 				};
 			};
-			if(temp != M22Script::to_wstring("")) scriptLines.push_back(temp);
+			if(temp != M22Script::to_wstring(""))
+			{
+				scriptLines.push_back(temp);
+				linenumber++;
+			};
 		};
 	}
 	else
@@ -45,6 +60,7 @@ int M22ScriptCompiler::CompileLoadScriptFile(std::string _filename)
 		M22Script::SplitString(scriptLines.at(i), CURRENT_LINE_SPLIT, ' ');
 		M22ScriptCompiler::line_c tempLine_c;
 		tempLine_c.m_lineType = M22Script::CheckLineType(CURRENT_LINE_SPLIT.at(0));
+		
 		if(tempLine_c.m_lineType == M22Script::SPEECH)
 		{
 			tempLine_c.m_lineContents = scriptLines.at(i);
@@ -56,76 +72,102 @@ int M22ScriptCompiler::CompileLoadScriptFile(std::string _filename)
 		}
 		else
 		{
-			switch(tempLine_c.m_lineType)
-			{
-				case M22Script::DRAW_CHARACTER:
-					tempLine_c.m_parameters.push_back(
-						M22Engine::GetOutfitIndexFromName(M22Script::to_string(CURRENT_LINE_SPLIT.at(2)), 
-							tempLine_c.m_speaker)
-						);
-					tempLine_c.m_parameters.push_back(
-						M22Engine::GetEmotionIndexFromName(M22Script::to_string(CURRENT_LINE_SPLIT.at(3)), 
-							tempLine_c.m_speaker)
-						);
-					tempLine_c.m_parameters.push_back(atoi(M22Script::to_string(CURRENT_LINE_SPLIT.at(4)).c_str()));
-					break;
-				case M22Script::GOTO:
-				case M22Script::WAIT:
-					tempLine_c.m_parameters.push_back(atoi(M22Script::to_string(CURRENT_LINE_SPLIT.at(1)).c_str()));
-					break;
-				case M22Script::NEW_BACKGROUND:
-					tempLine_c.m_parameters.push_back(M22Engine::GetBackgroundIDFromName(M22Script::to_string(CURRENT_LINE_SPLIT.at(1))));
-					break;
-				case M22Script::NEW_MUSIC:
-					tempLine_c.m_parameters.push_back(M22Sound::FindMusicFromName(M22Script::to_string(CURRENT_LINE_SPLIT.at(1))));
-					break;
-				case M22Script::PLAY_STING:
-				case M22Script::PLAY_STING_LOOPED:
-					tempLine_c.m_parameters.push_back(M22Sound::FindStingFromName(M22Script::to_string(CURRENT_LINE_SPLIT.at(1))));
-					break;
-				case M22Script::SET_ACTIVE_TRANSITION:
-					for(size_t i = 0; i < M22Graphics::TRANSITIONS::NUMBER_OF_TRANSITIONS; i++)
-					{
-						if(CURRENT_LINE_SPLIT.at(1) == M22Graphics::TRANSITION_NAMES[i])
-						{
-							tempLine_c.m_parameters.push_back(i);
-							break;
-						};
-					};
-					break;
-				case M22Script::RUN_LUA_SCRIPT:
-				case M22Script::LOAD_SCRIPT:
-					tempLine_c.m_parameters_txt.push_back(M22Script::to_string(CURRENT_LINE_SPLIT.at(1)));
-					break;
-				case M22Script::IF_STATEMENT:
-				case M22Script::MAKE_DECISION:
-					for(size_t k = 1; k < CURRENT_LINE_SPLIT.size(); k++)
-					{
-						tempLine_c.m_parameters_txt.push_back(M22Script::to_string(CURRENT_LINE_SPLIT.at(k)));
-					};
-					break;
-			};
+			CompileLine(tempLine_c, CURRENT_LINE_SPLIT);
 		};
+
 		M22ScriptCompiler::currentScript_c.push_back(tempLine_c);
 	};
-
 	return 0;
 };
 
-int M22ScriptCompiler::RunLine(int _line)
+int M22ScriptCompiler::CompileLine(M22ScriptCompiler::line_c &tempLine_c, std::vector<std::wstring> CURRENT_LINE_SPLIT)
 {
-	if((size_t)_line > M22ScriptCompiler::currentScript_c.size())
+	std::vector<int> tempint;
+	switch(tempLine_c.m_lineType)
 	{
-		printf("[M22ScriptCompiler] Out of lines!\n");
-		return -2;
+		case M22Script::DRAW_CHARACTER_BRUTAL:
+		case M22Script::DRAW_CHARACTER:
+			tempint.push_back(
+					M22Engine::GetCharacterIndexFromName(CURRENT_LINE_SPLIT.at(1))
+				);
+			tempint.push_back(
+					M22Engine::GetOutfitIndexFromName(M22Script::to_string(CURRENT_LINE_SPLIT.at(2)), 
+					tempint.at(0))
+				);
+			tempint.push_back(
+					M22Engine::GetEmotionIndexFromName(M22Script::to_string(CURRENT_LINE_SPLIT.at(3)), 
+					tempint.at(0))
+				);
+			tempint.push_back(
+					atoi(M22Script::to_string(CURRENT_LINE_SPLIT.at(4)).c_str())
+				);
+			if(tempint.at(0) == -1) printf("[M22ScriptCompiler] Failed to find character index \"%s\"!\n",		M22Script::to_string(CURRENT_LINE_SPLIT.at(1)).c_str());
+			if(tempint.at(1) == -1) printf("[M22ScriptCompiler] Failed to find outfit index \"%s\"!\n",			M22Script::to_string(CURRENT_LINE_SPLIT.at(2)).c_str());
+			if(tempint.at(2) == -1) printf("[M22ScriptCompiler] Failed to find emotion index \"%s\"!\n",		M22Script::to_string(CURRENT_LINE_SPLIT.at(3)).c_str());
+			tempLine_c.m_parameters.push_back(tempint.at(0));
+			tempLine_c.m_parameters.push_back(tempint.at(1));
+			tempLine_c.m_parameters.push_back(tempint.at(2));
+			tempLine_c.m_parameters.push_back(tempint.at(3));
+			break;
+		case M22Script::GOTO_DEBUG:
+		case M22Script::WAIT:
+			tempLine_c.m_parameters.push_back(atoi(M22Script::to_string(CURRENT_LINE_SPLIT.at(1)).c_str()));
+			break;
+		case M22Script::NEW_BACKGROUND:
+			tempint.push_back(M22Engine::GetBackgroundIDFromName(M22Script::to_string(CURRENT_LINE_SPLIT.at(1))));
+			if(tempint.at(0) == -1) printf("[M22ScriptCompiler] Failed to find background index \"%s\"!\n",		M22Script::to_string(CURRENT_LINE_SPLIT.at(1)).c_str());
+			tempLine_c.m_parameters.push_back(tempint.at(0));
+			break;
+		case M22Script::NEW_MUSIC:
+			tempint.push_back(M22Sound::FindMusicFromName(M22Script::to_string(CURRENT_LINE_SPLIT.at(1))));
+			if(tempint.at(0) == -1) printf("[M22ScriptCompiler] Failed to find music file \"%s\"!\n",		M22Script::to_string(CURRENT_LINE_SPLIT.at(1)).c_str());
+			tempLine_c.m_parameters.push_back(tempint.at(0));
+			break;
+		case M22Script::PLAY_STING:
+		case M22Script::PLAY_STING_LOOPED:
+			tempint.push_back(M22Sound::FindStingFromName(M22Script::to_string(CURRENT_LINE_SPLIT.at(1))));
+			if(tempint.at(0) == -1) printf("[M22ScriptCompiler] Failed to find sting \"%s\"!\n",M22Script::to_string(CURRENT_LINE_SPLIT.at(1)).c_str());
+			tempLine_c.m_parameters.push_back(tempint.at(0));
+			break;
+		case M22Script::SET_ACTIVE_TRANSITION:
+			for(size_t i = 0; i < M22Graphics::TRANSITIONS::NUMBER_OF_TRANSITIONS; i++)
+			{
+				if(CURRENT_LINE_SPLIT.at(1) == M22Graphics::TRANSITION_NAMES[i])
+				{
+					tempLine_c.m_parameters.push_back(i);
+					break;
+				};
+			};
+			break;
+		case M22Script::LOAD_SCRIPT_GOTO:
+			tempLine_c.m_parameters_txt.push_back(M22Script::to_string(CURRENT_LINE_SPLIT.at(1)));
+			tempLine_c.m_parameters.push_back(atoi(M22Script::to_string(CURRENT_LINE_SPLIT.at(2)).c_str()));
+			break;
+		case M22Script::RUN_LUA_SCRIPT:
+		case M22Script::GOTO:
+		case M22Script::LOAD_SCRIPT:
+			tempLine_c.m_parameters_txt.push_back(M22Script::to_string(CURRENT_LINE_SPLIT.at(1)));
+			break;
+		case M22Script::IF_STATEMENT:
+		case M22Script::MAKE_DECISION:
+			for(size_t k = 1; k < CURRENT_LINE_SPLIT.size(); k++)
+			{
+				tempLine_c.m_parameters_txt.push_back(M22Script::to_string(CURRENT_LINE_SPLIT.at(k)));
+			};
+			break;
 	};
+	return 0;
+};
 
-	M22ScriptCompiler::line_c* ACTV_LINE = &M22ScriptCompiler::currentScript_c.at(_line);
+int M22ScriptCompiler::ExecuteCommand(M22ScriptCompiler::line_c _linec, int _line)
+{
+	M22ScriptCompiler::line_c* ACTV_LINE = &_linec;
 	std::string tempPath;
 	M22Script::Decision tempDecision;
 	bool exitflag = false;
 	short int specifiedDecision = -1;
 	short int specifiedChoice = -1;
+
 	switch(ACTV_LINE->m_lineType)
 	{
 		case M22Script::NEW_BACKGROUND:
@@ -155,6 +197,7 @@ int M22ScriptCompiler::RunLine(int _line)
 
 		case M22Script::FADE_TO_BLACK:
 			M22Script::FadeToBlack();
+			M22Script::ChangeLine(++_line);
 			return 0;
 
 		case M22Script::PLAY_STING:
@@ -180,6 +223,13 @@ int M22ScriptCompiler::RunLine(int _line)
 		case M22Script::WAIT:
 			M22Engine::TIMER_CURR = 0;
 			M22Engine::TIMER_TARGET = ACTV_LINE->m_parameters.at(0);
+			return 0;
+
+		case M22Script::LOAD_SCRIPT_GOTO:
+			M22ScriptCompiler::currentScript_c.clear();
+			M22Script::ClearCharacters();
+			M22ScriptCompiler::CompileLoadScriptFile(ACTV_LINE->m_parameters_txt.at(0));
+			M22Script::ChangeLine(ACTV_LINE->m_parameters.at(0));
 			return 0;
 
 		case M22Script::LOAD_SCRIPT:
@@ -212,13 +262,18 @@ int M22ScriptCompiler::RunLine(int _line)
 			return 0;
 
 		case M22Script::GOTO:
+			M22ScriptCompiler::FindCheckpoint(ACTV_LINE->m_parameters_txt.at(0), _line);
+			M22Script::ChangeLine(_line);
+			return 0;
+
+		case M22Script::GOTO_DEBUG:
 			if(ACTV_LINE->m_parameters.at(0) <= (int)M22ScriptCompiler::currentScript_c.size()) 
 			{
 				M22Script::ChangeLine(ACTV_LINE->m_parameters.at(0));
 			}
 			else
 			{
-				printf("[M22ScriptCompiler] Goto error! Line number exceeds size of script!\n");
+				printf("[M22ScriptCompiler] Goto_debug error! Line number exceeds size of script!\n");
 			};
 			return 0;
 
@@ -259,8 +314,8 @@ int M22ScriptCompiler::RunLine(int _line)
 				if(exitflag == true) break;
 			};
 			if(exitflag == false) printf("[M22ScriptCompiler] Decision/choice not found @ %s line %i!\n", M22Script::currentScriptFileName, _line);
-
 			M22Script::ChangeLine(++_line);
+
 			return 0;
 
 		case M22Script::EXITTOMAINMENU:
@@ -320,7 +375,12 @@ int M22ScriptCompiler::RunLine(int _line)
 				{
 					tempStrVec.push_back(M22Script::to_wstring(ACTV_LINE->m_parameters_txt.at(i)));
 				};
-				M22Script::ExecuteM22ScriptCommand(tempType,tempStrVec,_line);
+				M22ScriptCompiler::line_c temporaryLineC;
+				temporaryLineC.m_lineType = tempType;
+				tempStrVec.insert(tempStrVec.begin(), M22Script::to_wstring(""));
+				M22ScriptCompiler::CompileLine(temporaryLineC, tempStrVec);
+				M22ScriptCompiler::ExecuteCommand(temporaryLineC, _line);
+				//M22Script::ExecuteM22ScriptCommand(tempType,tempStrVec,_line);
 				return 0;
 			}
 			else
@@ -392,4 +452,19 @@ int M22ScriptCompiler::RunLine(int _line)
 			return 0;
 
 	};
+};
+
+int M22ScriptCompiler::FindCheckpoint(std::string _chkpnt, int &_line)
+{
+	for(size_t i = 0; i < M22ScriptCompiler::currentScript_checkpoints.size(); i++)
+	{
+		if(_chkpnt == M22ScriptCompiler::currentScript_checkpoints.at(i).m_name)
+		{
+			_line = M22ScriptCompiler::currentScript_checkpoints.at(i).m_position;
+			return 0;
+		};
+	};
+
+	printf("[M22ScriptCompiler] FindCheckpoint error! Could not find: %s\n", _chkpnt.c_str());
+	return -1;
 };

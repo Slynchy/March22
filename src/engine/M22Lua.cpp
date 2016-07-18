@@ -9,7 +9,6 @@ int M22Lua::Initialize()
 	M22Lua::STATE = luaL_newstate();
 	luaL_openlibs(M22Lua::STATE);
 
-	lua_register(M22Lua::STATE, "M22_ChangeBackground", ChangeBackground);
 	lua_register(M22Lua::STATE, "M22_ExecuteCommand", ExecuteM22ScriptCommand);
 	luaL_loadbuffer(M22Lua::STATE, buff, strlen(buff), "line");
 	lua_pcall(M22Lua::STATE, 0, 0, 0);
@@ -21,21 +20,6 @@ void M22Lua::Shutdown()
 	lua_close(M22Lua::STATE);
 	return;
 };
-
-int M22Lua::ChangeBackground(lua_State* L)
-{
-	// Convert arg to string
-	std::string a = lua_tostring(L, 1);
-
-	// Create wstring vector because apparently I thought that was a smart idea
-	std::vector<std::wstring> temp;
-	temp.push_back(M22Script::to_wstring(" "));
-	temp.push_back(M22Script::to_wstring(a));
-
-	// Push the results of the script command
-	lua_pushinteger(L, M22Script::ExecuteM22ScriptCommand(M22Script::NEW_BACKGROUND, temp, M22Script::currentLineIndex));
-	return 1;
-}
 
 int M22Lua::ExecuteM22ScriptCommand(lua_State* L)
 {
@@ -49,7 +33,11 @@ int M22Lua::ExecuteM22ScriptCommand(lua_State* L)
 
 	command_type = M22Script::CheckLineType(temp.at(0));
 
+	M22ScriptCompiler::line_c templineC;
+	templineC.m_lineType = command_type;
+	M22ScriptCompiler::CompileLine(templineC, temp);
+
 	// Push the results of the script command
-	lua_pushinteger(L, M22Script::ExecuteM22ScriptCommand(command_type, temp, M22Script::currentLineIndex));
+	lua_pushinteger(L, M22ScriptCompiler::ExecuteCommand( templineC, M22Script::currentLineIndex));
 	return 1;
 }

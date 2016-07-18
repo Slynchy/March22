@@ -1,6 +1,20 @@
 #March22 Changelog
 ###NOTE: Please don't take this changelog as gospel; I hardly ever remember what I add per version.
 
+#### v0.7.2
+- Added new functions to m22 script language:
+	* LoadScriptGoto [_scriptname, _linenumber] - Combination of LoadScript and Goto_debug
+	* Goto [_checkpoint_str] - Finds the checkpoint in the active script and goes to it
+	* Goto_debug [_linenumber] - Goes to the specified line (for debugging)
+- Added checkpoints to m22 script
+	* Prefix a checkpoint with --
+	* No spaces allowed
+	* Example: "--This_is_a_checkpoint"
+	* Then call "Goto This_is_a_checkpoint" to go to it
+- Removed M22_ChangeBackground from Lua engine (just use M22_ExecuteCommand)
+- Removed ExecuteM22ScriptCommand from M22Script (replaced with M22ScriptCompiler::ExecuteCommand)
+- Fixed the m22 LoadScript function still using old LoadScriptToCurrent functions, instead of M22ScriptCompiler
+
 #### v0.7.0
 - Added "M22ScriptCompiler"
 	* Compiles scripts prior to execution

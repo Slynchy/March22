@@ -316,6 +316,12 @@ void M22Script::ClearCharacters(void)
 
 void M22Script::ChangeLine(int _newLine)
 {
+	if((size_t)_newLine > M22ScriptCompiler::currentScript_c.size())
+	{
+		printf("[M22Script] Out of bounds line change!\n");
+		return;
+	};
+
 	// Update currentLine variable
 	M22Script::currentLine = M22Script::to_string(M22ScriptCompiler::currentScript_c.at(_newLine).m_lineContents);
 	M22Script::currentLine_w = M22ScriptCompiler::currentScript_c.at(_newLine).m_lineContents;
@@ -325,358 +331,8 @@ void M22Script::ChangeLine(int _newLine)
 	M22Script::currentLineType = M22ScriptCompiler::CURRENT_LINE->m_lineType;
 
 	M22Script::currentLineIndex = _newLine;
-	M22ScriptCompiler::RunLine(M22Script::currentLineIndex);
+	M22ScriptCompiler::ExecuteCommand(M22ScriptCompiler::currentScript_c.at(M22Script::currentLineIndex), M22Script::currentLineIndex);
 	return;
-};
-
-short int M22Script::ExecuteM22ScriptCommand(M22Script::LINETYPE LINETYPE, std::vector<std::wstring> temp, int _newLine)
-{
-	// This is to fix the M22ScriptCompiler getting rid of the first value (which isn't used here anyway)
-		temp.insert(temp.begin(), M22Script::to_wstring(""));
-
-	if(LINETYPE == M22Script::LINETYPE::NEW_BACKGROUND)
-	{
-		for(size_t i = 0; i < M22Graphics::backgroundIndex.size(); i++)
-		{
-			std::string tempPath = "graphics/backgrounds/";
-			tempPath += M22Script::to_string(temp.at(1));
-			tempPath += ".webp";
-			if(tempPath == M22Graphics::backgroundIndex[i])
-			{
-				M22Engine::ACTIVE_BACKGROUNDS[0].sprite = M22Graphics::BACKGROUNDS[i];
-				M22Engine::ACTIVE_BACKGROUNDS[0].name = tempPath;
-				SDL_SetTextureAlphaMod(M22Engine::ACTIVE_BACKGROUNDS[0].sprite, 255);
-				SDL_SetTextureAlphaMod(M22Engine::ACTIVE_BACKGROUNDS[1].sprite, 255);
-				SDL_SetTextureAlphaMod(M22Graphics::BACKGROUND_RENDER_TARGET, 255);
-				SDL_SetTextureAlphaMod(M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, 255);
-				M22Graphics::UpdateBackgroundRenderTarget();
-				SDL_SetTextureAlphaMod(M22Graphics::BACKGROUND_RENDER_TARGET, 255);
-				SDL_SetTextureAlphaMod(M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, 255);
-				//M22Script::ChangeLine(++_newLine);
-				return 0;
-			};
-		};
-	}
-	else if(LINETYPE == M22Script::LINETYPE::NEW_MUSIC)
-	{
-		std::string tempPath = "sfx/music/";
-		tempPath += M22Script::to_string(temp.at(1));
-		tempPath += ".OGG";
-		M22Sound::ChangeMusicTrack(tempPath);
-		M22Script::ChangeLine(++_newLine);
-		return 0;
-	}
-	else if(LINETYPE == M22Script::LINETYPE::STOP_MUSIC)
-	{
-		M22Sound::ChangeMusicTrack("sfx/music/SILENCE.OGG");
-		M22Script::ChangeLine(++_newLine);
-		return 0;
-	}
-	else if(LINETYPE == M22Script::LINETYPE::FADE_TO_BLACK)
-	{
-		M22Script::FadeToBlack();
-		//M22Script::ChangeLine(++_newLine);
-		return 0;
-	}
-	else if(LINETYPE == M22Script::LINETYPE::PLAY_STING)
-	{
-		std::string tempPath = "sfx/stings/";
-		tempPath += M22Script::to_string(temp[1]);
-		tempPath += ".OGG";
-		M22Sound::PlaySting(tempPath, true);
-		M22Script::ChangeLine(++_newLine);
-		return 0;
-	}
-	else if(LINETYPE == M22Script::LINETYPE::DRAW_CHARACTER)
-	{
-		int charIndex;
-		charIndex = M22Engine::GetCharacterIndexFromName(temp.at(1));
-		M22Graphics::AddCharacterToBackgroundRenderTarget(charIndex, M22Engine::GetOutfitIndexFromName(M22Script::to_string(temp.at(2)), charIndex), M22Engine::GetEmotionIndexFromName(M22Script::to_string(temp.at(3)), charIndex), atoi(M22Script::to_string(temp.at(4)).c_str()), false);
-		M22Script::ChangeLine(++_newLine);
-		return 0;
-	}
-	else if(LINETYPE == M22Script::LINETYPE::DRAW_CHARACTER_BRUTAL)
-	{
-		int charIndex;
-		charIndex = M22Engine::GetCharacterIndexFromName(temp.at(1));
-		M22Graphics::AddCharacterToBackgroundRenderTarget(charIndex, M22Engine::GetOutfitIndexFromName(M22Script::to_string(temp.at(2)), charIndex), M22Engine::GetEmotionIndexFromName(M22Script::to_string(temp.at(3)), charIndex), atoi(M22Script::to_string(temp.at(4)).c_str()), true);
-		M22Script::ChangeLine(++_newLine);
-		return 0;
-	}
-	else if(LINETYPE == M22Script::LINETYPE::CLEAR_CHARACTERS)
-	{
-		M22Script::ClearCharacters();
-		M22Script::ChangeLine(++_newLine);
-		return 0;
-	}
-	else if(LINETYPE == M22Script::LINETYPE::WAIT)
-	{
-		M22Script::currentLine = "";
-		M22Engine::TIMER_CURR = 0;
-		M22Engine::TIMER_TARGET = atoi(M22Script::to_string(temp.at(1)).c_str());
-		return 0;
-	}
-	else if(LINETYPE == M22Script::LINETYPE::LOAD_SCRIPT)
-	{
-		M22Script::currentScript.clear();
-		M22Script::ClearCharacters();
-		LoadScriptToCurrent(M22Script::to_string(temp.at(1)).c_str());
-		LoadScriptToCurrent_w(M22Script::to_string(temp.at(1)).c_str());
-		M22Script::ChangeLine(0);
-		return 0;
-	}
-	else if(LINETYPE == M22Script::LINETYPE::DARK_SCREEN)
-	{
-		SDL_SetTextureAlphaMod( M22Graphics::BLACK_TEXTURE, M22Script::DARKEN_SCREEN_OPACITY );
-		M22Script::ChangeLine(++_newLine);
-		return 0;
-	}
-	else if(LINETYPE == M22Script::LINETYPE::BRIGHT_SCREEN)
-	{
-		SDL_SetTextureAlphaMod( M22Graphics::BLACK_TEXTURE, 0 );
-		M22Script::ChangeLine(++_newLine);
-		return 0;
-	}
-	else if(LINETYPE == M22Script::LINETYPE::PLAY_STING_LOOPED)
-	{
-		std::string tempPath = "sfx/stings/";
-		tempPath += M22Script::to_string(temp.at(1));
-		tempPath += ".OGG";
-		M22Sound::PlayLoopedSting(tempPath);
-		M22Script::ChangeLine(++_newLine);
-		return 0;
-	}
-	else if(LINETYPE == M22Script::LINETYPE::STOP_STING_LOOPED)
-	{
-		M22Sound::StopLoopedStings();
-		M22Script::ChangeLine(++_newLine);
-		return 0;
-	}
-	else if(LINETYPE == M22Script::LINETYPE::GOTO)
-	{
-		int newLinePosition = atoi(M22Script::to_string(temp.at(1)).c_str());
-		M22Script::ChangeLine(newLinePosition);
-		return 0;
-	}
-	else if(LINETYPE == M22Script::LINETYPE::EXITGAME)
-	{
-		M22Engine::QUIT = true;
-		return 0;
-	}
-	else if(LINETYPE == M22Script::LINETYPE::SET_DECISION)
-	{
-
-		//Wipe spaces
-		for(size_t i = 0; i < temp.size(); i++)
-		{
-			temp[i].erase(
-				std::remove_if(
-					temp[i].begin(), 
-					temp[i].end(), 
-					isspace
-				)
-			);
-		};
-
-		//Check decision doesn't already exist.
-		bool exitflag = false;
-		for(size_t i = 0; i < M22Script::gameDecisions.size(); i++)
-		{
-			// if decision is found
-			if(M22Script::gameDecisions.at(i).name == temp.at(1))
-			{
-				for(size_t k = 0; k < M22Script::gameDecisions.at(i).choices.size(); k++)
-				{
-					// found choice
-					if(M22Script::gameDecisions.at(i).choices.at(k) == temp.at(2))
-					{
-						exitflag = true;
-						M22Script::gameDecisions.at(i).selectedOption = k;
-					};
-					if(exitflag == true) break;
-				};
-			};
-			if(exitflag == true) break;
-		};
-		if(exitflag == false) printf("[M22Script] Decision/choice not found @ %s line %i!\n", M22Script::currentScriptFileName, M22Script::currentLineIndex);
-
-		M22Script::ChangeLine(++_newLine);
-		return 0;
-	}
-	else if(LINETYPE == M22Script::LINETYPE::EXITTOMAINMENU)
-	{
-		M22Engine::ResetGame();
-		return 0;
-	}
-	else if(LINETYPE == M22Script::LINETYPE::IF_STATEMENT)
-	{
-		// m22IF TEST_DECISION YES Goto 500
-		// param 1 = which decision
-		// param 2 = which choice of decision
-		// param 3 = what to do if true
-
-		// temp[0] == m22IF
-		// temp[1] == TEST_DECISION
-		// temp[2] == YES
-
-		for(size_t i = 0; i < temp.size(); i++)
-		{
-			temp[i].erase(
-				std::remove_if(
-					temp[i].begin(), 
-					temp[i].end(), 
-					isspace
-				)
-			);
-		};
-
-		short int specifiedDecision = -1;
-		short int specifiedChoice = -1;
-
-		for(size_t i = 0; i < gameDecisions.size(); i++)
-		{
-			if(gameDecisions.at(i).name == temp.at(1))
-			{
-				// found decision
-				specifiedDecision = i;
-				break;
-			};
-		};
-
-		if(specifiedDecision == -1)
-		{
-			// INVALID DECISION
-			M22Script::ChangeLine(++_newLine);
-			return 0;
-		};
-
-		for(size_t i = 0; i < gameDecisions.at(specifiedDecision).choices.size(); i++)
-		{
-			if(gameDecisions.at(specifiedDecision).choices.at(i) == temp.at(2))
-			{
-				specifiedChoice = i;
-			};
-		};
-
-		if(specifiedChoice == -1)
-		{
-			// INVALID CHOICE
-			M22Script::ChangeLine(++_newLine);
-			return 0;
-		};
-
-		if(gameDecisions.at(specifiedDecision).selectedOption == specifiedChoice)
-		{
-			//IF STATEMENT RETURNS TRUE
-			M22Script::LINETYPE tempType = M22Script::CheckLineType(temp.at(3));
-			std::vector<std::wstring> tempStrVec;
-			for(size_t i = 3; i < temp.size(); i++)
-			{
-				tempStrVec.push_back(temp.at(i));
-			};
-			M22Script::ExecuteM22ScriptCommand(tempType,tempStrVec,_newLine);
-			return 0;
-		}
-		else
-		{
-			// RETURN FALSE
-			M22Script::ChangeLine(++_newLine);
-		};
-		return 0;
-	}
-	else if(LINETYPE == M22Script::LINETYPE::MAKE_DECISION)
-	{
-		M22Script::activeSpeakerIndex = 0;
-		M22Engine::skipping = false;
-		for(size_t i = 0; i < temp.size(); i++)
-		{
-			temp[i].erase(
-				std::remove_if(
-					temp[i].begin(), 
-					temp[i].end(), 
-					isspace
-				)
-			);
-		};
-
-		//Check decision doesn't already exist.
-		for(size_t i = 0; i < M22Script::gameDecisions.size(); i++)
-		{
-			if(M22Script::gameDecisions.at(i).name == temp.at(1))
-			{
-				M22Engine::moveVectorItemToBack(M22Script::gameDecisions, i);
-				return 0;
-			};
-		};
-
-		M22Script::Decision tempDecision;
-		tempDecision.name = temp.at(1);
-		for(size_t i = 2; i < temp.size(); i++)
-		{
-			tempDecision.choices.push_back(temp.at(i));
-			tempDecision.num_of_choices++;
-		};
-
-		M22Script::gameDecisions.push_back(tempDecision);
-
-		return 0;
-	}
-	else if(LINETYPE == M22Script::LINETYPE::RUN_LUA_SCRIPT)
-	{
-		std::string tempStr = "./scripts/lua/";
-		tempStr += M22Script::to_string(temp.at(1));
-		luaL_dofile(M22Lua::STATE, tempStr.c_str());
-		M22Script::ChangeLine(++_newLine);
-		return 0;
-	}
-	else if(LINETYPE == M22Script::LINETYPE::COMMENT)
-	{
-		M22Script::ChangeLine(++_newLine);
-		return 0;
-	}
-	else if(LINETYPE == M22Script::LINETYPE::SET_ACTIVE_TRANSITION)
-	{
-		for(size_t i = 0; i < M22Graphics::TRANSITIONS::NUMBER_OF_TRANSITIONS; i++)
-		{
-			if(temp.at(1) == M22Graphics::TRANSITION_NAMES[i])
-			{
-				M22Graphics::activeTransition = i;
-				break;
-			};
-		};
-		M22Script::ChangeLine(++_newLine);
-		return 0;
-	}
-	else if(LINETYPE == M22Script::LINETYPE::CLEAR_CHARACTERS_BRUTAL)
-	{
-		ClearCharacters();
-		M22Script::ChangeLine(++_newLine);
-		return 0;
-	}
-	else if(LINETYPE == M22Script::LINETYPE::FADE_TO_BLACK_FANCY)
-	{
-		//if(!M22Engine::skipping)
-		//{
-			M22Graphics::FadeToBlackFancy();
-		//}
-		//else
-		//{
-		//	M22Script::FadeToBlack();
-		//};
-		M22Script::ChangeLine(++_newLine);
-		return 0;
-	}
-	else
-	{
-		M22Script::activeSpeakerIndex = M22Engine::GetCharacterIndexFromName(temp.at(0), true);
-		if(M22Script::activeSpeakerIndex > 0)
-		{
-			std::wstring tempName = temp.at(0);
-			M22Script::currentLine.erase(0, tempName.length());
-			M22Script::currentLine_w.erase(0, tempName.length());
-		};
-	};
-	return 1;
 };
 
 bool M22Script::isColon(int _char)
@@ -752,6 +408,10 @@ M22Script::LINETYPE M22Script::CheckLineType(std::wstring _input)
 	{
 		return M22Script::LINETYPE::CLEAR_CHARACTERS_BRUTAL;
 	}
+	else if(_input == M22Script::to_wstring("LoadScriptGoto"))
+	{
+		return M22Script::LINETYPE::LOAD_SCRIPT_GOTO;
+	}
 	else if(_input == M22Script::to_wstring("LoadScript"))
 	{
 		return M22Script::LINETYPE::LOAD_SCRIPT;
@@ -779,6 +439,10 @@ M22Script::LINETYPE M22Script::CheckLineType(std::wstring _input)
 	else if(_input == M22Script::to_wstring("Goto"))
 	{
 		return M22Script::LINETYPE::GOTO;
+	}
+	else if(_input == M22Script::to_wstring("Goto_debug"))
+	{
+		return M22Script::LINETYPE::GOTO_DEBUG;
 	}
 	else if(_input == M22Script::to_wstring("PlayLoopedSting"))
 	{

@@ -546,12 +546,14 @@ class M22Script
 			PLAY_STING,						///< Plays the specified SFX
 			PLAY_STING_LOOPED,				///< Plays the specified SFX on loop
 			STOP_STING_LOOPED,				///< Stops any looped SFX
-			GOTO,							///< Goes straight to specified line
+			GOTO_DEBUG,						///< Goes straight to specified line
+			GOTO,							///< Finds the specified checkpoint and goes to it
 			DRAW_CHARACTER,					///< Add new character to active characters
 			CLEAR_CHARACTERS,				///< Remove all characters from active characters
 			CLEAR_CHARACTERS_BRUTAL,		///< Remove all characters from active characters without transition
 			DRAW_CHARACTER_BRUTAL,			///< Add new character to active characters without transition
 			LOAD_SCRIPT,					///< Terminate the current script and load the specified one
+			LOAD_SCRIPT_GOTO,				///< Combination of LOAD_SCRIPT and GOTO
 			SPEECH,							///< Speech from a character
 			COMMENT,						///< Code comment
 			WAIT,							///< Waits N milliseconds before loading the next line
@@ -586,14 +588,6 @@ class M22Script
 				choices.clear();
 			};
 		};
-		
-		/// Executes specified scripting function
-		///
-		/// \param LINETYPE Function to execute
-		/// \param temp Complete line
-		/// \param _newLine Target line (not always required)
-		/// \return Error code if problem encountered, 0 if fine
-		static short int ExecuteM22ScriptCommand(M22Script::LINETYPE LINETYPE, std::vector<std::wstring> temp, int _newLine);
 
 		static const unsigned short int DARKEN_SCREEN_OPACITY = 100;	///< Current opacity of the darken screen effect
 
@@ -703,6 +697,27 @@ class M22Script
 			return output;
 		};
 		
+		/// Converts a wstring to a Uint16 array (for SDL_TTF)
+		///
+		/// \param _wstr wstring to convert
+		/// \param _size Reference to size of array variable
+		inline static Uint16* to_Uint16(std::wstring _wstr, int &_size)
+		{
+			if(_wstr.length() != 0)
+			{
+				Uint16* stext = new Uint16[_wstr.length()+1];
+				_size = _wstr.length()+1;
+				for (size_t i = 0; i < _wstr.length(); ++i) {
+					stext[i] = _wstr.at(i); 
+				}
+				stext[_wstr.length()] = '\0';
+				return stext;
+			} 
+			else 
+			{
+				return NULL;
+			};
+		};
 		
 		/// Converts a wstring to a Uint16 array (for SDL_TTF)
 		///
@@ -776,11 +791,30 @@ public:
 		};
 	};
 
-	static std::vector<line_c> currentScript_c;						///< The current script, compiled
-	static line_c* CURRENT_LINE;									///< A pointer to the current line, for shorthand
+	struct script_checkpoint
+	{
+		int m_position;
+		std::string m_name;
+		script_checkpoint()
+		{
+			m_position = 0;
+			m_name = "";
+		};
+		~script_checkpoint()
+		{
+			m_name.clear();
+			m_position = 0;
+		};
+	};
 
-	static int CompileLoadScriptFile(std::string _filename);		///< Compiles the specified script file and loads it into currentScript_c
-	static int RunLine(int _line);									///< Runs the specified line of compiled M22 code from currentScript_c
+	static std::vector<line_c> currentScript_c;																			///< The current script, compiled
+	static line_c* CURRENT_LINE;																						///< A pointer to the current line, for shorthand
+	static std::vector<script_checkpoint> currentScript_checkpoints;													///< Array of checkpoint positions
+
+	static int CompileLoadScriptFile(std::string _filename);															///< Compiles the specified script file and loads it into currentScript_c
+	static int ExecuteCommand(M22ScriptCompiler::line_c _linec, int _line);												///< Runs the specified command
+	static int FindCheckpoint(std::string _chkpnt, int &_line);															///< Searches currentScript_checkpoints for the specified checkpoint
+	static int CompileLine(M22ScriptCompiler::line_c &tempLine_c, std::vector<std::wstring> CURRENT_LINE_SPLIT);		///< Compiles the parameterised line_c variable
 };
 
 /// \class 		M22Interface M22Engine.h "include/M22Engine.h"
@@ -963,7 +997,6 @@ class M22Lua
 		static lua_State *STATE;
 		static int M22Lua::Initialize();
 		static void M22Lua::Shutdown();
-		static int M22Lua::ChangeBackground(lua_State*);
 		static int M22Lua::ExecuteM22ScriptCommand(lua_State*);
 };
 

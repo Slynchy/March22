@@ -145,7 +145,12 @@ void M22Sound::StopLoopedStings(void)
 
 short int M22Sound::PlayLoopedSting(short int _position)
 {
-	if(M22Sound::SOUND_FX[_position])
+	if(_position == -1)
+	{
+		printf("[M22Sound] Cannot play sting because -1!\n");
+		return -2;
+	};
+	if(M22Sound::SOUND_FX.at(_position))
 	{
 		Mix_PlayChannel( M22Sound::MIXERS::LOOPED_SFX, M22Sound::SOUND_FX.at(_position), -1);
 		return 0;

@@ -2,12 +2,14 @@ DrawBackground BLACK
 DrawBackground mystery_girl_s
 PlayMusic MP03
 Girl: "Do you know about the Snow Sakura?"
-//RunLuaScript sample.lua
 Snow Sakura?
+
+//RunLuaScript sample.lua
 //MakeDecision TEST
-//m22IF TEST (1)_Snow_Sakura? Goto 50
-//SetDecision DECISION_NAME CHOICE
+//m22IF TEST (1)_Snow_Sakura? Goto Time_to_wake_up
+
 Girl: "Once a year, its flowers bloom in the chill of winter."
+
 Even though it's a cherry tree?
 Girl: "Yes, even though it's a cherry tree."
 Cherry trees only bloom in the spring, you know.
@@ -33,6 +35,9 @@ It was the familiar sound of my alarm clock.
 PlaySting alarmclick
 StopLoopedStings
 I opened my eyes sleepily.
+
+--Time_to_wake_up
+
 DrawBackground bedroom_day
 PlayMusic MP02
 Yuuji: "........."
@@ -55,6 +60,7 @@ DrawBackground bedroom_day
 Yuuji: "I just don't get it..."
 I buried myself under my blanket once again in hopes that this really would turn out to be a dream.
 FadeToBlackFancy
+StopMusic
 Rustle rustle!
 Ahhh... This blanket is the greatest!
 Unknown: "What are you mumbling about? Come on, get up!"
@@ -81,7 +87,7 @@ DrawCharacter Saki Indoors_1 ANGRY 0
 Saki: "That's no excuse!"
 Yuuji: "I don't want breakfast! I just want to sleep straight through to Saturday morning."
 ClearCharactersBrutal
-DrawCharacterBrutal Saki Indoors_1 ANGRY_B 0
+DrawCharacter Saki Indoors_1 ANGRY_B 0
 Saki: "Stop being such a lazy bum!"
 ClearCharacters
 DrawBackground saki_punch_indoors
@@ -103,11 +109,11 @@ DrawCharacter Saki Indoors_1 HAPPY 0
 Saki: "I'm lying."
 Yuuji: "Why, you..."
 ClearCharactersBrutal
-DrawCharacterBrutal Saki Indoors_1 NORMAL 0
+DrawCharacter Saki Indoors_1 NORMAL 0
 Saki: "Did you believe me, just a little bit?"
 Yuuji: "No way!"
 ClearCharactersBrutal
-DrawCharacterBrutal Saki Indoors_1 SNEAKY 0
+DrawCharacter Saki Indoors_1 SNEAKY 0
 Saki: "This is why I hate smartasses who grew up in the city."
 Smartasses!?
 Will I be able to survive in this place?

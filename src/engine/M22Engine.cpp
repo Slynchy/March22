@@ -38,6 +38,7 @@ void M22Engine::StartGame(void)
 		//if(RENDERING_API == "direct3d") 
 		SDL_Delay(1000/60);
 	};
+	M22Sound::StopMusic();
 	SDL_SetTextureAlphaMod( M22Graphics::BLACK_TEXTURE, 0 );
 	SDL_SetTextureAlphaMod( M22Graphics::activeMenuBackground.sprite, 0 );
 	SDL_SetTextureAlphaMod( M22Graphics::menuLogo.sprite, 0 );
@@ -652,8 +653,9 @@ void M22Engine::LoadGame(const char* _filename)
 		std::wstring tempStr = M22Script::to_wstring(savegameObject.CURRENTSCRIPTFILE);
 		std::vector<std::wstring> tempVec;
 		M22Script::SplitString(tempStr, tempVec, '/');
-		M22Script::LoadScriptToCurrent(M22Script::to_string(tempVec.back()).c_str());
-		M22Script::LoadScriptToCurrent_w(M22Script::to_string(tempVec.back()).c_str());
+		//M22Script::LoadScriptToCurrent(M22Script::to_string(tempVec.back()).c_str());
+		//M22Script::LoadScriptToCurrent_w(M22Script::to_string(tempVec.back()).c_str());
+		M22ScriptCompiler::CompileLoadScriptFile(M22Script::to_string(tempVec.back()));
 
 		std::vector<std::wstring> temp;
 		std::wstring backgroundname;
@@ -667,7 +669,11 @@ void M22Engine::LoadGame(const char* _filename)
 		temp.push_back(backgroundname);
 
 		//temp.push_back(temp.back());
-		M22Script::ExecuteM22ScriptCommand(M22Script::LINETYPE::NEW_BACKGROUND, temp, savegameObject.CURRENTLINEPOSITION);
+		M22ScriptCompiler::line_c temporaryLineC;
+		temporaryLineC.m_lineType = M22Script::NEW_BACKGROUND;
+		temporaryLineC.m_parameters_txt.push_back(M22Script::to_string(backgroundname));
+		M22ScriptCompiler::ExecuteCommand(temporaryLineC, savegameObject.CURRENTLINEPOSITION);
+		//M22Script::ExecuteM22ScriptCommand(M22Script::LINETYPE::NEW_BACKGROUND, temp, savegameObject.CURRENTLINEPOSITION);
 
 
 	};

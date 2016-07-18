@@ -18,7 +18,7 @@ The engine parses the next line of the script and does the action based on the f
 | StopMusic                                            | Stops any music playing immediately                                             |
 | DarkenScreen                                         | Slightly darkens the screen                                                     |
 | BrightenScreen                                       | Restores screen brightness from DarkenScreen                                    |
-| Goto ( _lineNum )                                    | Goes immediately to the specified line (for debugging)                          |
+| Goto ( _checkpoint )                                 | Goes immediately to the specified checkpoint name (if found)                    |
 | PlayLoopedSting ( _name )                            | Plays the specified SFX on loop                                                 |
 | StopLoopedStings                                     | Stops all looped SFX                                                            |
 | //                                                   | For making comments                                                             |
@@ -30,3 +30,5 @@ The engine parses the next line of the script and does the action based on the f
 | MakeDecision ( _decision, _choice1, _choice2, [_choice3] ) | Creates a new decision and makes the player make a choice                 |
 | MakeDecision ( _decision )                           | Finds the decision from the decisions array gives player the decision           |
 | RunLuaScript ( _filename )                           | Runs specified Lua script from "./scripts/lua"                                  |
+| Goto_debug ( _linenumber )                           | Goes immediately the specified line (for debugging)                             |
+| LoadScriptGoto ( _filepath, _linenumber)             | Combination of LoadScript and Goto_debug                                        |

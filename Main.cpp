@@ -10,7 +10,7 @@
 #define DEBUG_ENABLED false
 
 #define WINDOW_TITLE		"M22Engine "
-#define VERSION				"v0.7.0"
+#define VERSION				"v0.7.2"
 
 #define FPS 60
 
@@ -117,8 +117,6 @@ void InitializeEverything(Vec2 _ScrPos)
 	ERROR_CODE = M22Script::LoadTextBoxPosition("graphics/TEXT_BOX_POSITION.txt");
 	
 	// Loads the script file into the current file
-	//ERROR_CODE = M22Script::LoadScriptToCurrent("START_SCRIPT.txt");
-	//ERROR_CODE = M22Script::LoadScriptToCurrent_w("START_SCRIPT.txt");
 	ERROR_CODE = M22ScriptCompiler::CompileLoadScriptFile("START_SCRIPT.txt");
 	
 	// Load the desired font
