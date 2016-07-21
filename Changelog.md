@@ -1,6 +1,23 @@
 #March22 Changelog
 ###NOTE: Please don't take this changelog as gospel; I hardly ever remember what I add per version.
 
+#### v0.7.3
+- Added script-based resource loader for better RAM usage
+	* Only loads required backgrounds, character sprites
+	* Reloads them all if used in a following script, but this is a trade-off for less RAM usage
+	* The following files are no longer required:
+		+ graphics/characters/[CHARNAME]/EMOTIONS.txt
+		+ graphics/characters/[CHARNAME]/OUTFITS.txt
+- Improved garbage collection
+	* Now destroys/frees resources, then cleans the pointer
+	* Unloads all loaded libraries
+- Fixed bug where the character sprite would load in the vector above the current position, then get reloaded into the current position
+	* Meaning all character sprites would be the same as the first one loaded
+- Todo list:
+	* Add SFX/music to the resource loader system
+	* Create Lua versions of M22 functions for more control
+	* Double-check all SDL_Texture variables to ensure they are unloaded properly in M22Engine::Shutdown()
+
 #### v0.7.2
 - Added new functions to m22 script language:
 	* LoadScriptGoto [_scriptname, _linenumber] - Combination of LoadScript and Goto_debug

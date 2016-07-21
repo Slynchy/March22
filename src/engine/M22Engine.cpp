@@ -4,7 +4,6 @@ M22Engine::GAMESTATES M22Engine::GAMESTATE = M22Engine::GAMESTATES::INGAME;
 M22Engine::OPTIONS_STRUCTURE  M22Engine::OPTIONS;
 SDL_Event M22Engine::SDL_EVENTS;
 const Uint8 *M22Engine::SDL_KEYBOARDSTATE = NULL;
-std::vector<std::string> M22Engine::CHARACTER_NAMES;
 unsigned short int M22Engine::ACTIVE_BACKGROUND_INDEX = 0;
 std::vector<std::string> M22Engine::CHARACTER_EMOTIONS;
 std::vector<M22Engine::Character> M22Engine::CHARACTERS_ARRAY;
@@ -85,21 +84,93 @@ int M22Engine::GetBackgroundIDFromName(std::string _name)
 	return -1;
 };
 
+void M22Engine::DestroySDLTextureVector(std::vector<SDL_Texture*>& _vector)
+{
+	for(size_t i = 0; i < _vector.size(); i++)
+	{
+		// Shouldn't this be 'nullptr'? idk, since it's a C api?
+		if(_vector.at(i) != NULL)
+			SDL_DestroyTexture(_vector.at(i));
+	};
+	_vector.clear();
+	return;
+};
+
+void M22Engine::FreeSFXVector(std::vector<Mix_Chunk*>& _vector)
+{
+	for(size_t i = 0; i < _vector.size(); i++)
+	{
+		// Shouldn't this be 'nullptr'? idk, since it's a C api?
+		if(_vector.at(i) != NULL)
+			Mix_FreeChunk(_vector.at(i));
+	};
+	_vector.clear();
+	return;
+};
+
+void M22Engine::FreeMusicVector(std::vector<Mix_Music*>& _vector)
+{
+	for(size_t i = 0; i < _vector.size(); i++)
+	{
+		// Shouldn't this be 'nullptr'? idk, since it's a C api?
+		if(_vector.at(i) != NULL)
+			Mix_FreeMusic(_vector.at(i));
+	};
+	_vector.clear();
+	return;
+};
+
 void M22Engine::Shutdown()
 {
 	SDL_Quit();
+
+	// M22Renderer
+	SDL_DestroyRenderer(M22Renderer::SDL_RENDERER);
 	M22Renderer::SDL_RENDERER = NULL;
+	SDL_DestroyWindow(M22Renderer::SDL_SCREEN);
 	M22Renderer::SDL_SCREEN = NULL;
-	M22Engine::SDL_KEYBOARDSTATE = NULL;
-	M22Sound::SOUND_FX.clear();
-	M22Sound::MUSIC.clear();
-	M22Graphics::BACKGROUNDS.clear();
-	M22Graphics::characterFrameHeaders.clear();
-	M22Graphics::textFrame = NULL;
+
+	// M22Graphics
+	M22Engine::DestroySDLTextureVector(M22Graphics::BACKGROUNDS);
+	M22Engine::DestroySDLTextureVector(M22Graphics::characterFrameHeaders);
+	M22Engine::DestroySDLTextureVector(M22Graphics::mainMenuBackgrounds);
+	SDL_DestroyTexture(M22Graphics::textFrame);
+		M22Graphics::textFrame = NULL;
+	SDL_DestroyTexture(M22Graphics::activeMenuBackground.sprite);
+		M22Graphics::activeMenuBackground.sprite = NULL;
+	SDL_DestroyTexture(M22Graphics::menuLogo.sprite);
+		M22Graphics::menuLogo.sprite = NULL;
+	SDL_DestroyTexture(M22Graphics::BLACK_TEXTURE);
+		M22Graphics::BLACK_TEXTURE = NULL;
+	SDL_DestroyTexture(M22Graphics::OPTION_BAR);
+		M22Graphics::OPTION_BAR = NULL;
+	SDL_DestroyTexture(M22Graphics::BACKGROUND_RENDER_TARGET);
+		M22Graphics::BACKGROUND_RENDER_TARGET = NULL;
+	SDL_DestroyTexture(M22Graphics::NEXT_BACKGROUND_RENDER_TARGET);
+		M22Graphics::NEXT_BACKGROUND_RENDER_TARGET = NULL;
+	SDL_DestroyTexture(M22Graphics::wipeBlack);
+		M22Graphics::wipeBlack = NULL;
+	TTF_CloseFont(M22Graphics::textFont);
 	M22Graphics::textFont = NULL;
+
+	//M22Engine
+	M22Engine::FreeSFXVector(M22Sound::SOUND_FX);
+	M22Engine::FreeMusicVector(M22Sound::MUSIC);
+	for(size_t i = 0; i < M22Engine::CHARACTERS_ARRAY.size(); i++)
+	{
+		M22Engine::CHARACTERS_ARRAY.at(i).emotions.clear();
+		M22Engine::CHARACTERS_ARRAY.at(i).outfits.clear();
+		for(size_t spr = 0; spr < M22Engine::CHARACTERS_ARRAY.at(i).sprites.size(); spr++)
+		{
+			M22Engine::DestroySDLTextureVector(M22Engine::CHARACTERS_ARRAY.at(i).sprites.at(spr));
+		};
+	};
 	M22Engine::CHARACTERS_ARRAY.clear();
+
 	M22Lua::Shutdown();
 	TTF_Quit();
+	Mix_Quit();
+	IMG_Quit();
 	return;
 };
 
@@ -291,31 +362,20 @@ void M22Engine::UpdateDeltaTime(void)
 	return;
 };
 
+M22Engine::Character M22Engine::CreateCharacter(std::string _name)
+{
+	M22Engine::Character tempChar;
+	tempChar.name = _name;
+	return tempChar;
+};
+
 short int M22Engine::InitializeM22(int ScrW, int ScrH)
 {
 	printf("[M22Engine] Initializing M22...\n");
 
-	printf("[M22Engine] Loading \"scripts/CHARACTER_NAMES.txt\"...\n");
 	std::fstream input("scripts/CHARACTER_NAMES.txt");
 	int length;
 	std::string temp;
-	if(input)
-	{
-		input >> length;
-		getline(input,temp);
-		M22Engine::CHARACTER_NAMES.clear();
-		for(int i = 0; i < length; i++)
-		{
-			getline(input,temp);
-			M22Engine::CHARACTER_NAMES.push_back(temp);
-		};
-	}
-	else
-	{
-		printf("[M22Engine] Failed to load: \"scripts/CHARACTER_NAMES.txt\" \n ");
-		return -1;
-	};
-	input.close();
 	
 	printf("[M22Engine] Loading \"graphics/characters/CHARACTERS.txt\"...\n");
 	input.open("graphics/characters/CHARACTERS.txt");
@@ -339,92 +399,17 @@ short int M22Engine::InitializeM22(int ScrW, int ScrH)
 		return -1;
 	};
 	input.close();
-	
+	//
 	printf("[M22Engine] Loading character text frames...\n");
 	for(int i = 0; i < length; i++)
 	{
 		temp.clear();
 		temp = "graphics/text_frames/";
-		temp += M22Engine::CHARACTERS_ARRAY[i].name;
+		temp += M22Engine::CHARACTERS_ARRAY.at(i).name;
 		temp += ".png";
 		SDL_Texture* tempTexture = IMG_LoadTexture(M22Renderer::SDL_RENDERER, temp.c_str());
 		M22Graphics::characterFrameHeaders.push_back(tempTexture);
 		temp.clear();
-	};
-	
-	printf("[M22Engine] Loading EMOTIONS.txt...\n");
-	for(size_t i = 0; i < CHARACTERS_ARRAY.size(); i++)
-	{
-		std::string filename = "graphics/characters/";
-		filename += CHARACTERS_ARRAY[i].name;
-		filename += "/EMOTIONS.txt";
-		input.open(filename);
-		if(input)
-		{
-			input >> length;
-			getline(input,temp);
-			M22Engine::CHARACTERS_ARRAY[i].emotions.resize(length);
-			for(int k = 0; k < length; k++)
-			{
-				getline(input,temp);
-				M22Engine::CHARACTERS_ARRAY[i].emotions[k] = temp;
-			};
-		}
-		else
-		{
-			std::cout << "Failed to load script file: " << "graphics/characters/EMOTIONS.txt" << std::endl;
-			return -1;
-		};
-		input.close();
-	};
-	
-	printf("[M22Engine] Loading OUTFITS.txt...\n");
-	for(size_t i = 0; i < CHARACTERS_ARRAY.size(); i++)
-	{
-		std::string filename = "graphics/characters/";
-		filename += M22Engine::CHARACTERS_ARRAY[i].name;
-		filename += "/OUTFITS.txt";
-		input.open(filename);
-		if(input)
-		{
-			input >> length;
-			getline(input,temp);
-			M22Engine::CHARACTERS_ARRAY[i].outfits.clear();
-			for(int k = 0; k < length; k++)
-			{
-				getline(input,temp);
-				M22Engine::CHARACTERS_ARRAY[i].outfits.push_back(temp);
-			};
-		}
-		else
-		{
-			std::cout << "Failed to load script file: " << filename << std::endl;
-			return -1;
-		};
-		input.close();
-	};
-	
-	printf("[M22Engine] Loading character sprites...\n");
-	for(size_t i = 0; i < CHARACTERS_ARRAY.size(); i++)
-	{
-		CHARACTERS_ARRAY[i].sprites.resize(CHARACTERS_ARRAY[i].outfits.size());
-		for(size_t p = 0; p < CHARACTERS_ARRAY[i].outfits.size(); p++)
-		{
-			for(size_t k = 0; k < CHARACTERS_ARRAY[i].emotions.size(); k++)
-			{
-				std::string tempPath = "graphics/characters/";
-				tempPath += CHARACTERS_ARRAY[i].name;
-				tempPath += "/";
-				tempPath += CHARACTERS_ARRAY[i].outfits[p];
-				tempPath += "/";
-				tempPath += CHARACTERS_ARRAY[i].emotions[k];
-				tempPath += ".png";
-				SDL_Texture* tempTex = IMG_LoadTexture(M22Renderer::SDL_RENDERER, tempPath.c_str());
-				SDL_SetTextureAlphaMod( tempTex, 0 );
-				SDL_SetTextureBlendMode(tempTex, SDL_BLENDMODE_BLEND);
-				M22Engine::CHARACTERS_ARRAY[i].sprites[p].push_back(tempTex);
-			};
-		};
 	};
 	
 	printf("[M22Engine] Loading main menu backgrounds...\n");
@@ -485,11 +470,12 @@ int M22Engine::GetCharacterIndexFromName(std::wstring _input, bool _dialogue)
 			return i;
 		};
 	};
-	return 0;
+	return -1;
 };
 
 int M22Engine::GetCharacterIndexFromName(std::string _input, bool _dialogue)
 {
+	if(M22Engine::CHARACTERS_ARRAY.size() == 0) return -1;
 	_input.erase(std::remove_if(_input.begin(), _input.end(), isspace));
 	int size = _input.size();
 	_input.erase(std::remove_if(_input.begin(), _input.end(), M22Script::isColon));
@@ -505,15 +491,16 @@ int M22Engine::GetCharacterIndexFromName(std::string _input, bool _dialogue)
 			return i;
 		};
 	};
-	return 0;
+	return -1;
 };
 
 int M22Engine::GetOutfitIndexFromName(std::string _input, int _charIndex)
 {
+	if(M22Engine::CHARACTERS_ARRAY.size() == 0 || _charIndex == -1) return -1;
 	_input.erase(std::remove_if(_input.begin(), _input.end(), isspace));
-	for(size_t i = 0; i < M22Engine::CHARACTERS_ARRAY[_charIndex].outfits.size(); i++)
+	for(size_t i = 0; i < M22Engine::CHARACTERS_ARRAY.at(_charIndex).outfits.size(); i++)
 	{
-		if(M22Engine::CHARACTERS_ARRAY[_charIndex].outfits[i] == _input)
+		if(M22Engine::CHARACTERS_ARRAY.at(_charIndex).outfits[i] == _input)
 		{
 			return i;
 		};
@@ -523,8 +510,9 @@ int M22Engine::GetOutfitIndexFromName(std::string _input, int _charIndex)
 
 int M22Engine::GetEmotionIndexFromName(std::string _input, int _charIndex)
 {
+	if(M22Engine::CHARACTERS_ARRAY.size() == 0 || _charIndex == -1) return -1;
 	_input.erase(std::remove_if(_input.begin(), _input.end(), isspace));
-	for(size_t i = 0; i < M22Engine::CHARACTERS_ARRAY[_charIndex].emotions.size(); i++)
+	for(size_t i = 0; i < M22Engine::CHARACTERS_ARRAY.at(_charIndex).emotions.size(); i++)
 	{
 		if(M22Engine::CHARACTERS_ARRAY[_charIndex].emotions[i] == _input)
 		{

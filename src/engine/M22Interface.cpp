@@ -211,8 +211,8 @@ void M22Interface::DrawTextArea(int _ScrSizeX, int _ScrSizeY)
 		SDL_RenderCopy(M22Renderer::SDL_RENDERER, M22Graphics::textFrame, NULL, &textbox);
 
 		SDL_Rect characterName = {0,368,0,0};
-		SDL_QueryTexture(M22Graphics::characterFrameHeaders[M22Script::activeSpeakerIndex], NULL, NULL, &characterName.w, &characterName.h);
-		SDL_RenderCopy(M22Renderer::SDL_RENDERER, M22Graphics::characterFrameHeaders[M22Script::activeSpeakerIndex], NULL, &characterName);
+		SDL_QueryTexture(M22Graphics::characterFrameHeaders.at(M22Script::activeSpeakerIndex), NULL, NULL, &characterName.w, &characterName.h);
+		SDL_RenderCopy(M22Renderer::SDL_RENDERER, M22Graphics::characterFrameHeaders.at(M22Script::activeSpeakerIndex), NULL, &characterName);
 
 		M22Graphics::DrawArrow(width, height);
 		

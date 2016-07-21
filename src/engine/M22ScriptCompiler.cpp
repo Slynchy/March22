@@ -19,6 +19,41 @@ int M22ScriptCompiler::CompileLoadScriptFile(std::string _filename)
 	if(input)
 	{
 		printf("[M22ScriptCompiler] Compiling \"%s\" \n", filename.c_str());
+
+		// Clear the loaded backgrounds
+		for(size_t i = 0; i < M22Graphics::BACKGROUNDS.size(); i++)
+		{
+			SDL_DestroyTexture(M22Graphics::BACKGROUNDS.at(i));
+		};
+		M22Graphics::BACKGROUNDS.clear();
+		M22Graphics::backgroundIndex.clear();
+
+		// Clear the loaded character sprites
+		/*for(size_t c = 0; c < M22Engine::CHARACTERS_ARRAY.size(); c++)
+		{
+			for(size_t o = 0; o < M22Engine::CHARACTERS_ARRAY.at(c).sprites.size(); o++)
+			{
+				for(size_t e = 0; e < M22Engine::CHARACTERS_ARRAY.at(c).sprites.at(o).size(); e++)
+				{
+					SDL_DestroyTexture(M22Engine::CHARACTERS_ARRAY.at(c).sprites.at(o).at(e));
+				};
+				M22Engine::CHARACTERS_ARRAY.at(c).sprites.at(o).clear();
+			};
+			M22Engine::CHARACTERS_ARRAY.at(c).sprites.clear();
+			M22Engine::CHARACTERS_ARRAY.at(c).outfits.clear();
+			M22Engine::CHARACTERS_ARRAY.at(c).emotions.clear();
+		};*/
+		for(size_t i = 0; i < M22Engine::CHARACTERS_ARRAY.size(); i++)
+		{
+			M22Engine::CHARACTERS_ARRAY.at(i).emotions.clear();
+			M22Engine::CHARACTERS_ARRAY.at(i).outfits.clear();
+			for(size_t spr = 0; spr < M22Engine::CHARACTERS_ARRAY.at(i).sprites.size(); spr++)
+			{
+				M22Engine::DestroySDLTextureVector(M22Engine::CHARACTERS_ARRAY.at(i).sprites.at(spr));
+			};
+			M22Engine::CHARACTERS_ARRAY.at(i).sprites.clear();
+		};
+
 		M22Script::currentScriptFileName = filename;
 		unsigned int linenumber = 0;
 		while (std::getline(input , temp)) 
@@ -68,6 +103,12 @@ int M22ScriptCompiler::CompileLoadScriptFile(std::string _filename)
 			if(tempLine_c.m_speaker > 0)
 			{
 				tempLine_c.m_lineContents.erase(0, CURRENT_LINE_SPLIT.at(0).length());
+			}
+			else if(tempLine_c.m_speaker == -1)
+			{
+				CURRENT_LINE_SPLIT.at(0).erase(std::remove_if(CURRENT_LINE_SPLIT.at(0).begin(), CURRENT_LINE_SPLIT.at(0).end(), isspace));
+				CURRENT_LINE_SPLIT.at(0).erase(std::remove_if(CURRENT_LINE_SPLIT.at(0).begin(), CURRENT_LINE_SPLIT.at(0).end(), M22Script::isColon));
+				printf("[M22ScriptCompiler] Character index \"%s\" not found!\n", M22Script::to_string(CURRENT_LINE_SPLIT.at(0)).c_str());
 			};
 		}
 		else
@@ -83,10 +124,17 @@ int M22ScriptCompiler::CompileLoadScriptFile(std::string _filename)
 int M22ScriptCompiler::CompileLine(M22ScriptCompiler::line_c &tempLine_c, std::vector<std::wstring> CURRENT_LINE_SPLIT)
 {
 	std::vector<int> tempint;
+	bool failed_char = false;
+	bool failed_emot = false;
+	bool failed_otft = false;
 	switch(tempLine_c.m_lineType)
 	{
 		case M22Script::DRAW_CHARACTER_BRUTAL:
 		case M22Script::DRAW_CHARACTER:
+			for(size_t i = 0; i < CURRENT_LINE_SPLIT.size(); i++)
+			{
+				CURRENT_LINE_SPLIT.at(i).erase(std::remove_if(CURRENT_LINE_SPLIT.at(i).begin(), CURRENT_LINE_SPLIT.at(i).end(), isspace));
+			};
 			tempint.push_back(
 					M22Engine::GetCharacterIndexFromName(CURRENT_LINE_SPLIT.at(1))
 				);
@@ -101,9 +149,79 @@ int M22ScriptCompiler::CompileLine(M22ScriptCompiler::line_c &tempLine_c, std::v
 			tempint.push_back(
 					atoi(M22Script::to_string(CURRENT_LINE_SPLIT.at(4)).c_str())
 				);
-			if(tempint.at(0) == -1) printf("[M22ScriptCompiler] Failed to find character index \"%s\"!\n",		M22Script::to_string(CURRENT_LINE_SPLIT.at(1)).c_str());
-			if(tempint.at(1) == -1) printf("[M22ScriptCompiler] Failed to find outfit index \"%s\"!\n",			M22Script::to_string(CURRENT_LINE_SPLIT.at(2)).c_str());
-			if(tempint.at(2) == -1) printf("[M22ScriptCompiler] Failed to find emotion index \"%s\"!\n",		M22Script::to_string(CURRENT_LINE_SPLIT.at(3)).c_str());
+
+			// Failed to find character, so load it
+			if(tempint.at(0) == -1)
+			{
+				M22Engine::CHARACTERS_ARRAY.push_back(M22Engine::CreateCharacter(M22Script::to_string(CURRENT_LINE_SPLIT.at(1))));	
+				tempint.at(0) = (M22Engine::CHARACTERS_ARRAY.size()-1);
+				failed_char = true;
+			};
+			if(tempint.at(1) == -1)
+			{
+				M22Engine::CHARACTERS_ARRAY.at(tempint.at(0)).outfits.push_back(M22Script::to_string(CURRENT_LINE_SPLIT.at(2)));
+				tempint.at(1) = (M22Engine::CHARACTERS_ARRAY.at(tempint.at(0)).outfits.size()-1);
+				failed_otft = true;
+			};
+			if(tempint.at(2) == -1)
+			{
+				M22Engine::CHARACTERS_ARRAY.at(tempint.at(0)).emotions.push_back(M22Script::to_string(CURRENT_LINE_SPLIT.at(3)));
+				tempint.at(2) = (M22Engine::CHARACTERS_ARRAY.at(tempint.at(0)).emotions.size()-1);
+				failed_emot = true;
+			};
+
+			if(failed_char == true || failed_emot == true || failed_otft == true)
+			{
+				/*if(failed_char == true)
+				{
+					tempLine_c.m_parameters_txt.push_back(
+						"graphics/text_frames/" + 
+						M22Engine::CHARACTERS_ARRAY.at(tempint.at(0)).name + 
+						".png"
+					);
+					SDL_Texture* tempTexture = IMG_LoadTexture(M22Renderer::SDL_RENDERER, tempLine_c.m_parameters_txt.back().c_str());
+					if(!tempTexture) printf("[M22ScriptCompiler] Failed to load character textbox %s!\n", tempLine_c.m_parameters_txt.back().c_str());
+					M22Graphics::characterFrameHeaders.push_back(tempTexture);
+					tempLine_c.m_parameters_txt.pop_back();
+				};*/
+
+				tempLine_c.m_parameters_txt.push_back(
+					"graphics/characters/" + 
+					M22Engine::CHARACTERS_ARRAY.at(tempint.at(0)).name + 
+					"/" + 
+					M22Engine::CHARACTERS_ARRAY.at(tempint.at(0)).outfits.back() + 
+					"/" +
+					M22Engine::CHARACTERS_ARRAY.at(tempint.at(0)).emotions.back() +
+					".png"
+				);
+				SDL_Texture* tempTex = IMG_LoadTexture(M22Renderer::SDL_RENDERER, tempLine_c.m_parameters_txt.back().c_str());
+				if(!tempTex) printf("[M22ScriptCompiler] Failed to load character sprite %s!\n", tempLine_c.m_parameters_txt.back().c_str());
+				SDL_SetTextureAlphaMod( tempTex, 0 );
+				SDL_SetTextureBlendMode(tempTex, SDL_BLENDMODE_BLEND);
+				M22Engine::CHARACTERS_ARRAY.at(tempint.at(0)).sprites.resize(M22Engine::CHARACTERS_ARRAY.at(tempint.at(0)).outfits.size());
+				M22Engine::CHARACTERS_ARRAY.at(tempint.at(0)).sprites.at(tempint.at(1)).resize(M22Engine::CHARACTERS_ARRAY.at(tempint.at(0)).emotions.size());
+				M22Engine::CHARACTERS_ARRAY.at(tempint.at(0)).sprites.at(tempint.at(1)).at(tempint.at(2)) = tempTex;
+				tempLine_c.m_parameters_txt.pop_back();
+			};
+
+			if(!M22Engine::CHARACTERS_ARRAY.at(tempint.at(0)).sprites.at(tempint.at(1)).at(tempint.at(2)))
+			{
+				tempLine_c.m_parameters_txt.push_back(
+					"graphics/characters/" + 
+					M22Engine::CHARACTERS_ARRAY.at(tempint.at(0)).name + 
+					"/" + 
+					M22Engine::CHARACTERS_ARRAY.at(tempint.at(0)).outfits.back() + 
+					"/" +
+					M22Engine::CHARACTERS_ARRAY.at(tempint.at(0)).emotions.back() +
+					".png"
+				);
+				SDL_Texture* tempTex = IMG_LoadTexture(M22Renderer::SDL_RENDERER, tempLine_c.m_parameters_txt.back().c_str());
+				if(!tempTex) printf("[M22ScriptCompiler] Failed to load character sprite %s!\n", tempLine_c.m_parameters_txt.back().c_str());
+				SDL_SetTextureAlphaMod( tempTex, 0 );
+				SDL_SetTextureBlendMode(tempTex, SDL_BLENDMODE_BLEND);
+				M22Engine::CHARACTERS_ARRAY.at(tempint.at(0)).sprites.at(tempint.at(1)).at(tempint.at(2)) = (tempTex);
+			};
+
 			tempLine_c.m_parameters.push_back(tempint.at(0));
 			tempLine_c.m_parameters.push_back(tempint.at(1));
 			tempLine_c.m_parameters.push_back(tempint.at(2));
@@ -114,8 +232,40 @@ int M22ScriptCompiler::CompileLine(M22ScriptCompiler::line_c &tempLine_c, std::v
 			tempLine_c.m_parameters.push_back(atoi(M22Script::to_string(CURRENT_LINE_SPLIT.at(1)).c_str()));
 			break;
 		case M22Script::NEW_BACKGROUND:
-			tempint.push_back(M22Engine::GetBackgroundIDFromName(M22Script::to_string(CURRENT_LINE_SPLIT.at(1))));
-			if(tempint.at(0) == -1) printf("[M22ScriptCompiler] Failed to find background index \"%s\"!\n",		M22Script::to_string(CURRENT_LINE_SPLIT.at(1)).c_str());
+			tempint.push_back(
+				M22Engine::GetBackgroundIDFromName(M22Script::to_string(CURRENT_LINE_SPLIT.at(1)))
+			);
+
+			// If the ID wasn't found, load it
+			if(tempint.back() == -1)
+			{
+				// Use the m_parameters_txt for temporary string storage
+				tempLine_c.m_parameters_txt.push_back( "graphics/backgrounds/" + M22Script::to_string(CURRENT_LINE_SPLIT.at(1)) + ".webp" );
+				
+				// Load the texture to M22Graphics::BACKGROUNDS
+				SDL_Texture *temp = IMG_LoadTexture(M22Renderer::SDL_RENDERER, tempLine_c.m_parameters_txt.back().c_str());
+				if(!temp)
+				{
+					printf("[M22ScriptCompiler] Failed to load background %s!\n", tempLine_c.m_parameters_txt.back().c_str());
+				};
+				M22Graphics::BACKGROUNDS.push_back(temp);
+
+				// Push back the filename to the index
+				M22Graphics::backgroundIndex.push_back(tempLine_c.m_parameters_txt.back());
+				if(tempLine_c.m_parameters_txt.back() == "graphics/backgrounds/BLACK.webp") 
+				{
+					temp = NULL;
+					temp = IMG_LoadTexture(M22Renderer::SDL_RENDERER, tempLine_c.m_parameters_txt.back().c_str());
+					M22Graphics::BLACK_TEXTURE = temp;
+					SDL_SetTextureBlendMode(M22Graphics::BLACK_TEXTURE, SDL_BLENDMODE_BLEND);
+					SDL_SetTextureAlphaMod( M22Graphics::BLACK_TEXTURE, 0 );
+					temp = NULL;
+				};
+
+				//Delete the temporary string and push back the index location
+				tempLine_c.m_parameters_txt.pop_back();
+				tempint.back() = (M22Graphics::backgroundIndex.size()-1);
+			};
 			tempLine_c.m_parameters.push_back(tempint.at(0));
 			break;
 		case M22Script::NEW_MUSIC:

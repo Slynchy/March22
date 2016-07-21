@@ -161,6 +161,12 @@ class M22Engine
 		};
 		
 
+		/// Creates a new character
+		///
+		/// \param _name Name of character
+		/// \return The created character
+		static M22Engine::Character CreateCharacter(std::string _name);
+		
 		/// Finds the index of the background from the string
 		///
 		/// \param _name Filename
@@ -218,7 +224,16 @@ class M22Engine
 		
 		/// Shuts down the engine, SDL, and destroys variables
 		static void Shutdown(void);
-		
+
+		/// Iterates through the vector and destroys the textures, then clears the vector to get rid of dangling ptrs
+		static void DestroySDLTextureVector(std::vector<SDL_Texture*>& _vector);
+
+		/// Iterates through the vector and destroys the music, then clears the vector
+		static void FreeMusicVector(std::vector<Mix_Music*>& _vector);
+
+		/// Iterates through the vector and destroys the SFX, then clears the vector
+		static void FreeSFXVector(std::vector<Mix_Chunk*>& _vector);
+
 		/// Updates delta time variables
 		static void UpdateDeltaTime(void);
 		
@@ -233,7 +248,6 @@ class M22Engine
 
 		static Vec2 ScrSize; 		///< Logical screen resolution to render at
 
-		static std::vector<std::string> CHARACTER_NAMES;		///< Array of character names (for file-loading, e.g. "Yuuji" -> "Yuuji/School/Happy_1.png")
 		static unsigned short int ACTIVE_BACKGROUND_INDEX;		///< The index of the current background, relative to \a ACTIVE_BACKGROUNDS;
 		static std::vector<Background> ACTIVE_BACKGROUNDS;		///< Array of backgrounds to be drawn (should be no larger than two)
 
@@ -621,19 +635,6 @@ class M22Script
 		/// \param _filename File path/name of text box position file
 		/// \return Error code if problem encountered, 0 if fine
 		static short int LoadTextBoxPosition(const char* _filename);
-
-		/// Loads the script file into \a currentScript
-		/// \deprecated Replaced with M22ScriptCompiler::CompileLoadScriptFile as of v0.7.0
-		/// \param _filename File path/name of script file
-		/// \return Error code if problem encountered, 0 if fine
-		static short int LoadScriptToCurrent(const char* _filename);
-
-		/// Loads the script file into \a currentScript_w (with wstrings)
-		///
-		/// \param _filename File path/name of script file
-		/// \deprecated Replaced with M22ScriptCompiler::CompileLoadScriptFile as of v0.7.0
-		/// \return Error code if problem encountered, 0 if fine
-		static short int LoadScriptToCurrent_w(const char* _filename);
 			
 		/// Draws the contents of \a currentLine to screen
 		///

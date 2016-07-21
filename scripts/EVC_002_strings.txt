@@ -1,12 +1,12 @@
 DrawBackground BLACK
 PlayMusic MP02
 
-???: "Yuuji! It's morning!"
+Unknown: "Yuuji! It's morning!"
 Mom?
-???: "If you don't wake up soon, you won't have time for breakfast!"
+Unknown: "If you don't wake up soon, you won't have time for breakfast!"
 Breakfast?
 I'll pass on that today.
-???: "Come on, wake up!"
+Unknown: "Come on, wake up!"
 Leave me alone!
 It's freezing in here!
 I'm staying home from school today.
@@ -14,7 +14,7 @@ I've made up my mind!
 
 StopMusic
 
-???: "If you don't get your act together and wake up..."
+Unknown: "If you don't get your act together and wake up..."
 What a pest...
 Saki: "This is what you get!!"
 
@@ -27,7 +27,7 @@ Yuuji: "Oof!!"
 Pain unlike anything I'd ever felt before raced through my abdomen.
 
 DrawBackground bedroom_day
-DrawCharacter Saki School NORMAL 0
+DrawCharacter Saki School HAPPY 0
 
 Saki: "Are you awake?"
 
@@ -124,7 +124,7 @@ PlayMusic MP14
 ClearCharacters
 //DrawCharacter Sumiyoshi School NORMAL 0
 
-???: "Oh! Your uniform came, huh?"
+Unknown: "Oh! Your uniform came, huh?"
 Yuuji: "Sumiyoshi?"
 A really shallow-looking guy suddenly appeared.
 
@@ -155,7 +155,7 @@ Saki: "Morning, Misaki!"
 DarkenScreen
 
 This cheerful girl is Misaki Souya.
-She's cheeful and honest.
+She's cheerful and honest.
 She's the total opposite of Saki, but for some reason they get along well.
 She's also our teacher Miss Misato's younger sister.
 Her puzzle is missing a few pieces as well.
@@ -180,11 +180,11 @@ ClearCharacters
 
 Misaki: "........." (Blush)
 Why are you blushing?
-Saki: "I see Yuuji is looking at Misaki with lusty eyes again."
 
 ClearCharacters
 DrawCharacter Saki School SNEAKY 0
 
+Saki: "I see Yuuji is looking at Misaki with lusty eyes again."
 Yuuji: "Don't say stuff like that! You'll make me look bad!"
 
 ClearCharacters
@@ -270,7 +270,7 @@ Saying that, she quickly turned and sped off towards Misaki.
 What was that all about, anyway?
 
 DrawBackground BLACK
-//DrawBackground school classrom daytime
+DrawBackground school_classroom_daytime
 
 Sumiyoshi: "It's been a week since you transfered here, Yuuji."
 Sumiyoshi: "I think you've really started to fit in well in our little group."

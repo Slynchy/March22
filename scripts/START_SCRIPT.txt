@@ -10,6 +10,8 @@ Snow Sakura?
 
 Girl: "Once a year, its flowers bloom in the chill of winter."
 
+Goto end_of_script
+
 Even though it's a cherry tree?
 Girl: "Yes, even though it's a cherry tree."
 Cherry trees only bloom in the spring, you know.
@@ -659,6 +661,7 @@ Takeaki: "Hey! You shouldn't light fireworks indoors!"
 Saki and Uncle came running into my room.
 Amidst the ruckus...
 ...my life in this noisy, exasperating snowy country had truly begun.
+--end_of_script
 FadeToBlackFancy
 //ExitGame
 //MainMenu

@@ -10,7 +10,7 @@
 #define DEBUG_ENABLED false
 
 #define WINDOW_TITLE		"M22Engine "
-#define VERSION				"v0.7.2"
+#define VERSION				"v0.7.3"
 
 #define FPS 60
 
@@ -105,7 +105,10 @@ void InitializeEverything(Vec2 _ScrPos)
 	ERROR_CODE = M22Engine::InitializeM22(int(M22Engine::ScrSize.x()),int(M22Engine::ScrSize.y()));
 	
 	// Loads all the background files from the specified index file
-	ERROR_CODE = M22Graphics::LoadBackgroundsFromIndex("graphics/backgrounds/index.txt");
+	M22Graphics::BACKGROUND_RENDER_TARGET = SDL_CreateTexture( M22Renderer::SDL_RENDERER, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET , 640, 480 );
+	SDL_SetTextureBlendMode(M22Graphics::BACKGROUND_RENDER_TARGET, SDL_BLENDMODE_BLEND);
+	M22Graphics::NEXT_BACKGROUND_RENDER_TARGET = SDL_CreateTexture( M22Renderer::SDL_RENDERER, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET , 640, 480 );
+	SDL_SetTextureBlendMode(M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, SDL_BLENDMODE_BLEND);
 	
 	// Initializes the text box (loads appropriate files)
 	M22Interface::InitTextBox();

@@ -229,7 +229,7 @@ void M22Graphics::AddCharacterToBackgroundRenderTarget(int _charindex, int _outf
 	SDL_SetRenderTarget(M22Renderer::SDL_RENDERER, M22Graphics::NEXT_BACKGROUND_RENDER_TARGET);
 	
 	SDL_Rect* tempRect = new SDL_Rect();
-	SDL_QueryTexture(M22Engine::CHARACTERS_ARRAY[_charindex].sprites[_outfitindex][_emotionindex], NULL, NULL, &tempRect->w, &tempRect->h);
+	SDL_QueryTexture(M22Engine::CHARACTERS_ARRAY.at(_charindex).sprites.at(_outfitindex).at(_emotionindex), NULL, NULL, &tempRect->w, &tempRect->h);
 	tempRect->x = _xPosition;
 	tempRect->y = 0;
 	SDL_SetTextureBlendMode(M22Engine::CHARACTERS_ARRAY[_charindex].sprites[_outfitindex][_emotionindex], SDL_BLENDMODE_BLEND);
