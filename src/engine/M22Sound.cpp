@@ -1,5 +1,7 @@
 #include <engine/M22Engine.h>
 
+using namespace March22;
+
 std::vector<Mix_Chunk*> M22Sound::SOUND_FX;
 std::vector<Mix_Music*> M22Sound::MUSIC;
 float* M22Sound::MUSIC_VOLUME = &M22Engine::OPTIONS.MUSIC_VOLUME;

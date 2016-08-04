@@ -1,5 +1,7 @@
 #include <engine/M22Engine.h>
 
+using namespace March22;
+
 std::string M22Script::currentLine;
 std::wstring M22Script::currentLine_w;
 int M22Script::currentLineIndex = NULL;
@@ -235,7 +237,7 @@ void M22Script::ClearCharacters(void)
 	SDL_SetRenderDrawColor(M22Renderer::SDL_RENDERER, 0,0,0,0);
 	SDL_RenderClear(M22Renderer::SDL_RENDERER);
 	
-	SDL_RenderCopy(M22Renderer::SDL_RENDERER, M22Engine::ACTIVE_BACKGROUNDS[0].sprite, NULL, NULL);
+	SDL_RenderCopy(M22Renderer::SDL_RENDERER, M22Engine::ACTIVE_BACKGROUNDS.at(0).sprite, NULL, NULL);
 	SDL_SetTextureAlphaMod( M22Graphics::BLACK_TEXTURE, 0 );
 
 	SDL_SetRenderTarget(M22Renderer::SDL_RENDERER, NULL);
@@ -316,6 +318,18 @@ M22Script::LINETYPE M22Script::CheckLineType(std::wstring _input)
 	{
 		return M22Script::LINETYPE::NEW_BACKGROUND;
 	}
+	else if (_input == M22Script::to_wstring("//"))
+	{
+		return M22Script::LINETYPE::COMMENT;
+	}
+	else if (_input == M22Script::to_wstring("DrawSprite"))
+	{
+		return M22Script::LINETYPE::DRAW_SPRITE;
+	}
+	else if (_input == M22Script::to_wstring("DrawAnimSprite"))
+	{
+		return M22Script::LINETYPE::DRAW_SPRITE_ANIMATED;
+	}
 	else if(_input == M22Script::to_wstring("PlayMusic"))
 	{
 		return M22Script::LINETYPE::NEW_MUSIC;
@@ -383,10 +397,6 @@ M22Script::LINETYPE M22Script::CheckLineType(std::wstring _input)
 	else if(_input == M22Script::to_wstring("StopLoopedStings"))
 	{
 		return M22Script::LINETYPE::STOP_STING_LOOPED;
-	}
-	else if(_input == M22Script::to_wstring("//"))
-	{
-		return M22Script::LINETYPE::COMMENT;
 	}
 	else if(_input == M22Script::to_wstring("ExitGame"))
 	{

@@ -1,5 +1,7 @@
 #include <engine/M22Engine.h>
 
+using namespace March22;
+
 std::vector<M22Interface::Interface> M22Interface::storedInterfaces;
 std::vector<M22Interface::Interface*> M22Interface::activeInterfaces;
 bool M22Interface::DRAW_TEXT_AREA = true; 
@@ -314,7 +316,7 @@ void M22Interface::UpdateActiveInterfaces(int _ScrSizeX, int _ScrSizeY)
 					else if(M22Interface::activeInterfaces[i]->buttons[k].name == "TEST_SFX")
 					{
 						M22Interface::activeInterfaces[i]->buttons[k].state = M22Interface::BUTTON_STATES::CLICKED;
-						M22Sound::PlaySting(rand()%M22Sound::SOUND_FX.size(), true);
+						M22Sound::PlaySting(rand() % (short int)M22Sound::SOUND_FX.size(), true);
 					}
 					else if(M22Interface::activeInterfaces[i]->buttons[k].name == "OPTIONS")
 					{

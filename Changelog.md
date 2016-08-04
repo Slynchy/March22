@@ -1,6 +1,17 @@
 #March22 Changelog
 ###NOTE: Please don't take this changelog as gospel; I hardly ever remember what I add per version.
 
+#### v0.7.4
+- Updated to VS2015
+	* Just some tweaks here and there to stop it complaining when compiling.
+- Added new functions to m22 script language:
+	* DrawSprite [_spritename, _x, _y] - Draws sprite at location
+	* DrawAnimSprite [_spritename, _x, _y, _speed, _number_of_frames] - Same as DrawSprite but does animation.
+		+ NOTE: The sprites are seeked in "graphics/sprites/" and must be webp format. Animated sprites must be named "name_0", "name_1", etc.
+- Added March22 namespace ("March22::M22Engine::")
+- Fixed saving/loading breaking with new script compiler
+- Fixed script compiler not unloading previous script when loading a new one. My bad.
+
 #### v0.7.3
 - Added script-based resource loader for better RAM usage
 	* Only loads required backgrounds, character sprites

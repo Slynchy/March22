@@ -6,6 +6,8 @@
 
 #include <engine/M22Engine.h>
 
+using namespace March22;
+
 
 SDL_Window* M22Renderer::SDL_SCREEN = NULL;
 SDL_Renderer *M22Renderer::SDL_RENDERER = NULL;

@@ -10,9 +10,8 @@
 #define DEBUG_ENABLED false
 
 #define WINDOW_TITLE		"M22Engine "
-#define VERSION				"v0.7.3"
 
-#define FPS 60
+#define FPS 61
 
 Vec2 ScrPos(600,200);
 
@@ -24,65 +23,65 @@ int main(int argc, char* argv[])
 {
 	InitializeEverything(ScrPos);
 
-	if(M22Engine::GAMESTATE == M22Engine::GAMESTATES::INGAME)
+	if(March22::M22Engine::GAMESTATE == March22::M22Engine::GAMESTATES::INGAME)
 	{
-		M22Engine::StartGame();
+		March22::M22Engine::StartGame();
 	}
-	else if(M22Engine::GAMESTATE == M22Engine::GAMESTATES::MAIN_MENU)
+	else if(March22::M22Engine::GAMESTATE == March22::M22Engine::GAMESTATES::MAIN_MENU)
 	{
-		M22Sound::ChangeMusicTrack("sfx/music/MENU.OGG");
-		M22Interface::activeInterfaces.push_back(&M22Interface::storedInterfaces[M22Interface::INTERFACES::MAIN_MENU_INTRFC]);
+		March22::M22Sound::ChangeMusicTrack("sfx/music/MENU.OGG");
+		March22::M22Interface::activeInterfaces.push_back(&March22::M22Interface::storedInterfaces[March22::M22Interface::INTERFACES::MAIN_MENU_INTRFC]);
 	};
 
-	while( !M22Engine::QUIT )
+	while( !March22::M22Engine::QUIT )
 	{
-		M22Engine::UpdateDeltaTime();
-		M22Engine::UpdateEvents();
-		M22Sound::UpdateSound();
+		March22::M22Engine::UpdateDeltaTime();
+		March22::M22Engine::UpdateEvents();
+		March22::M22Sound::UpdateSound();
 
-		if(M22Engine::skipping)
+		if(March22::M22Engine::skipping)
 		{
-			M22Script::ChangeLine(++M22Script::currentLineIndex);
+			March22::M22Script::ChangeLine(++March22::M22Script::currentLineIndex);
 		};
-		if(M22Engine::TIMER_TARGET != 0)
+		if(March22::M22Engine::TIMER_TARGET != 0)
 		{
-			if(M22Engine::TIMER_CURR < M22Engine::TIMER_TARGET)
+			if(March22::M22Engine::TIMER_CURR < March22::M22Engine::TIMER_TARGET)
 			{
-				M22Engine::TIMER_CURR += M22Engine::DELTA_TIME;
+				March22::M22Engine::TIMER_CURR += March22::M22Engine::DELTA_TIME;
 			}
 			else
 			{
-				M22Engine::TIMER_CURR = 0;
-				M22Engine::TIMER_TARGET = 0;
-				M22Script::ChangeLine(++M22Script::currentLineIndex);
+				March22::M22Engine::TIMER_CURR = 0;
+				March22::M22Engine::TIMER_TARGET = 0;
+				March22::M22Script::ChangeLine(++March22::M22Script::currentLineIndex);
 			};
 		};
-		if(M22Engine::GAMESTATE == M22Engine::GAMESTATES::MAIN_MENU) M22Graphics::UpdateBackgrounds();
-		M22Graphics::UpdateCharacters();
-		M22Interface::UpdateActiveInterfaces( int(M22Engine::ScrSize.x()), int(M22Engine::ScrSize.y()) );
+		if(March22::M22Engine::GAMESTATE == March22::M22Engine::GAMESTATES::MAIN_MENU) March22::M22Graphics::UpdateBackgrounds();
+		March22::M22Graphics::UpdateCharacters();
+		March22::M22Interface::UpdateActiveInterfaces( int(March22::M22Engine::ScrSize.x()), int(March22::M22Engine::ScrSize.y()) );
 		
-		M22Renderer::RenderClear();
+		March22::M22Renderer::RenderClear();
 
-		switch(M22Engine::GAMESTATE)
+		switch(March22::M22Engine::GAMESTATE)
 		{
-			case M22Engine::GAMESTATES::MAIN_MENU:
-				M22Renderer::RenderCopy(M22Graphics::activeMenuBackground);
-				M22Renderer::RenderCopy(M22Graphics::menuLogo);
-				M22Interface::DrawActiveInterfaces();
+			case March22::M22Engine::GAMESTATES::MAIN_MENU:
+				March22::M22Renderer::RenderCopy(March22::M22Graphics::activeMenuBackground);
+				March22::M22Renderer::RenderCopy(March22::M22Graphics::menuLogo);
+				March22::M22Interface::DrawActiveInterfaces();
 				break;
-			case M22Engine::GAMESTATES::INGAME:
-				M22Graphics::DrawInGame();
+			case March22::M22Engine::GAMESTATES::INGAME:
+				March22::M22Graphics::DrawInGame();
 				break;
 			default:
 				break;
 		};
 
-		M22Engine::LMB_Pressed = false;
-		if(!M22Engine::QUIT) M22Renderer::RenderPresent();
-		M22Renderer::Delay(1000/FPS); // 1000ms / 60 = 16.66ms delay (60FPS)
+		March22::M22Engine::LMB_Pressed = false;
+		if(!March22::M22Engine::QUIT) March22::M22Renderer::RenderPresent();
+		March22::M22Renderer::Delay(1000/FPS); // 1000ms / 60 = 16.66ms delay (60FPS)
 	};
 
-	M22Engine::Shutdown();
+	March22::M22Engine::Shutdown();
     return 0;
 }
 
@@ -90,55 +89,55 @@ void InitializeEverything(Vec2 _ScrPos)
 {
 	int ERROR_CODE = 0;
 	// Initialize Lua
-	ERROR_CODE = M22Lua::Initialize();
+	ERROR_CODE = March22::M22Lua::Initialize();
 
 	// Initialize the options file
-	M22Engine::OptionsFileInitializer();
+	March22::M22Engine::OptionsFileInitializer();
 
 	// Initialize SDL with specified title, version and at the specified position of the screen (if windowed)
-	ERROR_CODE = M22Engine::InitializeSDL(WINDOW_TITLE, VERSION, _ScrPos);
+	ERROR_CODE = March22::M22Engine::InitializeSDL(WINDOW_TITLE, _ScrPos);
 
 	// Initialize sound engine (setup mixers, etc.)
-	ERROR_CODE = M22Sound::InitializeSound();
+	ERROR_CODE = March22::M22Sound::InitializeSound();
 
 	// Initialize the M22 engine (loads all required files, returns -1 if error encountered)
-	ERROR_CODE = M22Engine::InitializeM22(int(M22Engine::ScrSize.x()),int(M22Engine::ScrSize.y()));
+	ERROR_CODE = March22::M22Engine::InitializeM22(int(March22::M22Engine::ScrSize.x()),int(March22::M22Engine::ScrSize.y()));
 	
 	// Loads all the background files from the specified index file
-	M22Graphics::BACKGROUND_RENDER_TARGET = SDL_CreateTexture( M22Renderer::SDL_RENDERER, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET , 640, 480 );
-	SDL_SetTextureBlendMode(M22Graphics::BACKGROUND_RENDER_TARGET, SDL_BLENDMODE_BLEND);
-	M22Graphics::NEXT_BACKGROUND_RENDER_TARGET = SDL_CreateTexture( M22Renderer::SDL_RENDERER, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET , 640, 480 );
-	SDL_SetTextureBlendMode(M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, SDL_BLENDMODE_BLEND);
+	March22::M22Graphics::BACKGROUND_RENDER_TARGET = SDL_CreateTexture( March22::M22Renderer::SDL_RENDERER, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET , 640, 480 );
+	SDL_SetTextureBlendMode(March22::M22Graphics::BACKGROUND_RENDER_TARGET, SDL_BLENDMODE_BLEND);
+	March22::M22Graphics::NEXT_BACKGROUND_RENDER_TARGET = SDL_CreateTexture( March22::M22Renderer::SDL_RENDERER, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET , 640, 480 );
+	SDL_SetTextureBlendMode(March22::M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, SDL_BLENDMODE_BLEND);
 	
 	// Initializes the text box (loads appropriate files)
-	M22Interface::InitTextBox();
+	March22::M22Interface::InitTextBox();
 	
 	// Loads list of game decisions from the decisions file
-	ERROR_CODE = M22Script::LoadGameDecisions("scripts/DECISIONS.txt");
+	ERROR_CODE = March22::M22Script::LoadGameDecisions("scripts/DECISIONS.txt");
 
 	// Load the text box position
-	ERROR_CODE = M22Script::LoadTextBoxPosition("graphics/TEXT_BOX_POSITION.txt");
+	ERROR_CODE = March22::M22Script::LoadTextBoxPosition("graphics/TEXT_BOX_POSITION.txt");
 	
 	// Loads the script file into the current file
-	ERROR_CODE = M22ScriptCompiler::CompileLoadScriptFile("START_SCRIPT.txt");
+	//ERROR_CODE = March22::M22ScriptCompiler::CompileLoadScriptFile("START_SCRIPT.txt");
 	
 	// Load the desired font
-	M22Graphics::textFont = TTF_OpenFont( "graphics/FONT.ttf", 19);
+	March22::M22Graphics::textFont = TTF_OpenFont( "graphics/FONT.ttf", 19);
 	
 	// Initialize the black wipe files/textures
-	M22Graphics::wipeBlack = M22Renderer::LoadTexture("graphics/wipeblack.png");
-	M22Renderer::GetTextureInfo(M22Graphics::wipeBlack, M22Graphics::wipeBlackRect.w, M22Graphics::wipeBlackRect.h);
-	M22Graphics::wipeBlackRect.w /= 3;
+	March22::M22Graphics::wipeBlack = March22::M22Renderer::LoadTexture("graphics/wipeblack.png");
+	March22::M22Renderer::GetTextureInfo(March22::M22Graphics::wipeBlack, March22::M22Graphics::wipeBlackRect.w, March22::M22Graphics::wipeBlackRect.h);
+	March22::M22Graphics::wipeBlackRect.w /= 3;
 
 	InitializeInterfaces();
 
-	M22Renderer::SetDrawColor(255, 255, 255, 255);
+	March22::M22Renderer::SetDrawColor(255, 255, 255, 255);
 
-	M22Graphics::wipePosition = new SDL_Rect();
-	M22Graphics::wipePosition->x = (0 - 640);
-	M22Graphics::wipePosition->y = 0;
-	M22Graphics::wipePosition->w = 640;
-	M22Graphics::wipePosition->h = 480;
+	March22::M22Graphics::wipePosition = new SDL_Rect();
+	March22::M22Graphics::wipePosition->x = (0 - 640);
+	March22::M22Graphics::wipePosition->y = 0;
+	March22::M22Graphics::wipePosition->w = 640;
+	March22::M22Graphics::wipePosition->h = 480;
 
 	if(ERROR_CODE != 0) printf("Error detected! Expect problems!\n");
 	return;
@@ -146,10 +145,10 @@ void InitializeEverything(Vec2 _ScrPos)
 
 void InitializeInterfaces(void)
 {
-	M22Interface::storedInterfaces.resize(M22Interface::INTERFACES::NUM_OF_INTERFACES);
-	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[M22Interface::INTERFACES::INGAME_INTRFC], 2, 0, "graphics/interface/GAME_BUTTONS.txt", true, M22Interface::INTERFACES::INGAME_INTRFC);
-	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[M22Interface::INTERFACES::MENU_BUTTON_INTRFC], 4, 0, "graphics/interface/MENU_BUTTONS.txt", true, M22Interface::INTERFACES::MENU_BUTTON_INTRFC);
-	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[M22Interface::INTERFACES::MAIN_MENU_INTRFC], 3, 0, "graphics/mainmenu/BUTTONS.txt", false, M22Interface::INTERFACES::MAIN_MENU_INTRFC);
-	M22Interface::InitializeInterface(&M22Interface::storedInterfaces[M22Interface::INTERFACES::OPTIONS_MENU_INTRFC], 7, 0, "graphics/optionsmenu/BUTTONS.txt", true, M22Interface::INTERFACES::OPTIONS_MENU_INTRFC);
+	March22::M22Interface::storedInterfaces.resize(March22::M22Interface::INTERFACES::NUM_OF_INTERFACES);
+	March22::M22Interface::InitializeInterface(&March22::M22Interface::storedInterfaces[March22::M22Interface::INTERFACES::INGAME_INTRFC], 2, 0, "graphics/interface/GAME_BUTTONS.txt", true, March22::M22Interface::INTERFACES::INGAME_INTRFC);
+	March22::M22Interface::InitializeInterface(&March22::M22Interface::storedInterfaces[March22::M22Interface::INTERFACES::MENU_BUTTON_INTRFC], 4, 0, "graphics/interface/MENU_BUTTONS.txt", true, March22::M22Interface::INTERFACES::MENU_BUTTON_INTRFC);
+	March22::M22Interface::InitializeInterface(&March22::M22Interface::storedInterfaces[March22::M22Interface::INTERFACES::MAIN_MENU_INTRFC], 3, 0, "graphics/mainmenu/BUTTONS.txt", false, March22::M22Interface::INTERFACES::MAIN_MENU_INTRFC);
+	March22::M22Interface::InitializeInterface(&March22::M22Interface::storedInterfaces[March22::M22Interface::INTERFACES::OPTIONS_MENU_INTRFC], 7, 0, "graphics/optionsmenu/BUTTONS.txt", true, March22::M22Interface::INTERFACES::OPTIONS_MENU_INTRFC);
 	return;
 };

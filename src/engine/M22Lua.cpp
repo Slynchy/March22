@@ -1,5 +1,7 @@
 #include <engine/M22Engine.h>
 
+using namespace March22;
+
 lua_State *M22Lua::STATE;
 
 int M22Lua::Initialize()

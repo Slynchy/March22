@@ -1,5 +1,7 @@
 #include <engine/M22Engine.h>
 
+using namespace March22;
+
 std::vector<SDL_Texture*> M22Graphics::BACKGROUNDS;
 SDL_Texture* M22Graphics::textFrame;
 M22Graphics::ArrowObj M22Graphics::arrow;
@@ -21,6 +23,7 @@ SDL_Texture* M22Graphics::wipeBlack;
 SDL_Rect M22Graphics::wipeBlackRect;
 Uint8 M22Graphics::activeTransition = M22Graphics::TRANSITIONS::SWIPE_TO_RIGHT;
 const std::wstring M22Graphics::TRANSITION_NAMES[M22Graphics::TRANSITIONS::NUMBER_OF_TRANSITIONS] = { M22Script::to_wstring("SwipeToRight"), M22Script::to_wstring("SwipeDown"), M22Script::to_wstring("SwipeToLeft"), M22Script::to_wstring("Fade") };
+std::vector<M22Graphics::M22Sprite> M22Graphics::ACTIVE_SPRITES;
 
 void M22Graphics::FadeToBlackFancy(void)
 {
@@ -53,6 +56,7 @@ void M22Graphics::FadeToBlackFancy(void)
 		//if(RENDERING_API == "direct3d") 
 		SDL_Delay(1000/60);
 	};
+	M22Sound::StopMusic();
 	for(size_t i = 0; i < M22Graphics::backgroundIndex.size(); i++)
 	{
 		if(M22Graphics::backgroundIndex[i] == "graphics/backgrounds/BLACK.webp")
@@ -197,8 +201,17 @@ void M22Graphics::DrawInGame(bool _draw_black)
 		default:
 			break;
 	};
-	
+
 	SDL_RenderCopy(M22Renderer::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET, NULL, NULL);
+
+	for (size_t i = 0; i < M22Graphics::ACTIVE_SPRITES.size(); i++)
+	{
+		if (M22Graphics::ACTIVE_SPRITES.at(i).IsActive())
+		{
+			M22Graphics::ACTIVE_SPRITES.at(i).Update();
+			M22Graphics::ACTIVE_SPRITES.at(i).Draw(M22Renderer::SDL_RENDERER);
+		};
+	}
 
 	if(_draw_black) SDL_RenderCopy(M22Renderer::SDL_RENDERER, M22Graphics::BLACK_TEXTURE, NULL, NULL);
 	if(M22Graphics::changeQueued == M22Graphics::BACKGROUND_UPDATE_TYPES::NONE) M22Interface::DrawTextArea((int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y());

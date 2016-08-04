@@ -1,5 +1,7 @@
 #include <engine/M22Engine.h>
 
+using namespace March22;
+
 M22Engine::GAMESTATES M22Engine::GAMESTATE = M22Engine::GAMESTATES::INGAME;
 M22Engine::OPTIONS_STRUCTURE  M22Engine::OPTIONS;
 SDL_Event M22Engine::SDL_EVENTS;
@@ -14,7 +16,8 @@ bool M22Engine::QUIT = false;
 bool M22Engine::skipping = false;
 Uint32 M22Engine::last = 0, M22Engine::DELTA_TIME = 0;
 Uint32 M22Engine::TIMER_CURR = 0, M22Engine::TIMER_TARGET = 0;
-SDL_DisplayMode M22Engine::SDL_DISPLAYMODE = {NULL, NULL, NULL, NULL, NULL};;
+SDL_DisplayMode M22Engine::SDL_DISPLAYMODE = {NULL, NULL, NULL, NULL, NULL};
+M22Engine::M22Version M22Engine::M22VERSION = {MAJOR,MINOR,PATCH};
 
 Vec2 M22Engine::ScrSize(640,480);
 
@@ -64,6 +67,7 @@ void M22Engine::StartGame(void)
 		};
 	};
 	M22Engine::LMB_Pressed = false;
+	M22ScriptCompiler::CompileLoadScriptFile("START_SCRIPT.txt");
 	M22Script::ChangeLine(0);
 	M22Interface::activeInterfaces.push_back(&M22Interface::storedInterfaces[0]);
 	return;
@@ -75,7 +79,10 @@ int M22Engine::GetBackgroundIDFromName(std::string _name)
 	{
 		std::string tempPath = "graphics/backgrounds/";
 		tempPath += _name;
-		tempPath += ".webp";
+		if (_name.size() >= 5 && _name.at(_name.size() - 5) != '.')
+		{
+			tempPath += ".webp";
+		};
 		if(tempPath == M22Graphics::backgroundIndex.at(i))
 		{
 			return i;
@@ -192,7 +199,7 @@ void M22Engine::OptionsFileInitializer(void)
 	return;
 };
 
-short int M22Engine::InitializeSDL(const std::string _windowTitle, const std::string _version, Vec2 ScrPos)
+short int M22Engine::InitializeSDL(const std::string _windowTitle, Vec2 ScrPos)
 {
 	SDL_version compiled;
 	SDL_VERSION(&compiled);
@@ -201,7 +208,7 @@ short int M22Engine::InitializeSDL(const std::string _windowTitle, const std::st
 	SDL_Init( SDL_INIT_EVERYTHING );
 	SDL_SetHint (SDL_HINT_RENDER_DRIVER, RENDERING_API);
 	std::string tempTitle = _windowTitle;
-	tempTitle += _version;
+	tempTitle += M22Engine::M22VERSION;
 
 	if(M22Engine::OPTIONS.WINDOWED == M22Engine::WINDOW_STATES::FULLSCREEN)
 	{
@@ -596,7 +603,7 @@ void M22Engine::SaveGame(const char* _filename)
 
 		struct SAVEGAME_STRUCTURE savegameObject;
 		savegameObject.GAMESTATE = M22Engine::GAMESTATE;
-		savegameObject.CURRENTBACKGROUND = M22Engine::ACTIVE_BACKGROUNDS[0].name;
+		savegameObject.CURRENTBACKGROUND = M22Engine::ACTIVE_BACKGROUNDS.at(0).name;
 		savegameObject.CURRENTMUSIC = M22Sound::MUSIC_NAMES.at(M22Sound::currentTrack);
 		savegameObject.CURRENTLOOPINGSFX = "sfx/music/SILENCE.OGG";
 		savegameObject.CURRENTSCRIPTFILE = M22Script::currentScriptFileName;
@@ -638,12 +645,7 @@ void M22Engine::LoadGame(const char* _filename)
 		M22Sound::StopLoopedStings();
 		M22Sound::PlayLoopedSting(savegameObject.CURRENTLOOPINGSFX);
 
-		std::wstring tempStr = M22Script::to_wstring(savegameObject.CURRENTSCRIPTFILE);
-		std::vector<std::wstring> tempVec;
-		M22Script::SplitString(tempStr, tempVec, '/');
-		//M22Script::LoadScriptToCurrent(M22Script::to_string(tempVec.back()).c_str());
-		//M22Script::LoadScriptToCurrent_w(M22Script::to_string(tempVec.back()).c_str());
-		M22ScriptCompiler::CompileLoadScriptFile(M22Script::to_string(tempVec.back()));
+		M22ScriptCompiler::CompileLoadScriptFile(savegameObject.CURRENTSCRIPTFILE);
 
 		std::vector<std::wstring> temp;
 		std::wstring backgroundname;
@@ -651,17 +653,11 @@ void M22Engine::LoadGame(const char* _filename)
 		backgroundname = temp.back();
 		backgroundname.erase(backgroundname.end()-5,backgroundname.end());
 
-		temp.clear();
-		temp.shrink_to_fit();
-		temp.push_back(M22Script::to_wstring("DrawBackground"));
-		temp.push_back(backgroundname);
-
-		//temp.push_back(temp.back());
 		M22ScriptCompiler::line_c temporaryLineC;
 		temporaryLineC.m_lineType = M22Script::NEW_BACKGROUND;
 		temporaryLineC.m_parameters_txt.push_back(M22Script::to_string(backgroundname));
+		temporaryLineC.m_parameters.push_back(M22Engine::GetBackgroundIDFromName(M22Script::to_string(backgroundname)));
 		M22ScriptCompiler::ExecuteCommand(temporaryLineC, savegameObject.CURRENTLINEPOSITION);
-		//M22Script::ExecuteM22ScriptCommand(M22Script::LINETYPE::NEW_BACKGROUND, temp, savegameObject.CURRENTLINEPOSITION);
 
 
 	};

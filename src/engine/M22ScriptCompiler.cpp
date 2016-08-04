@@ -1,5 +1,7 @@
 #include <engine/M22Engine.h>
 
+using namespace March22;
+
 std::vector<M22ScriptCompiler::line_c> M22ScriptCompiler::currentScript_c;
 M22ScriptCompiler::line_c* M22ScriptCompiler::CURRENT_LINE;
 std::vector<M22ScriptCompiler::script_checkpoint> M22ScriptCompiler::currentScript_checkpoints;
@@ -19,6 +21,7 @@ int M22ScriptCompiler::CompileLoadScriptFile(std::string _filename)
 	if(input)
 	{
 		printf("[M22ScriptCompiler] Compiling \"%s\" \n", filename.c_str());
+		M22Script::currentScriptFileName = _filename;
 
 		// Clear the loaded backgrounds
 		for(size_t i = 0; i < M22Graphics::BACKGROUNDS.size(); i++)
@@ -29,20 +32,6 @@ int M22ScriptCompiler::CompileLoadScriptFile(std::string _filename)
 		M22Graphics::backgroundIndex.clear();
 
 		// Clear the loaded character sprites
-		/*for(size_t c = 0; c < M22Engine::CHARACTERS_ARRAY.size(); c++)
-		{
-			for(size_t o = 0; o < M22Engine::CHARACTERS_ARRAY.at(c).sprites.size(); o++)
-			{
-				for(size_t e = 0; e < M22Engine::CHARACTERS_ARRAY.at(c).sprites.at(o).size(); e++)
-				{
-					SDL_DestroyTexture(M22Engine::CHARACTERS_ARRAY.at(c).sprites.at(o).at(e));
-				};
-				M22Engine::CHARACTERS_ARRAY.at(c).sprites.at(o).clear();
-			};
-			M22Engine::CHARACTERS_ARRAY.at(c).sprites.clear();
-			M22Engine::CHARACTERS_ARRAY.at(c).outfits.clear();
-			M22Engine::CHARACTERS_ARRAY.at(c).emotions.clear();
-		};*/
 		for(size_t i = 0; i < M22Engine::CHARACTERS_ARRAY.size(); i++)
 		{
 			M22Engine::CHARACTERS_ARRAY.at(i).emotions.clear();
@@ -54,7 +43,8 @@ int M22ScriptCompiler::CompileLoadScriptFile(std::string _filename)
 			M22Engine::CHARACTERS_ARRAY.at(i).sprites.clear();
 		};
 
-		M22Script::currentScriptFileName = filename;
+		M22ScriptCompiler::currentScript_c.clear();
+
 		unsigned int linenumber = 0;
 		while (std::getline(input , temp)) 
 		{
@@ -298,6 +288,16 @@ int M22ScriptCompiler::CompileLine(M22ScriptCompiler::line_c &tempLine_c, std::v
 		case M22Script::LOAD_SCRIPT:
 			tempLine_c.m_parameters_txt.push_back(M22Script::to_string(CURRENT_LINE_SPLIT.at(1)));
 			break;
+		case M22Script::DRAW_SPRITE:
+			tempLine_c.m_parameters_txt.push_back(M22Script::to_string(CURRENT_LINE_SPLIT.at(1)));
+			break;
+		// DrawAnimSprite anus 5
+		// "anus_0.png" -> "anus_4.png"
+		case M22Script::DRAW_SPRITE_ANIMATED:
+			tempLine_c.m_parameters_txt.push_back(M22Script::to_string(CURRENT_LINE_SPLIT.at(1)));
+			tempLine_c.m_parameters.push_back(atoi(M22Script::to_string(CURRENT_LINE_SPLIT.at(2)).c_str()));
+			tempLine_c.m_parameters.push_back(atoi(M22Script::to_string(CURRENT_LINE_SPLIT.at(3)).c_str()));
+			break;
 		case M22Script::IF_STATEMENT:
 		case M22Script::MAKE_DECISION:
 			for(size_t k = 1; k < CURRENT_LINE_SPLIT.size(); k++)
@@ -321,11 +321,11 @@ int M22ScriptCompiler::ExecuteCommand(M22ScriptCompiler::line_c _linec, int _lin
 	switch(ACTV_LINE->m_lineType)
 	{
 		case M22Script::NEW_BACKGROUND:
-			tempPath = "graphics/backgrounds/";
-			tempPath += M22Graphics::backgroundIndex.at(ACTV_LINE->m_parameters.at(0));
-			tempPath += ".webp";
+			//tempPath = "graphics/backgrounds/";
+			//tempPath += M22Graphics::backgroundIndex.at(ACTV_LINE->m_parameters.at(0));
+			//tempPath += ".webp";
 			M22Engine::ACTIVE_BACKGROUNDS.at(0).sprite = M22Graphics::BACKGROUNDS.at(ACTV_LINE->m_parameters.at(0));
-			M22Engine::ACTIVE_BACKGROUNDS.at(0).name = tempPath;
+			M22Engine::ACTIVE_BACKGROUNDS.at(0).name = M22Graphics::backgroundIndex.at(ACTV_LINE->m_parameters.at(0));
 			SDL_SetTextureAlphaMod(M22Engine::ACTIVE_BACKGROUNDS.at(0).sprite, 255);
 			SDL_SetTextureAlphaMod(M22Engine::ACTIVE_BACKGROUNDS.at(1).sprite, 255);
 			SDL_SetTextureAlphaMod(M22Graphics::BACKGROUND_RENDER_TARGET, 255);
@@ -456,14 +456,14 @@ int M22ScriptCompiler::ExecuteCommand(M22ScriptCompiler::line_c _linec, int _lin
 						if(M22Script::gameDecisions.at(i).choices.at(k) == M22Script::to_wstring(ACTV_LINE->m_parameters_txt.at(1)))
 						{
 							exitflag = true;
-							M22Script::gameDecisions.at(i).selectedOption = k;
+							M22Script::gameDecisions.at(i).selectedOption = (short int)k;
 						};
 						if(exitflag == true) break;
 					};
 				};
 				if(exitflag == true) break;
 			};
-			if(exitflag == false) printf("[M22ScriptCompiler] Decision/choice not found @ %s line %i!\n", M22Script::currentScriptFileName, _line);
+			if(exitflag == false) printf("[M22ScriptCompiler] Decision/choice not found @ %s line %i!\n", M22Script::currentScriptFileName.c_str(), _line);
 			M22Script::ChangeLine(++_line);
 
 			return 0;
@@ -489,7 +489,7 @@ int M22ScriptCompiler::ExecuteCommand(M22ScriptCompiler::line_c _linec, int _lin
 				if(M22Script::gameDecisions.at(i).name == M22Script::to_wstring(ACTV_LINE->m_parameters_txt.at(0)))
 				{
 					// found decision
-					specifiedDecision = i;
+					specifiedDecision = (short int)i;
 					break;
 				};
 			};
@@ -505,7 +505,7 @@ int M22ScriptCompiler::ExecuteCommand(M22ScriptCompiler::line_c _linec, int _lin
 			{
 				if(M22Script::gameDecisions.at(specifiedDecision).choices.at(i) == M22Script::to_wstring(ACTV_LINE->m_parameters_txt.at(1)))
 				{
-					specifiedChoice = i;
+					specifiedChoice = (short int)i;
 				};
 			};
 
@@ -594,6 +594,14 @@ int M22ScriptCompiler::ExecuteCommand(M22ScriptCompiler::line_c _linec, int _lin
 
 		case M22Script::FADE_TO_BLACK_FANCY:
 			M22Graphics::FadeToBlackFancy();
+			M22Script::ChangeLine(++_line);
+			return 0;
+
+		case M22Script::DRAW_SPRITE:
+			M22Script::ChangeLine(++_line);
+			return 0;
+
+		case M22Script::DRAW_SPRITE_ANIMATED:
 			M22Script::ChangeLine(++_line);
 			return 0;
 
