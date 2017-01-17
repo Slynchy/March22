@@ -1,7 +1,7 @@
 /// \file 		M22Engine.h
 /// \author 	Sam Lynch
 /// \brief 		Header file for entire M22 engine
-/// \version 	0.7.4
+/// \version 	0.8.0
 /// \date 		July 2016
 /// \details	The header file for declaring the engine and its functions/variables.
 
@@ -9,10 +9,10 @@
 #define M22ENGINE_H
 
 #define MAJOR 0
-#define MINOR 7
-#define PATCH 4
+#define MINOR 8
+#define PATCH 0
 
-#define SPRITE_DEFAULT_FORMAT ".webp"
+#define SPRITE_DEFAULT_FORMAT ".png"
 
 #define DEFAULT_MUSIC_VOLUME_MULT 0.25f
 	/*!< The default volume of music playback. */
@@ -46,6 +46,7 @@
 #include <chrono>
 #include <codecvt>
 #include <sstream>
+#include <nfont\NFont.h>
 
 namespace March22
 { 
@@ -163,6 +164,7 @@ namespace March22
 					///< Is in-game
 			};
 
+			/// Savegame structure (unused?)
 			struct SAVEGAME_STRUCTURE
 			{
 				GAMESTATES		GAMESTATE;
@@ -337,6 +339,7 @@ namespace March22
 				};
 			};
 
+			/// Sprite object
 			class M22Sprite
 			{
 				private:
@@ -345,13 +348,9 @@ namespace March22
 					std::vector<SDL_Texture*> m_sprites;		///< The actual sprites
 					float m_speed;								///< How fast to animate the sprite
 					SDL_Rect m_coords;							///< Position and size of sprite
-					bool m_active;								///< Is the sprite active? (for preloading)
+					std::string m_name;							///< Name of sprite
 				public:
 					SDL_Texture** currSprite;
-					inline bool IsActive()
-					{
-						return m_active;
-					}
 					inline bool IsAnimated()
 					{
 						return m_animated;
@@ -381,6 +380,10 @@ namespace March22
 						m_frame += m_speed;
 						currSprite = &m_sprites.at((int)m_frame);
 					}
+					inline bool CompareName(std::string _name)
+					{
+						return (_name == m_name);
+					}
 					inline void Draw(SDL_Renderer* _renderer)
 					{
 						SDL_RenderCopyEx(
@@ -395,8 +398,8 @@ namespace March22
 					}
 					M22Sprite( std::string _file, SDL_Renderer* _renderer, int _x = 0, int _y = 0, bool _animated = false, float _speed = 1.0f,  unsigned short int _num_of_frames = 1)
 					{
+						m_name = _file;
 						m_coords.x = _x;
-						m_active = false;
 						m_coords.y = _y;
 						m_frame = 0.0f;
 						m_animated = _animated;
@@ -444,7 +447,8 @@ namespace March22
 			static float NEXT_BACKGROUND_ALPHA;									///< The alpha of the next background (for fading in)
 			static BACKGROUND_UPDATE_TYPES changeQueued;						///< The type of the background change scheduled
 
-			static std::vector<M22Sprite> ACTIVE_SPRITES;						///< Sprites to draw
+			static std::vector<M22Sprite*> ACTIVE_SPRITES;						///< Sprites to draw
+			static std::vector<M22Sprite> LOADED_SPRITES;						///< Sprites that have been loaded
 
 			static SDL_Texture* textFrame;										///< Texture for the primary text frame
 			static ArrowObj arrow;												///< The text arrow object
@@ -683,7 +687,9 @@ namespace March22
 			/// Enumerator for the type of line the script is on
 			enum LINETYPE
 			{
+				NEW_PAGE,						///< Clears the typewriter text (starting a new page)
 				NEW_BACKGROUND,					///< Changes the background using active transition
+				NEW_BACKGROUND_STEALTH,			///< Changes the background using active transition, but does not hide text box
 				FADE_TO_BLACK,					///< Fade the background to black
 				FADE_TO_BLACK_FANCY,			///< Fade the background to black; hijacks the thread for a nicer effect.
 				NEW_MUSIC,						///< Changes the current music track
@@ -713,6 +719,7 @@ namespace March22
 				RUN_LUA_SCRIPT,					///< Runs a lua script
 				DRAW_SPRITE,					///< Draws the specified sprite file
 				DRAW_SPRITE_ANIMATED,			///< Draws the specified sprite file, animated
+				CLEAR_SPRITES,					///< Clears the ACTIVE_SPRITES array
 				NARRATIVE						///< Speech without chat box (thoughts of main character; narrative)
 			};
 
@@ -758,6 +765,10 @@ namespace March22
 			static float fontSize;											///< The size of the text font; not sure if still used?
 
 			static std::vector<Decision> gameDecisions;						///< Array of game decisions
+
+			static std::wstring typewriter_text;							///< Position the typewriter is currently at of the current line
+			static size_t typewriter_currPos;								///< Position the typewriter is currently at of the current line
+			static NFont* font;
 		
 			/// Loads the decisions file into \a gameDecisions array
 			/// \deprecated This is unnecessary since decisions are loaded from script into memory, then stored in savegame for later use.

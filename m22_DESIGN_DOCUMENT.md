@@ -1,10 +1,9 @@
 #.m22 DESIGN DOCUMENT
-##The specification for the scripting language of the March22 VN engine
-
-The engine parses the next line of the script and does the action based on the first word. This document outlines the functions
+##The specification for the scripting language of the March22 interactive-novel engine
 
 | Keywords                                             | What it does                                                                    |
 |------------------------------------------------------|---------------------------------------------------------------------------------|
+| NewPage                                              | Clears current page of text                                                     |
 | DrawBackground( _name )                              | Queues specified background to transition to, using active transition           |
 | PlayMusic( _name )                                   | Changes active music track to specified track                                   |
 | PlaySting( _name )                                   | Plays specified SFX                                                             |

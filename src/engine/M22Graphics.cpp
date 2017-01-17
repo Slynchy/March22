@@ -23,13 +23,20 @@ SDL_Texture* M22Graphics::wipeBlack;
 SDL_Rect M22Graphics::wipeBlackRect;
 Uint8 M22Graphics::activeTransition = M22Graphics::TRANSITIONS::SWIPE_TO_RIGHT;
 const std::wstring M22Graphics::TRANSITION_NAMES[M22Graphics::TRANSITIONS::NUMBER_OF_TRANSITIONS] = { M22Script::to_wstring("SwipeToRight"), M22Script::to_wstring("SwipeDown"), M22Script::to_wstring("SwipeToLeft"), M22Script::to_wstring("Fade") };
-std::vector<M22Graphics::M22Sprite> M22Graphics::ACTIVE_SPRITES;
+std::vector<M22Graphics::M22Sprite*> M22Graphics::ACTIVE_SPRITES;
+std::vector<M22Graphics::M22Sprite> M22Graphics::LOADED_SPRITES;
 
 void M22Graphics::FadeToBlackFancy(void)
 {
 	M22Interface::DRAW_TEXT_AREA = false;
 	float fade_to_black_alpha = 0;
 	bool fadeout = false;
+	if (M22Graphics::BLACK_TEXTURE == NULL)
+	{
+		M22Graphics::BLACK_TEXTURE = IMG_LoadTexture(M22Renderer::SDL_RENDERER, "./graphics/backgrounds/BLACK.webp");
+		SDL_SetTextureBlendMode(M22Graphics::BLACK_TEXTURE, SDL_BLENDMODE_BLEND);
+		SDL_SetTextureAlphaMod(M22Graphics::BLACK_TEXTURE, 0);
+	}
 	while(fade_to_black_alpha < 255.0f || Mix_PlayingMusic())
 	{
 		//fade_to_black_alpha = M22Graphics::Lerp( fade_to_black_alpha, 255.0f, DEFAULT_LERP_SPEED / 8);
@@ -93,8 +100,8 @@ void M22Graphics::DrawInGame(bool _draw_black)
 					SDL_RenderCopy(M22Renderer::SDL_RENDERER, M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, NULL, NULL);
 					SDL_SetRenderTarget(M22Renderer::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET);
 					SDL_RenderCopy(M22Renderer::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET, NULL, NULL);
-					M22Graphics::wipePosition->x += 24;
-					M22Graphics::wipeBlackRect.x = ( ( M22Graphics::wipePosition->x + 640 ) - (M22Graphics::wipeBlackRect.w/2) );
+					M22Graphics::wipePosition->x += 32;
+					M22Graphics::wipeBlackRect.x = ( ( M22Graphics::wipePosition->x + 1920 ) - (M22Graphics::wipeBlackRect.w/2) );
 
 					SDL_SetRenderDrawColor(M22Renderer::SDL_RENDERER, 0,0,0,0);
 
@@ -109,11 +116,12 @@ void M22Graphics::DrawInGame(bool _draw_black)
 					if(M22Graphics::wipePosition->x > 56)
 					{
 						M22Graphics::changeQueued = NONE;
-						M22Graphics::wipePosition->x = (0 - 658);
+						M22Graphics::wipePosition->x = (0 - 1230);
 						//M22Graphics::wipePosition->y = (0 - 521);
 						SDL_SetRenderTarget(M22Renderer::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET);
 						SDL_RenderCopy(M22Renderer::SDL_RENDERER, M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, NULL, NULL);
 						SDL_SetRenderTarget(M22Renderer::SDL_RENDERER, NULL);
+
 						M22Script::ChangeLine(++M22Script::currentLineIndex);
 					};
 					break;
@@ -135,11 +143,12 @@ void M22Graphics::DrawInGame(bool _draw_black)
 					if(M22Graphics::wipePosition->x < -28)
 					{
 						M22Graphics::changeQueued = NONE;
-						M22Graphics::wipePosition->x = (0 - 658);
+						M22Graphics::wipePosition->x = (0 - 1938);
 						SDL_SetRenderTarget(M22Renderer::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET);
 						SDL_RenderCopy(M22Renderer::SDL_RENDERER, M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, NULL, NULL);
 						SDL_SetRenderTarget(M22Renderer::SDL_RENDERER, NULL);
-						M22Script::ChangeLine(++M22Script::currentLineIndex);
+						if(M22ScriptCompiler::CURRENT_LINE->m_lineType != M22Script::LINETYPE::NEW_BACKGROUND_STEALTH)
+							M22Script::ChangeLine(++M22Script::currentLineIndex);
 					};
 					break;
 				case M22Graphics::TRANSITIONS::SWIPE_DOWN:
@@ -170,7 +179,7 @@ void M22Graphics::DrawInGame(bool _draw_black)
 					};
 					break;
 				case M22Graphics::TRANSITIONS::FADEIN:
-					M22Graphics::NEXT_BACKGROUND_ALPHA += 8.0f;
+					M22Graphics::NEXT_BACKGROUND_ALPHA += 3.33f;
 					SDL_SetTextureAlphaMod(M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, Uint8(M22Graphics::NEXT_BACKGROUND_ALPHA));
 					SDL_SetRenderTarget(M22Renderer::SDL_RENDERER, M22Graphics::BACKGROUND_RENDER_TARGET);
 					SDL_RenderCopy(M22Renderer::SDL_RENDERER, M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, NULL, NULL);
@@ -206,15 +215,16 @@ void M22Graphics::DrawInGame(bool _draw_black)
 
 	for (size_t i = 0; i < M22Graphics::ACTIVE_SPRITES.size(); i++)
 	{
-		if (M22Graphics::ACTIVE_SPRITES.at(i).IsActive())
+		if (M22Graphics::ACTIVE_SPRITES.at(i)->IsAnimated())
 		{
-			M22Graphics::ACTIVE_SPRITES.at(i).Update();
-			M22Graphics::ACTIVE_SPRITES.at(i).Draw(M22Renderer::SDL_RENDERER);
+			M22Graphics::ACTIVE_SPRITES.at(i)->Update();
 		};
+		M22Graphics::ACTIVE_SPRITES.at(i)->Draw(M22Renderer::SDL_RENDERER);
 	}
 
 	if(_draw_black) SDL_RenderCopy(M22Renderer::SDL_RENDERER, M22Graphics::BLACK_TEXTURE, NULL, NULL);
-	if(M22Graphics::changeQueued == M22Graphics::BACKGROUND_UPDATE_TYPES::NONE) M22Interface::DrawTextArea((int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y());
+	//if(M22Graphics::changeQueued == M22Graphics::BACKGROUND_UPDATE_TYPES::NONE || M22ScriptCompiler::CURRENT_LINE->m_lineType == M22Script::LINETYPE::NEW_BACKGROUND_STEALTH) 
+		M22Interface::DrawTextArea((int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y());
 	return;
 };
 
@@ -237,7 +247,7 @@ void M22Graphics::UpdateBackgroundRenderTarget(void)
 
 void M22Graphics::AddCharacterToBackgroundRenderTarget(int _charindex, int _outfitindex, int _emotionindex, int _xPosition, bool _brutal)
 {
-	int width = 640, height = 480;
+	int width = 1920, height = 1080;
 
 	SDL_SetRenderTarget(M22Renderer::SDL_RENDERER, M22Graphics::NEXT_BACKGROUND_RENDER_TARGET);
 	
@@ -258,9 +268,9 @@ void M22Graphics::AddCharacterToBackgroundRenderTarget(int _charindex, int _outf
 
 short int M22Graphics::LoadBackgroundsFromIndex(const char* _filename)
 {
-	M22Graphics::BACKGROUND_RENDER_TARGET = SDL_CreateTexture( M22Renderer::SDL_RENDERER, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET , 640, 480 );
+	M22Graphics::BACKGROUND_RENDER_TARGET = SDL_CreateTexture( M22Renderer::SDL_RENDERER, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET , 1920, 1080 );
 	SDL_SetTextureBlendMode(M22Graphics::BACKGROUND_RENDER_TARGET, SDL_BLENDMODE_BLEND);
-	M22Graphics::NEXT_BACKGROUND_RENDER_TARGET = SDL_CreateTexture( M22Renderer::SDL_RENDERER, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET , 640, 480 );
+	M22Graphics::NEXT_BACKGROUND_RENDER_TARGET = SDL_CreateTexture( M22Renderer::SDL_RENDERER, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET , 1920, 1080 );
 	SDL_SetTextureBlendMode(M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, SDL_BLENDMODE_BLEND);
 	std::fstream input(_filename);
 	int length;
@@ -415,7 +425,7 @@ void M22Graphics::DrawArrow(int ScrW, int ScrH)
 		By multiplying by the new resolution, we can get the scale/size/position at any scale (but not aspect)
 	*/
 	SDL_Rect tempSrc = { 22*((int)std::floor(M22Graphics::arrow.frame)+1), 0, 22, 22};
-	SDL_Rect tempDst = { 616, 458, 0, 0};
+	SDL_Rect tempDst = { 1920 - 92, 1080 - 92, 0, 0};
 	SDL_QueryTexture(M22Graphics::arrow.sprite, NULL, NULL, &tempDst.w, &tempDst.h);
 
 	tempDst.w /= 7;

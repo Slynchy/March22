@@ -1,6 +1,23 @@
 #March22 Changelog
 ###NOTE: Please don't take this changelog as gospel; I hardly ever remember what I add per version.
 
+#### v0.8.0
+- Engine is now built for Interactive Novel games, rather than visual novels.
+	* Text box now takes up entire screen
+	* Can support any resolution at 16:9
+		+ May blur past 1920x1080
+	* Typewriter effect on text
+	* UI has been ripped out and is not currently functional
+	* No decision-making in scripts yet
+- Added new functions to m22 script language:
+	* NewPage - Clears all text from text box
+
+#### v0.7.5
+- Added new functions to m22 script language:
+	* ClearSprites - Clears all sprites being drawn to the screen
+- Fixed actually being able to use the sprite drawer
+	* Animated sprites not working just yet
+
 #### v0.7.4
 - Updated to VS2015
 	* Just some tweaks here and there to stop it complaining when compiling.

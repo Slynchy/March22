@@ -187,7 +187,7 @@ void M22Interface::InitTextBox(void)
 	M22Graphics::textFrame = IMG_LoadTexture(M22Renderer::SDL_RENDERER, "graphics/frame.png");
 
 	// init the render target texture
-	M22Interface::ChatBoxRenderer = SDL_CreateTexture( M22Renderer::SDL_RENDERER, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET , 640, 480 );
+	M22Interface::ChatBoxRenderer = SDL_CreateTexture( M22Renderer::SDL_RENDERER, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET , 1920, 1080 );
 
 	// allow alpha channels
 	SDL_SetTextureBlendMode(M22Graphics::textFrame, SDL_BLENDMODE_BLEND);
@@ -200,21 +200,21 @@ void M22Interface::DrawTextArea(int _ScrSizeX, int _ScrSizeY)
 {
 	if(M22Interface::DRAW_TEXT_AREA == true)
 	{
-		int width = 640, height = 480;
+		int width = 1920, height = 1080;
 
 		SDL_SetRenderTarget(M22Renderer::SDL_RENDERER, M22Interface::ChatBoxRenderer);
 
 		SDL_SetRenderDrawColor(M22Renderer::SDL_RENDERER, 0,0,0,0);
 		SDL_RenderClear(M22Renderer::SDL_RENDERER);
 		
-		SDL_Rect textbox = {0, 480, 0, 0};
+		SDL_Rect textbox = {0, 1080, 0, 0};
 		SDL_QueryTexture(M22Graphics::textFrame, NULL, NULL, &textbox.w, &textbox.h);
-		textbox.y = 480 - textbox.h;
+		textbox.y = 1080 - textbox.h;
 		SDL_RenderCopy(M22Renderer::SDL_RENDERER, M22Graphics::textFrame, NULL, &textbox);
 
-		SDL_Rect characterName = {0,368,0,0};
-		SDL_QueryTexture(M22Graphics::characterFrameHeaders.at(M22Script::activeSpeakerIndex), NULL, NULL, &characterName.w, &characterName.h);
-		SDL_RenderCopy(M22Renderer::SDL_RENDERER, M22Graphics::characterFrameHeaders.at(M22Script::activeSpeakerIndex), NULL, &characterName);
+		//SDL_Rect characterName = {0,552,0,0};
+		//SDL_QueryTexture(M22Graphics::characterFrameHeaders.at(M22Script::activeSpeakerIndex), NULL, NULL, &characterName.w, &characterName.h);
+		//SDL_RenderCopy(M22Renderer::SDL_RENDERER, M22Graphics::characterFrameHeaders.at(M22Script::activeSpeakerIndex), NULL, &characterName);
 
 		M22Graphics::DrawArrow(width, height);
 		
@@ -244,7 +244,7 @@ void M22Interface::DrawTextArea(int _ScrSizeX, int _ScrSizeY)
 				SDL_RenderCopy( M22Renderer::SDL_RENDERER, M22Interface::activeInterfaces[i]->spriteSheet, NULL, NULL);
 			};
 		};
-		M22Interface::DrawActiveInterfacesButtons();
+		//M22Interface::DrawActiveInterfacesButtons();
 
 		SDL_SetRenderTarget(M22Renderer::SDL_RENDERER, NULL);
 

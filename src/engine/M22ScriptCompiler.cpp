@@ -221,6 +221,7 @@ int M22ScriptCompiler::CompileLine(M22ScriptCompiler::line_c &tempLine_c, std::v
 		case M22Script::WAIT:
 			tempLine_c.m_parameters.push_back(atoi(M22Script::to_string(CURRENT_LINE_SPLIT.at(1)).c_str()));
 			break;
+		case M22Script::NEW_BACKGROUND_STEALTH:
 		case M22Script::NEW_BACKGROUND:
 			tempint.push_back(
 				M22Engine::GetBackgroundIDFromName(M22Script::to_string(CURRENT_LINE_SPLIT.at(1)))
@@ -230,7 +231,7 @@ int M22ScriptCompiler::CompileLine(M22ScriptCompiler::line_c &tempLine_c, std::v
 			if(tempint.back() == -1)
 			{
 				// Use the m_parameters_txt for temporary string storage
-				tempLine_c.m_parameters_txt.push_back( "graphics/backgrounds/" + M22Script::to_string(CURRENT_LINE_SPLIT.at(1)) + ".webp" );
+				tempLine_c.m_parameters_txt.push_back( "graphics/backgrounds/" + M22Script::to_string(CURRENT_LINE_SPLIT.at(1)) + ".png" );
 				
 				// Load the texture to M22Graphics::BACKGROUNDS
 				SDL_Texture *temp = IMG_LoadTexture(M22Renderer::SDL_RENDERER, tempLine_c.m_parameters_txt.back().c_str());
@@ -289,14 +290,44 @@ int M22ScriptCompiler::CompileLine(M22ScriptCompiler::line_c &tempLine_c, std::v
 			tempLine_c.m_parameters_txt.push_back(M22Script::to_string(CURRENT_LINE_SPLIT.at(1)));
 			break;
 		case M22Script::DRAW_SPRITE:
+			for (size_t i = 0; i < CURRENT_LINE_SPLIT.size(); i++)
+			{
+				CURRENT_LINE_SPLIT.at(i).erase(std::remove_if(CURRENT_LINE_SPLIT.at(i).begin(), CURRENT_LINE_SPLIT.at(i).end(), isspace));
+			};
 			tempLine_c.m_parameters_txt.push_back(M22Script::to_string(CURRENT_LINE_SPLIT.at(1)));
+			tempLine_c.m_parameters.push_back(atoi(M22Script::to_string(CURRENT_LINE_SPLIT.at(2)).c_str()));
+			tempLine_c.m_parameters.push_back(atoi(M22Script::to_string(CURRENT_LINE_SPLIT.at(3)).c_str()));
+			M22Graphics::LOADED_SPRITES.push_back(
+				*(
+					new M22Graphics::M22Sprite(
+						tempLine_c.m_parameters_txt.at(0),
+						M22Renderer::SDL_RENDERER,
+						tempLine_c.m_parameters.at(0), 
+						tempLine_c.m_parameters.at(1))
+					)
+			);
 			break;
 		// DrawAnimSprite anus 5
 		// "anus_0.png" -> "anus_4.png"
 		case M22Script::DRAW_SPRITE_ANIMATED:
-			tempLine_c.m_parameters_txt.push_back(M22Script::to_string(CURRENT_LINE_SPLIT.at(1)));
-			tempLine_c.m_parameters.push_back(atoi(M22Script::to_string(CURRENT_LINE_SPLIT.at(2)).c_str()));
-			tempLine_c.m_parameters.push_back(atoi(M22Script::to_string(CURRENT_LINE_SPLIT.at(3)).c_str()));
+			tempLine_c.m_parameters_txt.push_back(M22Script::to_string(CURRENT_LINE_SPLIT.at(1)));				// 0
+			tempLine_c.m_parameters.push_back(atoi(M22Script::to_string(CURRENT_LINE_SPLIT.at(2)).c_str()));	// 0
+			tempLine_c.m_parameters.push_back(atoi(M22Script::to_string(CURRENT_LINE_SPLIT.at(3)).c_str()));	// 1
+			// because it only supports integers, save the float as a string									
+			tempLine_c.m_parameters_txt.push_back(M22Script::to_string(CURRENT_LINE_SPLIT.at(4)));				// 1
+			tempLine_c.m_parameters.push_back(atoi(M22Script::to_string(CURRENT_LINE_SPLIT.at(5)).c_str()));	// 2
+			M22Graphics::LOADED_SPRITES.push_back(
+				*(
+					new M22Graphics::M22Sprite(
+						tempLine_c.m_parameters_txt.at(0),
+						M22Renderer::SDL_RENDERER,
+						tempLine_c.m_parameters.at(0),
+						tempLine_c.m_parameters.at(1),
+						true,
+						(float)atof(tempLine_c.m_parameters_txt.at(1).c_str()),
+						tempLine_c.m_parameters.at(2))
+					)
+			);
 			break;
 		case M22Script::IF_STATEMENT:
 		case M22Script::MAKE_DECISION:
@@ -320,6 +351,7 @@ int M22ScriptCompiler::ExecuteCommand(M22ScriptCompiler::line_c _linec, int _lin
 
 	switch(ACTV_LINE->m_lineType)
 	{
+		case M22Script::NEW_BACKGROUND_STEALTH:
 		case M22Script::NEW_BACKGROUND:
 			//tempPath = "graphics/backgrounds/";
 			//tempPath += M22Graphics::backgroundIndex.at(ACTV_LINE->m_parameters.at(0));
@@ -333,6 +365,15 @@ int M22ScriptCompiler::ExecuteCommand(M22ScriptCompiler::line_c _linec, int _lin
 			M22Graphics::UpdateBackgroundRenderTarget();
 			SDL_SetTextureAlphaMod(M22Graphics::BACKGROUND_RENDER_TARGET, 255);
 			SDL_SetTextureAlphaMod(M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, 255);
+			//if(ACTV_LINE->m_lineType == M22Script::NEW_BACKGROUND_STEALTH)
+			//	M22Script::ChangeLine(++_line);
+			return 0;
+
+		case M22Script::NEW_PAGE:
+			M22Script::typewriter_currPos = 0;
+			M22Script::typewriter_text.clear();
+			M22Script::typewriter_text.resize(0);
+			M22Script::ChangeLine(++_line);
 			return 0;
 
 		case M22Script::NEW_MUSIC:
@@ -592,16 +633,25 @@ int M22ScriptCompiler::ExecuteCommand(M22ScriptCompiler::line_c _linec, int _lin
 			M22Script::ChangeLine(++_line);
 			return 0;
 
+		case M22Script::CLEAR_SPRITES:
+			M22Graphics::ACTIVE_SPRITES.clear();
+			M22Script::ChangeLine(++_line);
+			return 0;
+
 		case M22Script::FADE_TO_BLACK_FANCY:
 			M22Graphics::FadeToBlackFancy();
 			M22Script::ChangeLine(++_line);
 			return 0;
 
-		case M22Script::DRAW_SPRITE:
-			M22Script::ChangeLine(++_line);
-			return 0;
-
 		case M22Script::DRAW_SPRITE_ANIMATED:
+		case M22Script::DRAW_SPRITE:
+			for (size_t i = 0; i < M22Graphics::LOADED_SPRITES.size(); i++)
+			{
+				if (M22Graphics::LOADED_SPRITES.at(i).CompareName(ACTV_LINE->m_parameters_txt.at(0)))
+				{
+					M22Graphics::ACTIVE_SPRITES.push_back(&M22Graphics::LOADED_SPRITES.at(i));
+				};
+			}
 			M22Script::ChangeLine(++_line);
 			return 0;
 

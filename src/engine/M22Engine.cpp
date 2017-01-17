@@ -19,7 +19,7 @@ Uint32 M22Engine::TIMER_CURR = 0, M22Engine::TIMER_TARGET = 0;
 SDL_DisplayMode M22Engine::SDL_DISPLAYMODE = {NULL, NULL, NULL, NULL, NULL};
 M22Engine::M22Version M22Engine::M22VERSION = {MAJOR,MINOR,PATCH};
 
-Vec2 M22Engine::ScrSize(640,480);
+Vec2 M22Engine::ScrSize(1920,1080);
 
 void M22Engine::StartGame(void)
 {
@@ -81,7 +81,7 @@ int M22Engine::GetBackgroundIDFromName(std::string _name)
 		tempPath += _name;
 		if (_name.size() >= 5 && _name.at(_name.size() - 5) != '.')
 		{
-			tempPath += ".webp";
+			tempPath += ".png";
 		};
 		if(tempPath == M22Graphics::backgroundIndex.at(i))
 		{
@@ -212,19 +212,20 @@ short int M22Engine::InitializeSDL(const std::string _windowTitle, Vec2 ScrPos)
 
 	if(M22Engine::OPTIONS.WINDOWED == M22Engine::WINDOW_STATES::FULLSCREEN)
 	{
-		M22Renderer::SDL_SCREEN = SDL_CreateWindow(tempTitle.c_str(), (int)ScrPos.x(), (int)ScrPos.y(), (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y(), SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
+		M22Renderer::SDL_SCREEN = SDL_CreateWindow(tempTitle.c_str(), (int)ScrPos.x(), (int)ScrPos.y(), (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y(), SDL_WINDOW_FULLSCREEN);
 	}
 	else if(M22Engine::OPTIONS.WINDOWED == M22Engine::WINDOW_STATES::FULLSCREEN_BORDERLESS)
 	{
-		M22Renderer::SDL_SCREEN = SDL_CreateWindow(tempTitle.c_str(), (int)ScrPos.x(), (int)ScrPos.y(), (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y(), SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
+		M22Renderer::SDL_SCREEN = SDL_CreateWindow(tempTitle.c_str(), (int)ScrPos.x(), (int)ScrPos.y(), (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y(), SDL_WINDOW_RESIZABLE);
+		SDL_SetWindowFullscreen(M22Renderer::SDL_SCREEN, SDL_WINDOW_FULLSCREEN_DESKTOP);
 	}
 	else
 	{
-		M22Renderer::SDL_SCREEN = SDL_CreateWindow(tempTitle.c_str(), (int)ScrPos.x(), (int)ScrPos.y(), (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y(), SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
+		M22Renderer::SDL_SCREEN = SDL_CreateWindow(tempTitle.c_str(), (int)ScrPos.x(), (int)ScrPos.y(), (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y(), SDL_WINDOW_RESIZABLE);
 	};
 
     M22Renderer::SDL_RENDERER = SDL_CreateRenderer(M22Renderer::SDL_SCREEN, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
-	SDL_RenderSetLogicalSize(M22Renderer::SDL_RENDERER, (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y());
+	//SDL_RenderSetLogicalSize(M22Renderer::SDL_RENDERER, (int)M22Engine::ScrSize.x(), (int)M22Engine::ScrSize.y());
 	if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 4096 ) < 0 )
 	{
 		printf( "SDL_mixer failed to init! Error: %s\n", Mix_GetError() );
@@ -318,7 +319,18 @@ void M22Engine::UpdateKeyboard()
 	if(M22Engine::SDL_KEYBOARDSTATE[SDL_SCANCODE_RETURN] && M22Engine::GAMESTATE == M22Engine::GAMESTATES::INGAME && M22Script::currentLineType != M22Script::LINETYPE::MAKE_DECISION)
 	{
 		M22Interface::DRAW_TEXT_AREA = true;
-		M22Script::ChangeLine(++M22Script::currentLineIndex);
+		if (M22Script::updateCurrentLine == true)
+		{
+			for (size_t i = M22Script::typewriter_currPos; i < M22Script::currentLine_w.size(); i++)
+			{
+				M22Script::typewriter_text += M22Script::currentLine_w.at(i);
+			}
+			M22Script::typewriter_currPos = M22Script::currentLine_w.size();
+		}
+		else
+		{
+			M22Script::ChangeLine(++M22Script::currentLineIndex);
+		}
 	};
 
 	if(M22Script::currentLineType == M22Script::LINETYPE::MAKE_DECISION)
@@ -450,7 +462,7 @@ short int M22Engine::InitializeM22(int ScrW, int ScrH)
 	SDL_SetTextureBlendMode(M22Graphics::menuLogo.sprite, SDL_BLENDMODE_BLEND);
 	if(!M22Graphics::menuLogo.sprite) printf("Failed to load LOGO.png\n");
 
-	M22Script::fontSize = (((float(ScrW) / 640.0f) + (float(ScrH) / 480.0f)) / 2.0f);
+	M22Script::fontSize = (((float(ScrW) / 1920.0f) + (float(ScrH) / 1080.0f)) / 2.0f);
 
 	M22Engine::ACTIVE_BACKGROUNDS.resize(2);
 	M22Graphics::arrow.sprite = IMG_LoadTexture(M22Renderer::SDL_RENDERER, "graphics/arrow.png");

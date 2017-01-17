@@ -235,7 +235,8 @@ short int M22Sound::ChangeMusicTrack(short int _position)
 
 void M22Sound::StopMusic()
 {
-	Mix_HaltMusic();
+	//Mix_HaltMusic();
+	Mix_FadeOutMusic(2000);
 	M22Sound::currentTrack = 0;
 	return;
 };

@@ -1,8 +1,7 @@
 /*
-	March22 Engine Blank Project
+	March22 Interactive Novel Engine Prototype
 
-	Code by Sam Lynch, 
-		Amduat Games
+	By Sam Lynch
 */
 
 #include <engine/M22Engine.h>
@@ -11,9 +10,9 @@
 
 #define WINDOW_TITLE		"M22Engine "
 
-#define FPS 61
+#define FPS 60
 
-Vec2 ScrPos(600,200);
+Vec2 ScrPos(50,50);
 
 void InitializeEverything(Vec2 _ScrPos);
 void InitializeInterfaces(void);
@@ -22,6 +21,7 @@ void InitializeInterfaces(void);
 int main(int argc, char* argv[]) 
 {
 	InitializeEverything(ScrPos);
+	March22::M22Script::font = new NFont(March22::M22Renderer::SDL_RENDERER, "graphics/FONT.ttf", 29, NFont::Color(255, 255, 255, 255));
 
 	if(March22::M22Engine::GAMESTATE == March22::M22Engine::GAMESTATES::INGAME)
 	{
@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
 		};
 		if(March22::M22Engine::GAMESTATE == March22::M22Engine::GAMESTATES::MAIN_MENU) March22::M22Graphics::UpdateBackgrounds();
 		March22::M22Graphics::UpdateCharacters();
-		March22::M22Interface::UpdateActiveInterfaces( int(March22::M22Engine::ScrSize.x()), int(March22::M22Engine::ScrSize.y()) );
+		//March22::M22Interface::UpdateActiveInterfaces( int(March22::M22Engine::ScrSize.x()), int(March22::M22Engine::ScrSize.y()) );
 		
 		March22::M22Renderer::RenderClear();
 
@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
 
 		March22::M22Engine::LMB_Pressed = false;
 		if(!March22::M22Engine::QUIT) March22::M22Renderer::RenderPresent();
-		March22::M22Renderer::Delay(1000/FPS); // 1000ms / 60 = 16.66ms delay (60FPS)
+		March22::M22Renderer::Delay(1000/FPS); 
 	};
 
 	March22::M22Engine::Shutdown();
@@ -104,9 +104,9 @@ void InitializeEverything(Vec2 _ScrPos)
 	ERROR_CODE = March22::M22Engine::InitializeM22(int(March22::M22Engine::ScrSize.x()),int(March22::M22Engine::ScrSize.y()));
 	
 	// Loads all the background files from the specified index file
-	March22::M22Graphics::BACKGROUND_RENDER_TARGET = SDL_CreateTexture( March22::M22Renderer::SDL_RENDERER, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET , 640, 480 );
+	March22::M22Graphics::BACKGROUND_RENDER_TARGET = SDL_CreateTexture( March22::M22Renderer::SDL_RENDERER, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET , 1920, 1080 );
 	SDL_SetTextureBlendMode(March22::M22Graphics::BACKGROUND_RENDER_TARGET, SDL_BLENDMODE_BLEND);
-	March22::M22Graphics::NEXT_BACKGROUND_RENDER_TARGET = SDL_CreateTexture( March22::M22Renderer::SDL_RENDERER, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET , 640, 480 );
+	March22::M22Graphics::NEXT_BACKGROUND_RENDER_TARGET = SDL_CreateTexture( March22::M22Renderer::SDL_RENDERER, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET , 1920, 1080);
 	SDL_SetTextureBlendMode(March22::M22Graphics::NEXT_BACKGROUND_RENDER_TARGET, SDL_BLENDMODE_BLEND);
 	
 	// Initializes the text box (loads appropriate files)
@@ -134,10 +134,10 @@ void InitializeEverything(Vec2 _ScrPos)
 	March22::M22Renderer::SetDrawColor(255, 255, 255, 255);
 
 	March22::M22Graphics::wipePosition = new SDL_Rect();
-	March22::M22Graphics::wipePosition->x = (0 - 640);
+	March22::M22Graphics::wipePosition->x = (0 - 1920);
 	March22::M22Graphics::wipePosition->y = 0;
-	March22::M22Graphics::wipePosition->w = 640;
-	March22::M22Graphics::wipePosition->h = 480;
+	March22::M22Graphics::wipePosition->w = 1920;
+	March22::M22Graphics::wipePosition->h = 1080;
 
 	if(ERROR_CODE != 0) printf("Error detected! Expect problems!\n");
 	return;

@@ -19,6 +19,9 @@ std::string M22Script::currentScriptFileName;
 bool M22Script::updateCurrentLine = false;
 SDL_Rect M22Script::currentLineTextureShadowRect = {8+1,404+1,0,0};
 SDL_Rect M22Script::currentLineTextureRect = {8,404,0,0};
+std::wstring M22Script::typewriter_text;
+size_t M22Script::typewriter_currPos;
+NFont* M22Script::font;
 
 short int M22Script::LoadTextBoxPosition(const char* _filename)
 {
@@ -107,12 +110,12 @@ void M22Script::DrawDecisions(M22Script::Decision* _decision,int ScrW, int ScrH)
 
 	if(tempSurfShadow == NULL)
 	{
-		printf("Failed to draw message shadow!\n");
+		printf("[M22Script] Failed to draw message shadow!\n");
 		return;
 	};
 	if(tempSurf == NULL)
 	{
-		printf("Failed to draw message!\n");
+		printf("[M22Script] Failed to draw message!\n");
 		return;
 	};
 
@@ -141,49 +144,48 @@ void M22Script::DrawDecisions(M22Script::Decision* _decision,int ScrW, int ScrH)
 	return;
 };
 
+std::string wstring_to_utf8(const std::wstring& str)
+{
+	std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
+	return myconv.to_bytes(str);
+}
+
 /*
 	An extremely slow function (comparitively) for drawing decent-looking text.
 	Draws text then a "shadow" 1px adjacent @ 640x480
 */
 void M22Script::DrawCurrentLine(int ScrW, int ScrH)
 {
+	bool finished = false;
 	if(M22Script::updateCurrentLine == true)
 	{
 		SDL_Color tempCol2 = {0,0,0,255};       // Black
 		SDL_Color tempCol = {255,255,255,255};  // White
 
-		Uint16* UNICODETEXT = to_Uint16(M22Script::currentLine_w);
-		M22Script::currentLineSurfaceShadow = TTF_RenderUNICODE_Blended_Wrapped( M22Graphics::textFont, UNICODETEXT, tempCol2,	ScrW-12 );
-		M22Script::currentLineSurface =	      TTF_RenderUNICODE_Blended_Wrapped( M22Graphics::textFont, UNICODETEXT, tempCol,	ScrW-12 );
-		delete [] UNICODETEXT;
-	
-		if(M22Script::currentLineSurfaceShadow == NULL && M22Script::currentLine != "")
+		try
 		{
-			printf("Failed to draw message shadow!\n");
-			return;
-		};
-		if(M22Script::currentLineSurface == NULL && M22Script::currentLine != "")
+			//if (M22Script::currentLine_w.at(typewriter_currPos) == 0x2019)
+			//{
+			//	M22Script::typewriter_text += M22Script::currentLine_w.at(typewriter_currPos++);
+			//}
+			M22Script::typewriter_text += M22Script::currentLine_w.at(typewriter_currPos++);
+		}
+		catch (std::exception& e)
 		{
-			printf("Failed to draw message!\n");
-			return;
-		};
-		
-		SDL_DestroyTexture(M22Script::currentLineTextureShadow);
-		SDL_DestroyTexture(M22Script::currentLineTexture);
-		M22Script::currentLineTextureShadow =	SDL_CreateTextureFromSurface(M22Renderer::SDL_RENDERER, M22Script::currentLineSurfaceShadow);
-		M22Script::currentLineTexture =		SDL_CreateTextureFromSurface(M22Renderer::SDL_RENDERER, M22Script::currentLineSurface);
-		
-		SDL_QueryTexture(currentLineTextureShadow, NULL, NULL, &M22Script::currentLineTextureShadowRect.w, &M22Script::currentLineTextureShadowRect.h);
-		SDL_QueryTexture(currentLineTexture, NULL, NULL, &M22Script::currentLineTextureRect.w, &M22Script::currentLineTextureRect.h);
-
-		SDL_FreeSurface(currentLineSurfaceShadow);
-		SDL_FreeSurface(currentLineSurface);
-
-		M22Script::updateCurrentLine = false;
+			M22Script::updateCurrentLine = false;
+			M22Script::typewriter_currPos = 0;
+			finished = true;
+		}
 	};
-	
-	SDL_RenderCopy(M22Renderer::SDL_RENDERER, M22Script::currentLineTextureShadow, NULL, &M22Script::currentLineTextureShadowRect);
-	SDL_RenderCopy(M22Renderer::SDL_RENDERER, M22Script::currentLineTexture, NULL, &M22Script::currentLineTextureRect);
+
+	(*font).drawColumn(M22Renderer::SDL_RENDERER, 55 + 2, 50 + 2, ScrW - 90, NFont::Color(0, 0, 0, 255), wstring_to_utf8(M22Script::typewriter_text).c_str());
+	(*font).drawColumn(M22Renderer::SDL_RENDERER, 55, 50, ScrW - 90, wstring_to_utf8(M22Script::typewriter_text).c_str());
+
+
+	if(finished==true)
+		if (M22Script::currentLineType == March22::M22Script::LINETYPE::NARRATIVE ||
+			M22Script::currentLineType == March22::M22Script::LINETYPE::SPEECH)
+				typewriter_text += L"\n\n";
 
 	return;
 };
@@ -259,6 +261,7 @@ void M22Script::ChangeLine(int _newLine)
 	// Update currentLine variable
 	M22Script::currentLine = M22Script::to_string(M22ScriptCompiler::currentScript_c.at(_newLine).m_lineContents);
 	M22Script::currentLine_w = M22ScriptCompiler::currentScript_c.at(_newLine).m_lineContents;
+
 	M22Script::updateCurrentLine = true;
 
 	M22ScriptCompiler::CURRENT_LINE = &M22ScriptCompiler::currentScript_c.at(_newLine);
@@ -317,6 +320,10 @@ M22Script::LINETYPE M22Script::CheckLineType(std::wstring _input)
 	if(_input == M22Script::to_wstring("DrawBackground"))
 	{
 		return M22Script::LINETYPE::NEW_BACKGROUND;
+	}
+	else if (_input == M22Script::to_wstring("DrawBackgroundStealth"))
+	{
+		return M22Script::LINETYPE::NEW_BACKGROUND_STEALTH;
 	}
 	else if (_input == M22Script::to_wstring("//"))
 	{
@@ -422,6 +429,10 @@ M22Script::LINETYPE M22Script::CheckLineType(std::wstring _input)
 	{
 		return M22Script::LINETYPE::SET_DECISION;
 	}
+	else if (_input == M22Script::to_wstring("ClearSprites"))
+	{
+		return M22Script::LINETYPE::CLEAR_SPRITES;
+	}
 	else if(_input == M22Script::to_wstring("RunLuaScript"))
 	{
 		return M22Script::LINETYPE::RUN_LUA_SCRIPT;
@@ -429,6 +440,10 @@ M22Script::LINETYPE M22Script::CheckLineType(std::wstring _input)
 	else if(_input == M22Script::to_wstring("MakeDecision"))
 	{
 		return M22Script::LINETYPE::MAKE_DECISION;
+	}
+	else if (_input == M22Script::to_wstring("NewPage"))
+	{
+		return M22Script::LINETYPE::NEW_PAGE;
 	};
 	return M22Script::LINETYPE::SPEECH;
 };
